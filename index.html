@@ -515,8 +515,8 @@ async function loadAllRecords() {
     if (USE_CLOUD && isOnline) {
       const { data: rows, error } = await sbClient.from('records').select('*').order('full_date', { ascending: true });
       if (error) throw error;
-      // Map from Supabase snake_case to app camelCase
-      const mapped = rows.map(r => ({
+
+      const mapRow = r => ({
         id:       r.id,
         day:      r.day || (r.full_date ? parseInt(r.full_date.split('-')[2]) : 0),
         employee: r.employee || '',
@@ -529,16 +529,37 @@ async function loadAllRecords() {
         request:  r.request || '',
         details:  r.details || '',
         fullDate: r.full_date || ''
-      }));
-      // Cache in IndexedDB
-      for (const r of mapped) await idbPut(r);
-      data = mapped;
+      });
+
+      if (rows.length === 0) {
+        // Supabase is empty — seed it from RAW_DATA
+        showToast('🔄 جاري رفع البيانات الأساسية...', 'info');
+        const toInsert = RAW_DATA.map(r => ({
+          ...toSupabaseRecord({
+            ...r,
+            id: crypto.randomUUID(),
+            fullDate: r.fullDate || (r.day ? '2026-07-' + String(r.day).padStart(2,'0') : '')
+          })
+        }));
+        // Batch insert in chunks of 50
+        for (let i = 0; i < toInsert.length; i += 50) {
+          await sbClient.from('records').insert(toInsert.slice(i, i + 50));
+        }
+        // Reload after seeding
+        const { data: seeded } = await sbClient.from('records').select('*').order('full_date', { ascending: true });
+        data = (seeded || []).map(mapRow);
+      } else {
+        data = rows.map(mapRow);
+      }
+
+      // Update local IndexedDB cache
+      for (const r of data) await idbPut(r);
       showToast('✅ تم تحميل ' + data.length + ' سجل من السحابة', 'success');
+
     } else {
-      // Load from IndexedDB
+      // Offline — load from IndexedDB
       let local = await idbGetAll();
       if (local.length === 0) {
-        // Seed from RAW_DATA on first run
         for (const r of RAW_DATA) {
           const rec = {
             ...r,
@@ -550,7 +571,7 @@ async function loadAllRecords() {
         local = await idbGetAll();
       }
       data = local;
-      showToast(isOnline ? '✅ ' + data.length + ' سجل' : '📴 وضع أوفلاين — ' + data.length + ' سجل محلي', isOnline ? 'success' : 'warn');
+      showToast('📴 وضع أوفلاين — ' + data.length + ' سجل محلي', 'warn');
     }
   } catch (err) {
     console.error('Load error:', err);
@@ -1208,8 +1229,8 @@ function renderTable() {
       <td>${r.employee}</td>
       <td>
         <div class="actions-cell">
-          <button class="icon-btn" onclick="editRecord(${r.id})">✏️</button>
-          <button class="icon-btn del" onclick="deleteRecord(${r.id})">🗑️</button>
+          <button class="icon-btn" onclick="editRecord('${r.id}')">✏️</button>
+          <button class="icon-btn del" onclick="deleteRecord('${r.id}')">🗑️</button>
         </div>
       </td>
     </tr>`).join('') || '<tr><td colspan="11" class="empty-state">لا توجد نتائج</td></tr>';
@@ -1243,7 +1264,7 @@ function openModal(id=null) {
   editingId = id;
   document.getElementById('modal-title').textContent = id ? 'تعديل السجل' : 'إضافة سجل جديد';
   if(id) {
-    const r = data.find(x=>x.id===id);
+    const r = data.find(x=>String(x.id)===String(id));
     if(r) {
       document.getElementById('f-name').value=r.name||'';
       document.getElementById('f-phone').value=r.phone||'';
@@ -1283,10 +1304,9 @@ async function saveRecord() {
   };
   if(!rec.phone){alert('رقم الجوال مطلوب');return;}
   if(editingId) {
-    rec.id = editingId;
-    const idx = data.findIndex(x=>x.id===editingId);
-    if(idx>-1) data[idx]={...data[idx],...rec};
-    await saveRecordDB(data[idx]);
+    rec.id = String(editingId);
+    const idx = data.findIndex(x=>String(x.id)===String(editingId));
+    if(idx>-1) { data[idx]={...data[idx],...rec}; await saveRecordDB(data[idx]); }
   } else {
     rec.id = crypto.randomUUID();
     data.push(rec);
@@ -1297,11 +1317,12 @@ async function saveRecord() {
   buildMetrics(data, 'metrics-row');
   buildCharts(data);
 }
-function editRecord(id) { showTab('records'); openModal(id); }
+function editRecord(id) { showTab('records'); openModal(String(id)); }
 async function deleteRecord(id) {
+  id = String(id);
   if(!confirm('هل تريد حذف هذا السجل؟')) return;
   await deleteRecordDB(id);
-  data = data.filter(x=>x.id!==id);
+  data = data.filter(x=>String(x.id)!==id);
   filterAndRender();
   buildMetrics(data, 'metrics-row');
   buildCharts(data);
