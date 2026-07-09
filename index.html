@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>داشبورد العملاء</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1a1a2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; background: #f4f6f9; color: #1a1a2e; direction: rtl; }
+
+  /* HEADER */
+  .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: #fff; padding: 14px 32px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 12px rgba(0,0,0,0.3); }
+  .header-logo { display: flex; align-items: center; gap: 12px; }
+  .logo-icon { width: 42px; height: 42px; background: #e94560; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; color: #fff; }
+  .header-title { font-size: 20px; font-weight: 700; }
+  .header-sub { font-size: 12px; color: #a0aec0; margin-top: 2px; }
+  .header-actions { display: flex; gap: 10px; }
+  .btn { padding: 8px 18px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit; transition: all 0.2s; }
+  .btn-primary { background: #e94560; color: #fff; }
+  .btn-primary:hover { background: #c73652; transform: translateY(-1px); }
+  .btn-secondary { background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.3); }
+  .btn-secondary:hover { background: rgba(255,255,255,0.25); }
+  .btn-print { background: #0f3460; color: #fff; border: 1px solid rgba(255,255,255,0.2); }
+  .btn-print:hover { background: #1a4a80; }
+
+  /* NAV TABS */
+  .nav-tabs { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 0 32px; display: flex; gap: 4px; }
+  .tab { padding: 14px 20px; cursor: pointer; font-size: 14px; font-weight: 500; border-bottom: 3px solid transparent; color: #718096; transition: all 0.2s; }
+  .tab:hover { color: #1a1a2e; }
+  .tab.active { color: #e94560; border-bottom-color: #e94560; font-weight: 600; }
+
+  /* CONTENT */
+  .content { padding: 28px 32px; }
+
+  /* METRIC CARDS */
+  .metrics-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 24px; }
+  .metric-card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); border-top: 4px solid; }
+  .metric-card.blue { border-top-color: #3182ce; }
+  .metric-card.green { border-top-color: #38a169; }
+  .metric-card.orange { border-top-color: #dd6b20; }
+  .metric-card.purple { border-top-color: #805ad5; }
+  .metric-card.red { border-top-color: #e53e3e; }
+  .metric-label { font-size: 12px; color: #718096; margin-bottom: 6px; }
+  .metric-value { font-size: 28px; font-weight: 700; color: #1a1a2e; }
+  .metric-sub { font-size: 11px; color: #a0aec0; margin-top: 4px; }
+
+  /* CHARTS ROW */
+  .charts-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+  .chart-card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+  .chart-title { font-size: 14px; font-weight: 600; color: #2d3748; margin-bottom: 16px; }
+  .chart-wrap { position: relative; width: 100%; }
+
+  /* DATA TABLE */
+  .table-section { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+  .table-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
+  .table-title { font-size: 16px; font-weight: 700; color: #1a1a2e; }
+  .table-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .search-box { padding: 7px 14px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; font-family: inherit; width: 200px; outline: none; }
+  .search-box:focus { border-color: #e94560; }
+  select.filter-sel { padding: 7px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; font-family: inherit; outline: none; cursor: pointer; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th { background: #f7fafc; padding: 10px 12px; text-align: right; font-weight: 600; color: #4a5568; border-bottom: 2px solid #e2e8f0; white-space: nowrap; cursor: pointer; user-select: none; }
+  thead th:hover { background: #edf2f7; }
+  tbody tr { border-bottom: 1px solid #f0f0f0; transition: background 0.15s; }
+  tbody tr:hover { background: #f7fafc; }
+  tbody td { padding: 9px 12px; color: #2d3748; vertical-align: middle; }
+  .badge { display: inline-block; padding: 3px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .badge-استفسار { background: #ebf4ff; color: #2b6cb0; }
+  .badge-حجز { background: #e6fffa; color: #1d6a5a; }
+  .badge-مسبح { background: #ebf8ff; color: #2c5282; }
+  .badge-السعر { background: #fff5eb; color: #9c4221; }
+  .badge-العاب { background: #e6fffa; color: #276749; }
+  .badge-تعارض { background: #fff5f5; color: #9b2c2c; }
+  .badge-صالة { background: #faf5ff; color: #553c9a; }
+  .badge-المساحة { background: #f0fff4; color: #276749; }
+  .badge-طاولات { background: #fffaf0; color: #7b341e; }
+  .badge-شاشة { background: #e6f7ff; color: #1a5276; }
+  .source-icon { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; }
+
+  .pagination { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; }
+  .page-info { font-size: 13px; color: #718096; }
+  .page-btns { display: flex; gap: 6px; }
+  .page-btn { padding: 6px 12px; border: 1px solid #e2e8f0; border-radius: 6px; background: #fff; cursor: pointer; font-size: 13px; font-family: inherit; }
+  .page-btn:hover, .page-btn.active { background: #e94560; color: #fff; border-color: #e94560; }
+
+  /* MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: #fff; border-radius: 16px; padding: 32px; width: 600px; max-width: 95vw; max-height: 90vh; overflow-y: auto; }
+  .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 24px; color: #1a1a2e; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: span 2; }
+  label { font-size: 13px; font-weight: 500; color: #4a5568; }
+  input[type="text"], input[type="date"], textarea, select.form-select { padding: 9px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; font-family: inherit; outline: none; transition: border-color 0.2s; direction: rtl; }
+  input:focus, textarea:focus, select.form-select:focus { border-color: #e94560; }
+  textarea { resize: vertical; min-height: 80px; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-start; margin-top: 20px; }
+
+  /* PRINT / REPORT PANEL */
+  .report-panel { display: none; }
+  .report-panel.open { display: block; }
+  .print-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+  .date-filter { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .date-filter label { font-size: 13px; color: #4a5568; font-weight: 500; }
+
+  /* PRINT STYLES - forced single page */
+  @media print {
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box !important; }
+    html, body { height: auto !important; overflow: visible !important; background: #fff !important; margin: 0 !important; padding: 0 !important; }
+    .header, .nav-tabs, .modal-overlay, .btn-add,
+    #tab-dashboard, #tab-records,
+    .print-controls, #report-count { display: none !important; }
+    #tab-report { display: block !important; }
+    .content { padding: 0 !important; margin: 0 !important; }
+    .table-section { box-shadow: none !important; border: none !important; padding: 0 !important; margin: 0 !important; }
+    .print-only-header { display: flex !important; justify-content: space-between; align-items: center; margin-bottom: 5px; padding-bottom: 5px; border-bottom: 1.5px solid #1a1a2e; }
+    .print-only-header .ph-title { font-size: 12px; font-weight: 700; color: #1a1a2e; }
+    .print-only-header .ph-date { font-size: 9px; color: #718096; }
+    .metrics-row { display: grid !important; grid-template-columns: repeat(4,1fr) !important; gap: 4px !important; margin-bottom: 5px !important; }
+    .metric-card { box-shadow: none !important; border: 1px solid #e2e8f0 !important; border-top-width: 3px !important; padding: 5px 7px !important; border-radius: 5px !important; }
+    .metric-label { font-size: 7px !important; margin-bottom: 1px !important; }
+    .metric-value { font-size: 15px !important; }
+    .metric-sub { font-size: 7px !important; }
+    .charts-row { display: grid !important; grid-template-columns: 1fr 1fr 1fr !important; gap: 4px !important; margin-bottom: 5px !important; }
+    .chart-card { box-shadow: none !important; border: 1px solid #e2e8f0 !important; padding: 5px !important; border-radius: 5px !important; page-break-inside: avoid; break-inside: avoid; }
+    .chart-card > div:first-child { font-size: 8px !important; font-weight: 600; margin-bottom: 2px !important; }
+    .chart-wrap { height: 100px !important; }
+    .chart-wrap canvas { height: 100px !important; max-height: 100px !important; width: 100% !important; }
+    #report-recommendations { border: 1px solid #e2e8f0 !important; border-radius: 5px !important; padding: 5px 7px !important; margin-top: 4px !important; page-break-inside: avoid; break-inside: avoid; }
+    #report-recommendations > div:first-child { font-size: 9px !important; font-weight: 700; margin-bottom: 3px !important; }
+    #report-recommendations .rec-hint { display: none !important; }
+    #report-recommendations [contenteditable] { font-size: 7.5px !important; padding: 1px 3px !important; line-height: 1.4 !important; border: none !important; }
+    body > div[style*="text-align:center"] { font-size: 7px !important; padding: 3px !important; margin-top: 3px !important; }
+    @page { size: A3 landscape; margin: 7mm; }
+  }
+  .print-only-header { display: none; }
+  .print-report-header { display: none; }
+
+  .empty-state { text-align: center; padding: 40px; color: #a0aec0; font-size: 14px; }
+
+  .actions-cell { display: flex; gap: 6px; }
+  .icon-btn { padding: 4px 8px; border: 1px solid #e2e8f0; border-radius: 6px; background: #f7fafc; cursor: pointer; font-size: 12px; font-family: inherit; transition: all 0.15s; }
+  .icon-btn:hover { background: #e94560; color: #fff; border-color: #e94560; }
+  .icon-btn.del:hover { background: #e53e3e; border-color: #e53e3e; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-logo">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABkAAAAZACAYAAAAhDI6nAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAKlwSURBVHhe7N0LyGVXeTjuf2YyuWuMifVSjbZWrbfa1l/VemlttRVb7Q21LV5KrVSLFS1WVCoqimJIiESUSCQiBkUUUSRBDCIGkRQJEQkSDCFICCEhhCGEIYRQ/L/v3u+xx69nZr5v5jvn7L3W88BLMjPnsta7Lmfvvfbl/wMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAe+L7v+7/a0xTNz2R2TwAAAABJRU5ErkJggg==" style="height:64px;width:auto;border-radius:10px;" alt="Logo">
+    <div>
+      <div class="header-title">داشبورد العملاء</div>
+      <div class="header-sub">إدارة متكاملة لسجلات التواصل والحملات التسويقية</div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:16px;">
+    <span id="online-badge" style="font-size:12px;font-weight:600;">🟢 متصل</span>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-secondary" onclick="exportExcel()" style="background:rgba(56,161,105,0.85);border-color:rgba(56,161,105,0.5);color:#fff;">📊 تصدير Excel</button>
+    <button class="btn btn-primary btn-add" onclick="openModal()">+ إضافة سجل جديد</button>
+    <button class="btn btn-print" onclick="showTab('report')">📊 التقرير والطباعة</button>
+  </div>
+</div>
+
+<!-- NAV TABS -->
+<div class="nav-tabs">
+  <div class="tab active" onclick="showTab('dashboard')">لوحة البيانات</div>
+  <div class="tab" onclick="showTab('records')">سجلات العملاء</div>
+  <div class="tab" onclick="showTab('report')">التقرير والطباعة</div>
+</div>
+
+<!-- DASHBOARD TAB -->
+<div class="content" id="tab-dashboard">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;background:#fff;padding:12px 16px;border-radius:10px;border:1px solid #e2e8f0;flex-wrap:wrap;">
+  <span style="font-size:13px;font-weight:600;color:#4a5568">📅 الفترة الزمنية:</span>
+  <label style="font-size:13px;color:#4a5568">من:</label>
+  <input type="date" id="dash-date-from" style="padding:6px 8px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:inherit;outline:none;" onchange="applyDashFilter()">
+  <label style="font-size:13px;color:#4a5568">إلى:</label>
+  <input type="date" id="dash-date-to" style="padding:6px 8px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:inherit;outline:none;" onchange="applyDashFilter()">
+  <button class="btn btn-secondary" style="color:#1a1a2e;border-color:#e2e8f0;padding:6px 12px;" onclick="clearDashFilter()">كل الفترات</button>
+</div>
+<div class="metrics-row" id="metrics-row"></div>
+  <div class="charts-row">
+    <div class="chart-card">
+      <div class="chart-title">📊 طلبات العملاء</div>
+      <div class="chart-wrap" style="height:220px"><canvas id="chart-requests" role="img" aria-label="توزيع طلبات العملاء">توزيع أنواع الطلبات</canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">📡 مصادر التواصل</div>
+      <div class="chart-wrap" style="height:220px"><canvas id="chart-sources" role="img" aria-label="مصادر التواصل">مصادر التواصل</canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">📅 العملاء يومياً</div>
+      <div class="chart-wrap" style="height:220px"><canvas id="chart-daily" role="img" aria-label="توزيع العملاء يومياً">توزيع يومي</canvas></div>
+    </div>
+  </div>
+  <div class="charts-row" style="grid-template-columns: 1fr 1fr;">
+    <div class="chart-card">
+      <div class="chart-title">📞 نوع التواصل (واتساب / اتصال)</div>
+      <div class="chart-wrap" style="height:200px"><canvas id="chart-contact" role="img" aria-label="نوع التواصل">نوع التواصل</canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">🏷️ نوع الطلب (استفسار / حجز)</div>
+      <div class="chart-wrap" style="height:200px"><canvas id="chart-type" role="img" aria-label="نوع الطلب">نوع الطلب</canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- RECORDS TAB -->
+<div class="content" id="tab-records" style="display:none">
+  <div class="table-section">
+    <div class="table-header">
+      <div class="table-title">سجلات العملاء (<span id="count-display">0</span>)</div>
+      <div class="table-controls">
+        <input class="search-box" type="text" id="search-input" placeholder="بحث باسم أو رقم..." oninput="filterAndRender()">
+        <select class="filter-sel" id="filter-source" onchange="filterAndRender()">
+          <option value="">كل المصادر</option>
+          <option>Google Map</option><option>TikTok</option><option>Instagram</option>
+          <option>Snap chat</option><option>Google</option><option>FaceBook</option>
+          <option>YouTube</option><option>Unknown</option>
+        </select>
+        <select class="filter-sel" id="filter-request" onchange="filterAndRender()">
+          <option value="">كل الطلبات</option>
+          <option>السعر</option><option>مسبح</option><option>العاب مائية</option>
+          <option>تعارض في الحجز</option><option>صالة طعام</option><option>المساحة</option>
+          <option>طاولات طعام</option><option>شاشة</option>
+        </select>
+        <label style="font-size:13px;color:#4a5568;margin-right:4px">من:</label>
+        <input type="date" id="filter-date-from" class="filter-sel" onchange="filterAndRender()" style="padding:6px 8px;">
+        <label style="font-size:13px;color:#4a5568;margin-right:4px">إلى:</label>
+        <input type="date" id="filter-date-to" class="filter-sel" onchange="filterAndRender()" style="padding:6px 8px;">
+        <select class="filter-sel" id="filter-contact" onchange="filterAndRender()">
+          <option value="">كل التواصل</option>
+          <option>اتصال</option><option>واتساب</option>
+        </select>
+        <select class="filter-sel" id="filter-type" onchange="filterAndRender()">
+          <option value="">كل الأنواع</option>
+          <option>استفسار</option><option>حجز</option><option>شكوى</option>
+        </select>
+        <button class="btn btn-secondary" style="color:#1a1a2e; border-color:#e2e8f0;" onclick="resetFilters()">إعادة تعيين</button>
+        <button class="btn btn-secondary" style="color:#fff;background:#38a169;border-color:#38a169;" onclick="exportExcel()">📊 Excel</button>
+        <button class="btn btn-primary btn-add" onclick="openModal()">+ إضافة جديد</button>
+      </div>
+    </div>
+    <div style="overflow-x: auto;">
+      <table id="main-table">
+        <thead>
+          <tr>
+            <th onclick="sortTable('num')">#</th>
+            <th onclick="sortTable('name')">اسم العميل</th>
+            <th onclick="sortTable('phone')">رقم الجوال</th>
+            <th onclick="sortTable('day')">اليوم</th>
+            <th onclick="sortTable('source')">المصدر</th>
+            <th onclick="sortTable('contact')">التواصل</th>
+            <th onclick="sortTable('request')">الطلب</th>
+            <th onclick="sortTable('type')">النوع</th>
+            <th onclick="sortTable('details')">تفاصيل الطلب</th>
+            <th onclick="sortTable('employee')">الموظف</th>
+            <th>إجراءات</th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <div class="page-info" id="page-info"></div>
+      <div class="page-btns" id="page-btns"></div>
+    </div>
+  </div>
+</div>
+
+<!-- REPORT TAB -->
+<div class="content" id="tab-report" style="display:none">
+  <!-- Print-only header (hidden on screen, visible on print) -->
+  <div class="print-only-header">
+    <div class="ph-title">📋 تقرير العملاء</div>
+    <div class="ph-date" id="print-date-label">تاريخ الطباعة: —</div>
+  </div>
+  <div class="table-section print-controls">
+    <div class="print-header">
+      <div class="table-title" style="font-size:18px">📋 تقرير العملاء</div>
+    </div>
+    <div class="date-filter" style="margin-bottom:20px; gap:16px; background:#f7fafc; padding:16px; border-radius:10px; border:1px solid #e2e8f0;">
+      <label>من:</label>
+      <input type="date" id="report-date-from" class="filter-sel" onchange="renderReport()" style="padding:6px 8px;">
+      <label>إلى:</label>
+      <input type="date" id="report-date-to" class="filter-sel" onchange="renderReport()" style="padding:6px 8px;">
+      <select class="filter-sel" id="report-source" onchange="renderReport()">
+        <option value="">كل المصادر</option>
+        <option>Google Map</option><option>TikTok</option><option>Instagram</option>
+        <option>Snap chat</option><option>Google</option><option>FaceBook</option>
+        <option>Unknown</option>
+      </select>
+      <select class="filter-sel" id="report-request" onchange="renderReport()">
+        <option value="">كل الطلبات</option>
+        <option>السعر</option><option>مسبح</option><option>العاب مائية</option>
+        <option>تعارض في الحجز</option><option>صالة طعام</option><option>المساحة</option>
+        <option>طاولات طعام</option><option>شاشة</option>
+      </select>
+      <select class="filter-sel" id="report-contact" onchange="renderReport()">
+        <option value="">كل التواصل</option>
+        <option>اتصال</option><option>واتساب</option>
+      </select>
+      <select class="filter-sel" id="report-type" onchange="renderReport()">
+        <option value="">كل الأنواع</option>
+        <option>استفسار</option><option>حجز</option><option>شكوى</option>
+      </select>
+      <button class="btn btn-primary" onclick="printReport('a3')">🖨️ طباعة A3</button>
+      <button class="btn btn-secondary" style="color:#1a1a2e;border-color:#e2e8f0;" onclick="printReport('a4')">🖨️ طباعة A4</button>
+    </div>
+    <!-- Report metrics -->
+    <div class="metrics-row" id="report-metrics" style="grid-template-columns: repeat(4,1fr);"></div>
+    <!-- Report charts -->
+    <div class="charts-row" style="margin-top:20px; grid-template-columns:1fr 1fr 1fr;">
+      <div class="chart-card">
+        <div class="chart-title">توزيع الطلبات</div>
+        <div class="chart-wrap" style="height:200px"><canvas id="rep-chart-req" role="img" aria-label="توزيع الطلبات في التقرير">توزيع الطلبات</canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">مصادر التواصل</div>
+        <div class="chart-wrap" style="height:200px"><canvas id="rep-chart-src" role="img" aria-label="مصادر التواصل في التقرير">المصادر</canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">نوع التواصل</div>
+        <div class="chart-wrap" style="height:200px"><canvas id="rep-chart-contact" role="img" aria-label="نوع التواصل في التقرير">التواصل</canvas></div>
+      </div>
+    </div>
+    <!-- Recommendations section -->
+    <div id="report-recommendations" style="margin-top:24px; background:#fff; border-radius:12px; padding:20px; border:1px solid #e2e8f0;">
+      <div style="font-size:15px; font-weight:700; color:#1a1a2e; margin-bottom:14px;">💡 التوصيات</div>
+      <div class="rec-hint" style="font-size:11px;color:#a0aec0;margin-bottom:10px;">✏️ يمكنك تعديل أي توصية بالنقر عليها مباشرة</div>
+      <div id="rec-content" style="font-size:13px; color:#4a5568; line-height:1.9;">جاري تحليل البيانات...</div>
+    </div>
+    <div style="text-align:center; margin-top:12px; color:#a0aec0; font-size:12px;" id="report-count"></div>
+  </div>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">إضافة سجل جديد</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>اسم العميل</label>
+        <input type="text" id="f-name" placeholder="اسم العميل">
+      </div>
+      <div class="form-group">
+        <label>رقم الجوال</label>
+        <input type="text" id="f-phone" placeholder="05X XXX XXXX">
+      </div>
+      <div class="form-group">
+        <label>التاريخ</label>
+        <input type="date" id="f-day" class="form-select">
+      </div>
+      <div class="form-group">
+        <label>المدينة</label>
+        <select class="form-select" id="f-city">
+          <option>الرياض</option><option>جدة</option><option>الشرقية</option><option>أبها</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>التواصل عبر موقع</label>
+        <select class="form-select" id="f-source">
+          <option>Google Map</option><option>TikTok</option><option>Instagram</option>
+          <option>Snap chat</option><option>Google</option><option>FaceBook</option>
+          <option>YouTube</option><option>Unknown</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>نوع التواصل</label>
+        <select class="form-select" id="f-contact">
+          <option>اتصال</option><option>واتساب</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>نوع الطلب</label>
+        <select class="form-select" id="f-type">
+          <option>استفسار</option><option>حجز</option><option>شكوى</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>طلب العميل</label>
+        <input type="text" id="f-request" class="form-select" placeholder="اكتب طلب العميل...">
+      </div>
+      <div class="form-group">
+        <label>الموظف</label>
+        <input type="text" id="f-employee" value="احمد ادريس" placeholder="اسم الموظف">
+      </div>
+      <div class="form-group full">
+        <label>نتيجة / تفاصيل التواصل</label>
+        <textarea id="f-details" placeholder="اكتب تفاصيل التواصل..."></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="saveRecord()">💾 حفظ السجل</button>
+      <button class="btn btn-secondary" style="color:#1a1a2e;border-color:#e2e8f0;" onclick="closeModal()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==================== DATA ====================
+// =============================================
+// ⚙️ إعدادات Supabase — ضع بياناتك هنا
+// =============================================
+const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co';   // <-- غيّر هذا
+const SUPABASE_KEY = 'YOUR_ANON_KEY';                       // <-- غيّر هذا
+const USE_CLOUD = SUPABASE_URL.includes('supabase.co') && !SUPABASE_URL.includes('YOUR_PROJECT');
+
+// =============================================
+// قاعدة البيانات المحلية (IndexedDB)
+// =============================================
+let sbClient = null;
+if (USE_CLOUD) {
+  sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+}
+
+let idb = null;
+
+function openIDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open('crm_db', 2);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains('records')) {
+        db.createObjectStore('records', { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains('sync_queue')) {
+        db.createObjectStore('sync_queue', { keyPath: 'queueId', autoIncrement: true });
+      }
+      if (!db.objectStoreNames.contains('config')) {
+        db.createObjectStore('config', { keyPath: 'key' });
+      }
+    };
+    req.onsuccess = e => {
+      resolve(e.target.result);
+    };
+    req.onerror = e => reject(e.target.error);
+  });
+}
+
+async function idbGetAll() {
+  return new Promise((resolve, reject) => {
+    const tx = idb.transaction('records', 'readonly');
+    const req = tx.objectStore('records').getAll();
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function idbPut(record) {
+  return new Promise((resolve, reject) => {
+    const tx = idb.transaction('records', 'readwrite');
+    const req = tx.objectStore('records').put(record);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function idbDelete(id) {
+  return new Promise((resolve, reject) => {
+    const tx = idb.transaction('records', 'readwrite');
+    const req = tx.objectStore('records').delete(id);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function idbQueueAction(action, record) {
+  return new Promise((resolve, reject) => {
+    const tx = idb.transaction('sync_queue', 'readwrite');
+    const req = tx.objectStore('sync_queue').add({ action, record, ts: Date.now() });
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function idbSaveConfig() {
+  if (!USE_CLOUD) return;
+  const tx = idb.transaction('config', 'readwrite');
+  tx.objectStore('config').put({ key: 'supabase', value: { supabaseUrl: SUPABASE_URL, supabaseKey: SUPABASE_KEY } });
+}
+
+// =============================================
+// حالة الاتصال
+// =============================================
+let isOnline = navigator.onLine;
+function updateOnlineStatus() {
+  isOnline = navigator.onLine;
+  const badge = document.getElementById('online-badge');
+  if (badge) {
+    badge.textContent = isOnline ? '🟢 متصل' : '🔴 غير متصل';
+    badge.style.color = isOnline ? '#38a169' : '#e53e3e';
+  }
+  if (isOnline && USE_CLOUD) syncQueue();
+}
+window.addEventListener('online',  updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+
+// =============================================
+// تحميل السجلات: Cloud أو Local
+// =============================================
+async function loadAllRecords() {
+  showToast('جاري تحميل البيانات...', 'info');
+  try {
+    if (USE_CLOUD && isOnline) {
+      const { data: rows, error } = await sbClient.from('records').select('*').order('full_date', { ascending: true });
+      if (error) throw error;
+      // Map from Supabase snake_case to app camelCase
+      const mapped = rows.map(r => ({
+        id:       r.id,
+        day:      r.day || (r.full_date ? parseInt(r.full_date.split('-')[2]) : 0),
+        employee: r.employee || '',
+        name:     r.name || '',
+        phone:    r.phone || '',
+        city:     r.city || 'الرياض',
+        type:     r.type || '',
+        source:   r.source || '',
+        contact:  r.contact || '',
+        request:  r.request || '',
+        details:  r.details || '',
+        fullDate: r.full_date || ''
+      }));
+      // Cache in IndexedDB
+      for (const r of mapped) await idbPut(r);
+      data = mapped;
+      showToast('✅ تم تحميل ' + data.length + ' سجل من السحابة', 'success');
+    } else {
+      // Load from IndexedDB
+      let local = await idbGetAll();
+      if (local.length === 0) {
+        // Seed from RAW_DATA on first run
+        for (const r of RAW_DATA) {
+          const rec = {
+            ...r,
+            id: crypto.randomUUID(),
+            fullDate: r.fullDate || (r.day ? '2026-07-' + String(r.day).padStart(2,'0') : '')
+          };
+          await idbPut(rec);
+        }
+        local = await idbGetAll();
+      }
+      data = local;
+      showToast(isOnline ? '✅ ' + data.length + ' سجل' : '📴 وضع أوفلاين — ' + data.length + ' سجل محلي', isOnline ? 'success' : 'warn');
+    }
+  } catch (err) {
+    console.error('Load error:', err);
+    // Fallback to IndexedDB
+    let local = await idbGetAll();
+    if (local.length === 0) {
+      for (const r of RAW_DATA) {
+        const rec = { ...r, id: crypto.randomUUID(), fullDate: r.fullDate || (r.day ? '2026-07-' + String(r.day).padStart(2,'0') : '') };
+        await idbPut(rec);
+      }
+      local = await idbGetAll();
+    }
+    data = local;
+    showToast('⚠️ تعذّر الاتصال — يعمل محلياً', 'warn');
+  }
+  nextId = data.length + 1;
+  filteredData = [...data];
+  buildMetrics(data, 'metrics-row');
+  buildCharts(data);
+  renderTable();
+}
+
+// =============================================
+// حفظ سجل (Cloud + Local)
+// =============================================
+async function saveRecordDB(rec) {
+  await idbPut(rec);
+  if (USE_CLOUD && isOnline) {
+    const { error } = await sbClient.from('records').upsert(toSupabaseRecord(rec), { onConflict: 'id' });
+    if (error) {
+      console.warn('Cloud save failed, queued:', error);
+      await idbQueueAction('upsert', rec);
+    }
+  } else if (USE_CLOUD) {
+    await idbQueueAction('upsert', rec);
+    registerSync();
+  }
+}
+
+// =============================================
+// حذف سجل (Cloud + Local)
+// =============================================
+async function deleteRecordDB(id) {
+  await idbDelete(id);
+  if (USE_CLOUD && isOnline) {
+    const { error } = await sbClient.from('records').delete().eq('id', id);
+    if (error) {
+      await idbQueueAction('delete', { id });
+    }
+  } else if (USE_CLOUD) {
+    await idbQueueAction('delete', { id });
+    registerSync();
+  }
+}
+
+// =============================================
+// مزامنة قائمة الانتظار عند عودة الإنترنت
+// =============================================
+async function syncQueue() {
+  const pending = await new Promise((resolve, reject) => {
+    const tx = idb.transaction('sync_queue', 'readonly');
+    const req = tx.objectStore('sync_queue').getAll();
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+
+  if (pending.length === 0) return;
+  showToast('🔄 جاري مزامنة ' + pending.length + ' سجل...', 'info');
+
+  let synced = 0;
+  for (const item of pending) {
+    try {
+      let res;
+      if (item.action === 'delete') {
+        res = await sbClient.from('records').delete().eq('id', item.record.id);
+      } else {
+        res = await sbClient.from('records').upsert(toSupabaseRecord(item.record), { onConflict: 'id' });
+      }
+      if (!res.error) {
+        await new Promise((resolve, reject) => {
+          const tx = idb.transaction('sync_queue', 'readwrite');
+          const req = tx.objectStore('sync_queue').delete(item.queueId);
+          req.onsuccess = () => resolve();
+          req.onerror = () => reject(req.error);
+        });
+        synced++;
+      }
+    } catch(e) { console.warn('Sync item failed', e); }
+  }
+  if (synced > 0) showToast('✅ تمت مزامنة ' + synced + ' سجل', 'success');
+}
+
+function registerSync() {
+  if ('serviceWorker' in navigator && 'SyncManager' in window) {
+    navigator.serviceWorker.ready.then(reg => reg.sync.register('sync-records'));
+  }
+}
+
+function toSupabaseRecord(r) {
+  return {
+    id:        r.id,
+    day:       r.day || null,
+    employee:  r.employee || '',
+    name:      r.name || '',
+    phone:     r.phone || '',
+    city:      r.city || 'الرياض',
+    type:      (r.type || '').replace(/[\u200f\s]/g,'').trim(),
+    source:    r.source || '',
+    contact:   (r.contact || '').replace(/[\u200f\s]/g,'').trim(),
+    request:   r.request || '',
+    details:   r.details || '',
+    full_date: r.fullDate || null
+  };
+}
+
+// =============================================
+// Toast Notifications
+// =============================================
+function showToast(msg, type='info') {
+  let container = document.getElementById('toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toast-container';
+    container.style.cssText = 'position:fixed;bottom:20px;left:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;';
+    document.body.appendChild(container);
+  }
+  const colors = { success:'#38a169', warn:'#dd6b20', error:'#e53e3e', info:'#3182ce' };
+  const toast = document.createElement('div');
+  toast.style.cssText = `background:${colors[type]||colors.info};color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;font-family:inherit;box-shadow:0 4px 12px rgba(0,0,0,0.15);max-width:320px;transition:opacity 0.3s;`;
+  toast.textContent = msg;
+  container.appendChild(toast);
+  setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
+}
+
+// =============================================
+// Realtime subscription (أون لاين فقط)
+// =============================================
+function subscribeRealtime() {
+  if (!USE_CLOUD || !sbClient) return;
+  sbClient.channel('records-changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'records' }, payload => {
+      if (payload.eventType === 'INSERT') {
+        const r = mapFromSupabase(payload.new);
+        if (!data.find(x => x.id === r.id)) {
+          data.push(r);
+          idbPut(r);
+        }
+      } else if (payload.eventType === 'UPDATE') {
+        const r = mapFromSupabase(payload.new);
+        const idx = data.findIndex(x => x.id === r.id);
+        if (idx > -1) { data[idx] = r; idbPut(r); }
+      } else if (payload.eventType === 'DELETE') {
+        data = data.filter(x => x.id !== payload.old.id);
+        idbDelete(payload.old.id);
+      }
+      filteredData = [...data];
+      buildMetrics(data, 'metrics-row');
+      buildCharts(data);
+      renderTable();
+    })
+    .subscribe();
+}
+
+function mapFromSupabase(r) {
+  return {
+    id:       r.id,
+    day:      r.day || (r.full_date ? parseInt(r.full_date.split('-')[2]) : 0),
+    employee: r.employee || '',
+    name:     r.name || '',
+    phone:    r.phone || '',
+    city:     r.city || 'الرياض',
+    type:     r.type || '',
+    source:   r.source || '',
+    contact:  r.contact || '',
+    request:  r.request || '',
+    details:  r.details || '',
+    fullDate: r.full_date || ''
+  };
+}
+
+const RAW_DATA = [
+  // 1JUL (day=1)
+  {day:1,employee:'احمد ادريس',name:'',phone:'055 560 0887',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار'},
+  {day:1,employee:'احمد ادريس',name:'',phone:'055 226 6614',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار, طاولات طعام'},
+  {day:1,employee:'احمد ادريس',name:'',phone:'054 510 0056',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'اتصـال',request:'المساحة',details:'استفسار بخصوص , الاسعار, كم يشيل القسمين , وقت الدخول والخروج'},
+  {day:1,employee:'احمد ادريس',name:'',phone:'053 453 0089',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'صالة طعام',details:'استفسار بخصوص , الاسعار, متوفر للحجز , صاله طعام'},
+  {day:1,employee:'احمد ادريس',name:'',phone:'054 351 0076',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار'},
+  {day:1,employee:'احمد ادريس',name:'سعود العتيبي',phone:'050 029 0457',city:'الرياض',type:'ججز',source:'Google Map',contact:'اتصـال',request:'العاب مائية',details:'استفسار بخصوص , الاسعار, كم يشيل القسم'},
+  {day:1,employee:'احمد ادريس',name:'',phone:'055 416 6822',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'اتصـال',request:'مسبح',details:'استفسار بخصوص , الاسعار,  مسابح'},
+  {day:1,employee:'احمد ادريس',name:'',phone:'055 130 9882',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'المساحة',details:'استفسار بخصوص , الاسعار, العاب مائية , كم المساحه'},
+  {day:1,employee:'احمد ادريس',name:'',phone:'055 130 9882',city:'الرياض',type:'استفسـار',source:'Instagram',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار'},
+  {day:1,employee:'احمد ادريس',name:'',phone:'050 366 1752',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'تعارض في الحجز',details:'استفسار بخصوص , الاسعار, طاولات طعام , متوفر للحجز'},
+  {day:1,employee:'احمد ادريس',name:'',phone:'054 435 5290',city:'الرياض',type:'استفسـار',source:'Instagram',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار, متوفر للحجز'},
+  {day:1,employee:'احمد ادريس',name:'',phone:'053 524 8023',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'صالة طعام',details:'استفسار بخصوص , الاسعار, متوفر للحجز , صاله طعام'},
+  {day:1,employee:'احمد ادريس',name:'',phone:'050 397 7920',city:'الرياض',type:'استفسـار',source:'Instagram',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار'},
+  {day:1,employee:'احمد ادريس',name:'',phone:'056 744 0942',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'مسبح',details:'استفسار بخصوص ,  مسابح , العاب مائية'},
+  {day:1,employee:'احمد ادريس',name:'',phone:'050 786 0191',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'واتسـاب',request:'مسبح',details:'استفسار بخصوص , الاسعار,  مسابح'},
+  {day:1,employee:'احمد ادريس',name:'',phone:'054 749 6535',city:'الرياض',type:'استفسـار',source:'Google',contact:'واتسـاب',request:'مسبح',details:'استفسار بخصوص ,  مسابح , الاسعار بعد التجديد'},
+  {day:1,employee:'احمد ادريس',name:'',phone:'055 495 6450',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'واتسـاب',request:'العاب مائية',details:'استفسار بخصوص ,  مسابح , العاب مائية'},
+  {day:1,employee:'احمد ادريس',name:'',phone:'055 253 5854',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'واتسـاب',request:'السعر',details:'استفسار بخصوص , الاسعار'},
+  {day:1,employee:'احمد ادريس',name:'',phone:'056 990 5641',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'واتسـاب',request:'تعارض في الحجز',details:'استفسار بخصوص , الاسعار, متوفر للحجز'},
+  {day:1,employee:'احمد ادريس',name:'',phone:'053 002 8846',city:'الرياض',type:'استفسـار',source:'Instagram',contact:'واتسـاب',request:'السعر',details:'استفسار بخصوص, الاسعار, متوفر للحجز'},
+  {day:1,employee:'احمد ادريس',name:'',phone:'055 948 3382',city:'الرياض',type:'استفسـار',source:'Google',contact:'واتسـاب',request:'تعارض في الحجز',details:'استفسار بخصوص , الاسعار, كم يشيل القسمين , متوفر للحجز'},
+  {day:1,employee:'احمد ادريس',name:'',phone:'053 293 5242',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'واتسـاب',request:'السعر',details:'استفسار بخصوص , الاسعار بعد التجديد'},
+  {day:1,employee:'احمد ادريس',name:'',phone:'055 961 6060',city:'الرياض',type:'استفسار',source:'Unknown',contact:'اتصال',request:'مسبح',details:'استفسار بخصوص ,  مسابح, الاسعار بعد التجديد'},
+  {day:1,employee:'احمد ادريس',name:'',phone:'053 183 4620',city:'الرياض',type:'استفسار',source:'Unknown',contact:'اتصال',request:'السعر',details:'استفسار بخصوص , متوفر للحجز , الاسعار'},
+  {day:1,employee:'احمد ادريس',name:'',phone:'054 523 1004',city:'الرياض',type:'استفسار',source:'Unknown',contact:'اتصال',request:'السعر',details:'استفسار بخصوص , الاسعار'},
+  {day:1,employee:'احمد ادريس',name:'',phone:'055 088 7779',city:'الرياض',type:'استفسار',source:'Unknown',contact:'اتصال',request:'العاب مائية',details:'استفسار بخصوص ,  مسابح , متوفر للحجز , العاب مائية'},
+  {day:1,employee:'احمد ادريس',name:'',phone:'056 110 1927',city:'الرياض',type:'استفسار',source:'Unknown',contact:'واتساب',request:'مسبح',details:'استفسار بخصوص , الاسعار'},
+  // 2JUL (day=2)
+  {day:2,employee:'احمد ادريس',name:'',phone:'055 647 7097',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'مسبح',details:'استفسار بخصوص , الاسعار بعد التجديد ,  مسابح'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'053 313 7704',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'056 128 6974',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'اتصـال',request:'المساحة',details:'استفسار بخصوص , كم يشيل القسمين , الاسعار بعد التجديد'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'055 972 0112',city:'الرياض',type:'استفسـار',source:'Google',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار, الموقع , الاسعار بعد التجديد'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'050 800 7778',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'اتصـال',request:'مسبح',details:'استفسار بخصوص , العاب مائية ,  مسابح'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'050 059 4246',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار,  مسابح'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'053 338 3357',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'تعارض في الحجز',details:'استفسار بخصوص , متوفر للحجز , الاسعار بعد التجديد'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'055 627 6072',city:'الرياض',type:'استفسـار',source:'Snap chat',contact:'اتصـال',request:'مسبح',details:'استفسار بخصوص , الاسعار,  مسابح'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'056 457 4274',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار, صاله طعام'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'053 330 0319',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'العاب مائية',details:'استفسار بخصوص ,  مسابح , العاب مائية'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'050 397 7920',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'صالة طعام',details:'استفسار بخصوص , الاسعار, متوفر للحجز , صاله طعام'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'053 574 8908',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'اتصـال',request:'العاب مائية',details:'استفسار بخصوص , العاب مائية ,  مسابح'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'050 970 5183',city:'الرياض',type:'استفسـار',source:'Google',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار, طاولات طعام'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'053 456 0096',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'العاب مائية',details:'استفسار بخصوص , العاب مائية'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'055 808 6547',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'مسبح',details:'استفسار بخصوص , الاسعار,  مسابح'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'053 183 1631',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'اتصـال',request:'المساحة',details:'استفسار بخصوص , الاسعار, كم المساحه , كم يشيل القسمين'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'055 747 9157',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'العاب مائية',details:'استفسار بخصوص , العاب مائية , الاسعار بعد التجديد'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'050 747 9157',city:'الرياض',type:'استفسـار',source:'Instagram',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'055 906 0124',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'صالة طعام',details:'استفسار بخصوص , الاسعار, طاولات طعام , صاله طعام , كم يشيل القسم'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'053 933 9228',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'اتصـال',request:'مسبح',details:'استفسار بخصوص ,  مسابح'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'053 405 7476',city:'الرياض',type:'استفسـار',source:'Instagram',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , طاولات طعام , الاسعار, كم يشيل القسم'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'054 403 7399',city:'الرياض',type:'استفسـار',source:'Instagram',contact:'اتصـال',request:'صالة طعام',details:'استفسار بخصوص , الاسعار, كم المساحه , كم فيه غرف'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'050 538 2260',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'واتسـاب',request:'مسبح',details:'استفسار بخصوص ,  مسابح , العاب مائية'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'055 831 9460',city:'الرياض',type:'استفسـار',source:'Snap chat',contact:'واتسـاب',request:'السعر',details:'استفسار بخصوص , الاسعار, متوفر للحجز'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'053 063 2137',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'واتسـاب',request:'تعارض في الحجز',details:'استفسار بخصوص , متوفر للحجز'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'056 688 4292',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'واتسـاب',request:'السعر',details:'استفسار بخصوص , الاسعار'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'053 691 2067',city:'الرياض',type:'استفسـار',source:'Snap chat',contact:'واتسـاب',request:'تعارض في الحجز',details:'استفسار بخصوص , الاسعار, وسط الاسبوع , متوفر للحجز'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'055 529 7283',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'واتسـاب',request:'السعر',details:'استفسار بخصوص , الاسعار, وسط الاسبوع'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'057 460 7022',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'واتسـاب',request:'السعر',details:'استفسار بخصوص , العاب مائية , الاسعار بعد التجديد , طاولات طعام'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'050 259 3077',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'واتسـاب',request:'السعر',details:'استفسار بخصوص ,  مسابح , الاسعار بعد التجديد'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'055 317 7925',city:'الرياض',type:'استفسار',source:'Unknown',contact:'اتصال',request:'السعر',details:'استفسار بخصوص , الاسعار'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'055 292 9528',city:'الرياض',type:'استفسار',source:'Unknown',contact:'اتصال',request:'السعر',details:'استفسار بخصوص , الاسعار, نهايه الاسبوع'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'050 369 3825',city:'الرياض',type:'استفسار',source:'Unknown',contact:'اتصال',request:'العاب مائية',details:'استفسار بخصوص , العاب مائية , الاسعار, كم يشيل القسم'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'055 683 4702',city:'الرياض',type:'استفسار',source:'Unknown',contact:'واتساب',request:'مسبح',details:'استفسار بخصوص ,  مسابح , العاب مائية , الاسعار بعد التجديد'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'053 269 5546',city:'الرياض',type:'استفسار',source:'Unknown',contact:'واتساب',request:'السعر',details:'استفسار بخصوص , الاسعار, نهايه الاسبوع , متوفر للحجز'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'055 444 1732',city:'الرياض',type:'استفسار',source:'Unknown',contact:'واتساب',request:'العاب مائية',details:'استفسار بخصوص , العاب مائية'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'050 000 3401',city:'الرياض',type:'استفسار',source:'Unknown',contact:'واتساب',request:'العاب مائية',details:'استفسار بخصوص , الموقع , العاب مائية'},
+  {day:2,employee:'احمد ادريس',name:'',phone:'050 369 3825',city:'الرياض',type:'استفسار',source:'Unknown',contact:'واتساب',request:'السعر',details:'استفسار بخصوص , الاسعار'},
+  // 3JUL (day=3) - key entries
+  {day:3,employee:'احمد ادريس',name:'',phone:'053 996 7215',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار, كم يشيل القسمين'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'050 525 1136',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار, صاله طعام'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'050 525 6837',city:'الرياض',type:'استفسـار',source:'Instagram',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار, وقت الدخول والخروج'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'050 551 3183',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار, العاب مائية , الاسعار بعد التجديد'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'054 653 4491',city:'الرياض',type:'استفسـار',source:'Instagram',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , طاولات طعام, الاسعار'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'056 347 7299',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'تعارض في الحجز',details:'استفسار بخصوص , الاسعار, متوفر للحجز'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'050 550 3512',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص ,  مسابح, الاسعار بعد التجديد'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'056 781 7718',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار, متوفر للحجز ,  مسابح'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'056 644 5353',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'صالة طعام',details:'استفسار بخصوص, الاسعار, طاولات طعام , كم فيه غرف'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'055 246 5637',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'صالة طعام',details:'استفسار بخصوص, الاسعار, طاولات طعام , صاله طعام'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'058 372 6344',city:'الرياض',type:'استفسـار',source:'FaceBook',contact:'اتصـال',request:'العاب مائية',details:'استفسار بخصوص , العاب مائية, الاسعار بعد التجديد'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'055 158 4084',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'المساحة',details:'استفسار بخصوص , الاسعار, كم يشيل القسم'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'050 073 7778',city:'الرياض',type:'استفسـار',source:'Instagram',contact:'اتصـال',request:'العاب مائية',details:'استفسار بخصوص, متوفر للحجز , طاولات طعام'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'055 448 8151',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'العاب مائية',details:'استفسار بخصوص ,  مسابح , العاب مائية'},
+  {day:3,employee:'احمد ادريس',name:'عبدالله بن عبدالمحسن',phone:'055 617 4744',city:'الرياض',type:'ججز',source:'Google Map',contact:'اتصـال',request:'صالة طعام',details:'استفسار بخصوص , الاسعار, وسط الاسبوع , كم يشيل القسم'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'050 022 9029',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'مسبح',details:'استفسار بخصوص ,  مسابح , الاسعار بعد التجديد'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'053 339 3621',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'اتصـال',request:'مسبح',details:'استفسار بخصوص ,  مسابح , العاب مائية , الاسعار بعد التجديد'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'059 523 4074',city:'الرياض',type:'استفسـار',source:'Google',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار بعد التجديد , كم يشيل القسم'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'056 946 7844',city:'الرياض',type:'استفسـار',source:'Instagram',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار, وسط الاسبوع'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'050 097 4386',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'اتصـال',request:'صالة طعام',details:'استفسار بخصوص , الاسعار, صاله طعام , مكيف صحراوي براء'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'055 811 1628',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'العاب مائية',details:'استفسار بخصوص, العاب مائية'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'050 022 3498',city:'الرياض',type:'استفسـار',source:'Instagram',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار بعد التجديد , كم يشيل القسمين'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'055 978 7970',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , كم يشيل القسمين , متوفر للحجز'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'055 163 6875',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار, صاله طعام , كم فيه غرف'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'055 957 1224',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'صالة طعام',details:'استفسار بخصوص , الاسعار, متوفر للحجز , طاولات طعام'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'050 770 4093',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'اتصـال',request:'مسبح',details:'استفسار بخصوص ,  مسابح , العاب مائية'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'053 457 8150',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'اتصـال',request:'العاب مائية',details:'استفسار بخصوص ,  مسابح , العاب مائية'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'057 790 6384',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'تعارض في الحجز',details:'استفسار بخصوص , الاسعار, متوفر للحجز , كم يشيل القسمين'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'054 422 1836',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'مسبح',details:'استفسار بخصوص ,  مسابح'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'054 604 4405',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'مسبح',details:'استفسار بخصوص , الاسعار,  مسابح'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'055 310 8130',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'اتصـال',request:'مسبح',details:'استفسار بخصوص ,  مسابح'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'050 654 2251',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'واتسـاب',request:'السعر',details:'استفسار بخصوص , صاله طعام , كم يشيل القسمين'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'054 604 4405',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'واتسـاب',request:'السعر',details:'استفسار بخصوص , الاسعار'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'054 155 0590',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'واتسـاب',request:'العاب مائية',details:'استفسار بخصوص , الاسعار, العاب مائية ,  مسابح'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'055 568 0977',city:'الرياض',type:'استفسـار',source:'Instagram',contact:'واتسـاب',request:'السعر',details:'استفسار بخصوص , الاسعار'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'050 825 1116',city:'الرياض',type:'استفسـار',source:'FaceBook',contact:'واتسـاب',request:'العاب مائية',details:'استفسار بخصوص , العاب مائية ,  مسابح'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'055 593 9549',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'واتسـاب',request:'تعارض في الحجز',details:'استفسار بخصوص , الاسعار, متوفر للحجز'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'056 034 5978',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'واتسـاب',request:'صالة طعام',details:'استفسار بخصوص , صاله طعام , الاسعار بعد التجديد'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'055 640 4025',city:'الرياض',type:'استفسـار',source:'Snap chat',contact:'واتسـاب',request:'تعارض في الحجز',details:'استفسار بخصوص , الاسعار, كم المساحه , متوفر للحجز'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'055 289 7062',city:'الرياض',type:'استفسـار',source:'Google',contact:'واتسـاب',request:'العاب مائية',details:'استفسار بخصوص , الموقع , العاب مائية'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'050 762 0344',city:'الرياض',type:'استفسـار',source:'YouTube',contact:'واتسـاب',request:'السعر',details:'استفسار بخصوص , الموقع , العاب مائية, الاسعار بعد التجديد'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'055 255 7419',city:'الرياض',type:'استفسار',source:'Unknown',contact:'اتصال',request:'السعر',details:'استفسار بخصوص , الاسعار'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'056 434 2673',city:'الرياض',type:'استفسار',source:'Unknown',contact:'اتصال',request:'السعر',details:'استفسار بخصوص , الاسعار, العاب مائية'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'055 547 3203',city:'الرياض',type:'استفسار',source:'Unknown',contact:'اتصال',request:'السعر',details:'استفسار بخصوص , متوفر للحجز , الاسعار'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'053 596 9679',city:'الرياض',type:'استفسار',source:'Unknown',contact:'واتساب',request:'السعر',details:'استفسار بخصوص , الاسعار, نهايه الاسبوع'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'053 534 9135',city:'الرياض',type:'استفسار',source:'Unknown',contact:'اتصال',request:'العاب مائية',details:'استفسار بخصوص , العاب مائية ,  مسابح'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'050 103 3059',city:'الرياض',type:'استفسار',source:'Unknown',contact:'اتصال',request:'تعارض في الحجز',details:'استفسار بخصوص , متوفر للحجز'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'051 152 5202',city:'الرياض',type:'استفسار',source:'Unknown',contact:'واتساب',request:'العاب مائية',details:'استفسار بخصوص , الاسعار,  مسابح , العاب مائية'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'055 412 4478',city:'الرياض',type:'استفسار',source:'Unknown',contact:'واتساب',request:'تعارض في الحجز',details:'استفسار بخصوص , متوفر للحجز'},
+  {day:3,employee:'احمد ادريس',name:'',phone:'050 156 0130',city:'الرياض',type:'استفسار',source:'Unknown',contact:'واتساب',request:'مسبح',details:'استفسار بخصوص ,  مسابح'},
+  // 4JUL (day=4) - representative entries
+  {day:4,employee:'احمد ادريس',name:'',phone:'058 372 8082',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'اتصـال',request:'مسبح',details:'استفسار بخصوص ,  مسابح , العاب مائية'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'050 095 9592',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'054 436 5463',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'اتصـال',request:'مسبح',details:'استفسار بخصوص ,  مسابح , الاسعار بعد التجديد'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'506 248 3412',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار, نهايه الاسبوع'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'054 436 5463',city:'الرياض',type:'استفسـار',source:'Snap chat',contact:'اتصـال',request:'تعارض في الحجز',details:'استفسار بخصوص , الاسعار, متوفر للحجز'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'050 385 1139',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص ,  مسابح'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'056 301 1666',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'اتصـال',request:'مسبح',details:'استفسار بخصوص , العاب مائية , الاسعار بعد التجديد , وسط الاسبوع'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'050 006 3413',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'تعارض في الحجز',details:'استفسار بخصوص , متوفر للحجز'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'053 915 9054',city:'الرياض',type:'استفسـار',source:'Instagram',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار, كم يشيل القسم , كم فيه غرف'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'055 811 1628',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'056 949 1697',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار, كم يشيل القسم , وقت الدخول والخروج'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'050 555 6755',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'العاب مائية',details:'استفسار بخصوص , العاب مائية ,  مسابح , الاسعار بعد التجديد'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'050 501 6401',city:'الرياض',type:'استفسـار',source:'Google',contact:'اتصـال',request:'صالة طعام',details:'استفسار بخصوص , متوفر للحجز , صاله طعام'},
+  {day:4,employee:'احمد ادريس',name:'طارق بن دحيم العتيبي',phone:'055 777 1137',city:'الرياض',type:'ججز',source:'Google Map',contact:'اتصـال',request:'العاب مائية',details:'استفسار بخصوص , العاب مائية , الاسعار بعد التجديد'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'055 688 6581',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'العاب مائية',details:'استفسار بخصوص , العاب مائية , الاسعار بعد التجديد'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'056 501 6401',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'المساحة',details:'استفسار بخصوص , الاسعار, كم المساحه'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'053 044 4282',city:'الرياض',type:'استفسـار',source:'YouTube',contact:'اتصـال',request:'العاب مائية',details:'استفسار بخصوص , العاب مائية'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'056 493 0367',city:'الرياض',type:'استفسـار',source:'Instagram',contact:'اتصـال',request:'تعارض في الحجز',details:'استفسار بخصوص , الاسعار, كم يشيل القسمين , متوفر للحجز'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'055 333 1718',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'العاب مائية',details:'استفسار بخصوص , الاسعار, العاب مائية'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'053 235 5527',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'المساحة',details:'استفسار بخصوص , كم يشيل القسمين'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'053 695 5869',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'اتصـال',request:'صالة طعام',details:'استفسار بخصوص , الاسعار, العاب مائية'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'053 738 6779',city:'الرياض',type:'استفسـار',source:'Instagram',contact:'اتصـال',request:'المساحة',details:'استفسار بخصوص , الاسعار, كم يشيل القسم'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'055 401 4177',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'مسبح',details:'استفسار بخصوص ,  مسابح'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'053 585 1269',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'اتصـال',request:'مسبح',details:'استفسار بخصوص , العاب مائية ,  مسابح'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'050 981 0154',city:'الرياض',type:'استفسـار',source:'Instagram',contact:'اتصـال',request:'تعارض في الحجز',details:'استفسار بخصوص , متوفر للحجز'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'058 148 8210',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'واتسـاب',request:'صالة طعام',details:'استفسار بخصوص , الاسعار بعد التجديد , صاله طعام'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'056 952 1127',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'واتسـاب',request:'العاب مائية',details:'استفسار بخصوص , الاسعار,  مسابح , العاب مائية'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'050 055 9308',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'واتسـاب',request:'صالة طعام',details:'استفسار بخصوص , صاله طعام'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'050 521 3119',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'واتسـاب',request:'مسبح',details:'استفسار بخصوص , الاسعار,  مسابح'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'055 800 2924',city:'الرياض',type:'استفسـار',source:'Snap chat',contact:'واتسـاب',request:'تعارض في الحجز',details:'استفسار بخصوص , الاسعار, متوفر للحجز'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'050 458 7920',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'واتسـاب',request:'السعر',details:'استفسار بخصوص , الاسعار, العاب مائية , كم يشيل القسمين'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'055 511 2744',city:'الرياض',type:'استفسـار',source:'Instagram',contact:'واتسـاب',request:'السعر',details:'استفسار بخصوص , الاسعار'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'050 017 9141',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'واتسـاب',request:'العاب مائية',details:'استفسار بخصوص ,  مسابح , العاب مائية'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'056 534 4405',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'واتسـاب',request:'السعر',details:'استفسار بخصوص , الاسعار, نهايه الاسبوع'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'056 604 0024',city:'الرياض',type:'استفسار',source:'Unknown',contact:'اتصال',request:'مسبح',details:'استفسار بخصوص , الاسعار,  مسابح'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'050 253 7217',city:'الرياض',type:'استفسار',source:'Unknown',contact:'اتصال',request:'العاب مائية',details:'استفسار بخصوص , العاب مائية , الاسعار بعد التجديد'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'056 501 6401',city:'الرياض',type:'استفسار',source:'Unknown',contact:'اتصال',request:'تعارض في الحجز',details:'استفسار بخصوص , الاسعار'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'055 668 8557',city:'الرياض',type:'استفسار',source:'Unknown',contact:'اتصال',request:'السعر',details:'استفسار بخصوص , العاب مائية ,  مسابح'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'056 555 4177',city:'الرياض',type:'استفسار',source:'Unknown',contact:'اتصال',request:'تعارض في الحجز',details:'استفسار بخصوص , متوفر للحجز'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'056 233 9563',city:'الرياض',type:'استفسار',source:'Unknown',contact:'واتساب',request:'تعارض في الحجز',details:'استفسار بخصوص , الاسعار, وسط الاسبوع'},
+  {day:4,employee:'احمد ادريس',name:'',phone:'056 519 8359',city:'الرياض',type:'استفسار',source:'Unknown',contact:'واتساب',request:'العاب مائية',details:'استفسار بخصوص , الاسعار, العاب مائية'},
+  // 5JUL (day=5) - key entries
+  {day:5,employee:'احمد ادريس',name:'',phone:'055 907 9904',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار, صاله طعام'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'055 766 0883',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'العاب مائية',details:'استفسار بخصوص , العاب مائية ,  مسابح'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'055 267 0592',city:'الرياض',type:'استفسـار',source:'FaceBook',contact:'اتصـال',request:'مسبح',details:'استفسار بخصوص , العاب مائية ,  مسابح , الاسعار بعد التجديد'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'053 695 5869',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار, كم يشيل القسم'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'011 510 6120',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار, الاسعار بعد التجديد'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'055 422 7476',city:'الرياض',type:'استفسـار',source:'YouTube',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , كم المساحه , الاسعار بعد التجديد'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'050 6172682',city:'الرياض',type:'استفسـار',source:'Google',contact:'اتصـال',request:'مسبح',details:'استفسار بخصوص ,  مسابح , العاب مائية'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'050 146 4403',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'مسبح',details:'استفسار بخصوص , الاسعار,  مسابح'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'054 054 9336',city:'الرياض',type:'استفسـار',source:'Snap chat',contact:'اتصـال',request:'تعارض في الحجز',details:'استفسار بخصوص , الاسعار, طاولات طعام , متوفر للحجز'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'053 860 2005',city:'الرياض',type:'استفسـار',source:'Instagram',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار, طاولات طعام'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'053 100 3131',city:'الرياض',type:'استفسـار',source:'Instagram',contact:'اتصـال',request:'تعارض في الحجز',details:'استفسار بخصوص , متوفر للحجز'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'053 867 3932',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'المساحة',details:'استفسار بخصوص , الاسعار, كم يشيل القسمين'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'055 580 0191',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار, كم يشيل القسم'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'057 957 4973',city:'الرياض',type:'استفسـار',source:'Google',contact:'اتصـال',request:'صالة طعام',details:'استفسار بخصوص , صاله طعام , كم فيه غرف, وقت الدخول والخروج'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'056 400 0331',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'اتصـال',request:'مسبح',details:'استفسار بخصوص ,  مسابح'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'055 598 8804',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , كم يشيل القسمين , الاسعار, وسط الاسبوع'},
+  {day:5,employee:'احمد ادريس',name:'محمد الدريس',phone:'050 440 5965',city:'الرياض',type:'ججز',source:'TikTok',contact:'اتصـال',request:'طاولات طعام',details:'استفسار بخصوص , الاسعار, كم يشيل القسم'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'055 598 8804',city:'الرياض',type:'استفسـار',source:'FaceBook',contact:'اتصـال',request:'العاب مائية',details:'استفسار بخصوص , الاسعار,  مسابح , العاب مائية'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'053 102 6688',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'تعارض في الحجز',details:'استفسار بخصوص , الاسعار, متوفر للحجز'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'055 755 6352',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'اتصـال',request:'تعارض في الحجز',details:'استفسار بخصوص , العاب مائية , الاسعار بعد التجديد , متوفر للحجز'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'056 667 8281',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار, صاله طعام , متوفر للحجز'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'056 441 8888',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'صالة طعام',details:'استفسار بخصوص , الاسعار, متوفر للحجز , صاله طعام'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'057 100 9135',city:'الرياض',type:'استفسـار',source:'Instagram',contact:'اتصـال',request:'المساحة',details:'استفسار بخصوص , كم يشيل القسمين'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'053 384 4223',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'واتسـاب',request:'العاب مائية',details:'استفسار بخصوص , العاب مائية ,  مسابح'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'055 095 0556',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'واتسـاب',request:'السعر',details:'استفسار بخصوص ,  مسابح , الاسعار بعد التجديد'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'055 012 4347',city:'الرياض',type:'استفسـار',source:'Instagram',contact:'واتسـاب',request:'المساحة',details:'استفسار بخصوص , الاسعار, كم المساحه'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'050 054 0154',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'واتسـاب',request:'تعارض في الحجز',details:'استفسار بخصوص , الاسعار, متوفر للحجز'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'053 185 3882',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'واتسـاب',request:'السعر',details:'استفسار بخصوص , الاسعار بعد التجديد , نهايه الاسبوع'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'056 245 9307',city:'الرياض',type:'استفسـار',source:'Instagram',contact:'واتسـاب',request:'السعر',details:'استفسار بخصوص , الاسعار, كم يشيل القسمين , وقت الدخول والخروج'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'050 442 6435',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'واتسـاب',request:'العاب مائية',details:'استفسار بخصوص , الاسعار, كم يشيل القسم , العاب مائية'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'050 739 8035',city:'الرياض',type:'استفسـار',source:'Snap chat',contact:'واتسـاب',request:'مسبح',details:'استفسار بخصوص ,  مسابح, صاله طعام'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'055 121 6571',city:'الرياض',type:'استفسـار',source:'Google',contact:'واتسـاب',request:'السعر',details:'استفسار بخصوص , العاب مائية , الاسعار بعد التجديد'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'055 747 7686',city:'الرياض',type:'استفسـار',source:'YouTube',contact:'واتسـاب',request:'العاب مائية',details:'استفسار بخصوص , العاب مائية , كم فيه غرف'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'055 978 1819',city:'الرياض',type:'استفسار',source:'Unknown',contact:'اتصال',request:'السعر',details:'استفسار بخصوص , الاسعار'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'055 654 1274',city:'الرياض',type:'استفسار',source:'Unknown',contact:'اتصال',request:'مسبح',details:'استفسار بخصوص , الاسعار,  مسابح'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'055 416 9885',city:'الرياض',type:'استفسار',source:'Unknown',contact:'اتصال',request:'العاب مائية',details:'استفسار بخصوص , العاب مائية , الاسعار بعد التجديد'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'053 100 3131',city:'الرياض',type:'استفسار',source:'Unknown',contact:'اتصال',request:'تعارض في الحجز',details:'استفسار بخصوص , الاسعار'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'058 343 5855',city:'الرياض',type:'استفسار',source:'Unknown',contact:'اتصال',request:'السعر',details:'استفسار بخصوص , العاب مائية ,  مسابح'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'053 441 7731',city:'الرياض',type:'استفسار',source:'Unknown',contact:'اتصال',request:'تعارض في الحجز',details:'استفسار بخصوص , متوفر للحجز'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'054 498 1011',city:'الرياض',type:'استفسار',source:'Unknown',contact:'واتساب',request:'تعارض في الحجز',details:'استفسار بخصوص , الاسعار, وسط الاسبوع'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'056 667 8281',city:'الرياض',type:'استفسار',source:'Unknown',contact:'واتساب',request:'العاب مائية',details:'استفسار بخصوص , الاسعار, العاب مائية'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'053 784 7812',city:'الرياض',type:'استفسار',source:'Unknown',contact:'واتساب',request:'العاب مائية',details:'استفسار بخصوص , الاسعار, العاب مائية'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'055 856 1451',city:'الرياض',type:'استفسار',source:'Unknown',contact:'واتساب',request:'مسبح',details:'استفسار بخصوص ,  مسابح , الاسعار بعد التجديد'},
+  {day:5,employee:'احمد ادريس',name:'',phone:'056 122 2208',city:'الرياض',type:'استفسار',source:'Unknown',contact:'واتساب',request:'تعارض في الحجز',details:'استفسار بخصوص , متوفر للحجز'},
+  // 6JUL (day=6) - key entries
+  {day:6,employee:'احمد ادريس',name:'',phone:'053 354 8510',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار, العاب مائية'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'053 274 1680',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'اتصـال',request:'تعارض في الحجز',details:'استفسار بخصوص , متوفر للحجز'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'056 006 0936',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار, صاله طعام , كم المساحه'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'050 439 1303',city:'الرياض',type:'استفسـار',source:'Google',contact:'اتصـال',request:'تعارض في الحجز',details:'استفسار بخصوص , كم يشيل القسم , متوفر للحجز'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'050 908 8351',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار, نهايه الاسبوع'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'050 176 9735',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'العاب مائية',details:'استفسار بخصوص , العاب مائية , الاسعار بعد التجديد'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'053 355 0524',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'مسبح',details:'استفسار بخصوص ,  مسابح, الاسعار بعد التجديد'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'050 641 7044',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'اتصـال',request:'العاب مائية',details:'استفسار بخصوص , العاب مائية'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'055 433 5526',city:'الرياض',type:'استفسـار',source:'Instagram',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص, الاسعار, نهايه الاسبوع'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'055 196 1532',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص, الاسعار, كم يشيل القسمين'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'055 168 5156',city:'الرياض',type:'استفسـار',source:'FaceBook',contact:'اتصـال',request:'تعارض في الحجز',details:'استفسار بخصوص, الاسعار, متوفر للحجز'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'055 445 4512',city:'الرياض',type:'استفسـار',source:'Instagram',contact:'اتصـال',request:'العاب مائية',details:'استفسار بخصوص , العاب مائية ,  مسابح'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'050 867 9615',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'صالة طعام',details:'استفسار بخصوص , الاسعار, وسط الاسبوع , كم يشيل القسم'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'055 419 0223',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'طاولات طعام',details:'استفسار بخصوص , الاسعار, طاولات طعام'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'055 445 4512',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'اتصـال',request:'المساحة',details:'استفسار بخصوص , مسابح , كم يشيل القسمين'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'055 805 551',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'تعارض في الحجز',details:'استفسار بخصوص , طاولات طعام, متوفر للحجز'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'054 473 3972',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'053 788 1142',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'العاب مائية',details:'استفسار بخصوص ,  مسابح , العاب مائية'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'055 552 6685',city:'الرياض',type:'استفسـار',source:'FaceBook',contact:'اتصـال',request:'تعارض في الحجز',details:'استفسار بخصوص , متوفر للحجز'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'053 788 1142',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , مسابح , الاسعار بعد التجديد'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'055 552 6685',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , مسابح , طاولات طعام , الاسعار بعد التجديد'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'053 316 0341',city:'الرياض',type:'استفسـار',source:'FaceBook',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار, صاله طعام'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'055 015 9911',city:'الرياض',type:'استفسـار',source:'Snap chat',contact:'اتصـال',request:'المساحة',details:'استفسار بخصوص , كم فيه غرف, كم يشيل القسم'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'050 064 4582',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'تعارض في الحجز',details:'استفسار بخصوص , متوفر للحجز'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'050 444 7576',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'مسبح',details:'استفسار بخصوص , متوفر للحجز ,  مسابح'},
+  {day:6,employee:'احمد ادريس',name:'رائد الشثري',phone:'055 328 2860',city:'الرياض',type:'ججز',source:'TikTok',contact:'واتسـاب',request:'العاب مائية',details:'استفسار بخصوص , الاسعار,  مسابح , العاب مائية'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'050 627 3434',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'واتسـاب',request:'السعر',details:'استفسار بخصوص , الاسعار, وقت الدخول والخروج'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'059 829 9900',city:'الرياض',type:'استفسـار',source:'Google',contact:'واتسـاب',request:'صالة طعام',details:'استفسار بخصوص , صاله طعام'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'055 197 7499',city:'الرياض',type:'استفسـار',source:'Instagram',contact:'واتسـاب',request:'تعارض في الحجز',details:'استفسار بخصوص , الاسعار, متوفر للحجز'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'055 100 1313',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'واتسـاب',request:'مسبح',details:'استفسار بخصوص , الاسعار,  مسابح'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'055 944 3444',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'واتسـاب',request:'السعر',details:'استفسار بخصوص , الاسعار, العاب مائية , كم يشيل القسمين'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'054 620 4464',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'واتسـاب',request:'السعر',details:'استفسار بخصوص , الاسعار'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'054 083 6414',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'واتسـاب',request:'العاب مائية',details:'استفسار بخصوص ,  مسابح , العاب مائية'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'053 355 0524',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'واتسـاب',request:'السعر',details:'استفسار بخصوص , الاسعار, نهايه الاسبوع'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'050 757 5355',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'واتسـاب',request:'مسبح',details:'استفسار بخصوص , الاسعار,  مسابح'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'050 176 9735',city:'الرياض',type:'استفسار',source:'TikTok',contact:'واتسـاب',request:'العاب مائية',details:'استفسار بخصوص , العاب مائية , الاسعار بعد التجديد'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'055 127 1610',city:'الرياض',type:'استفسار',source:'Unknown',contact:'اتصال',request:'تعارض في الحجز',details:'استفسار بخصوص , الاسعار'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'053 120 0130',city:'الرياض',type:'استفسار',source:'Unknown',contact:'اتصال',request:'السعر',details:'استفسار بخصوص , العاب مائية ,  مسابح'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'055 327 7165',city:'الرياض',type:'استفسار',source:'Unknown',contact:'اتصال',request:'تعارض في الحجز',details:'استفسار بخصوص , متوفر للحجز'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'058 389 8611',city:'الرياض',type:'استفسار',source:'Unknown',contact:'واتساب',request:'تعارض في الحجز',details:'استفسار بخصوص , الاسعار, وسط الاسبوع'},
+  {day:6,employee:'احمد ادريس',name:'',phone:'054 479 4360',city:'الرياض',type:'استفسار',source:'Unknown',contact:'واتساب',request:'العاب مائية',details:'استفسار بخصوص , الاسعار, العاب مائية'},
+  // 7JUL (day=7)
+  {day:7,employee:'احمد ادريس',name:'',phone:'051 029 3054',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص, الاسعار, وقت الدخول والخروج'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'050 200 5074',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'العاب مائية',details:'استفسار بخصوص , العاب مائية , الاسعار بعد التجديد'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'055 238 0084',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'اتصـال',request:'مسبح',details:'استفسار بخصوص ,  مسابح'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'058 051 5019',city:'الرياض',type:'استفسـار',source:'Instagram',contact:'اتصـال',request:'تعارض في الحجز',details:'استفسار بخصوص , كم يشيل القسم , متوفر للحجز'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'055 526 3323',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار, نهايه الاسبوع'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'053 034 8511',city:'الرياض',type:'استفسـار',source:'Google',contact:'اتصـال',request:'العاب مائية',details:'استفسار بخصوص , العاب مائية , الاسعار بعد التجديد'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'053 384 4423',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'مسبح',details:'استفسار بخصوص ,  مسابح'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'053 821 6859',city:'الرياض',type:'استفسـار',source:'Instagram',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص, كم المساحه , الاسعار بعد التجديد , نهايه الاسبوع'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'050 659 9667',city:'الرياض',type:'استفسـار',source:'Instagram',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار, كم المساحه'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'053 288 6998',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'صالة طعام',details:'استفسار بخصوص , صاله طعام'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'055 002 4054',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'اتصـال',request:'تعارض في الحجز',details:'استفسار بخصوص , كم يشيل القسمين , متوفر للحجز'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'050 460 7780',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'اتصـال',request:'العاب مائية',details:'استفسار بخصوص , العاب مائية'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'054 433 3996',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'تعارض في الحجز',details:'استفسار بخصوص , متوفر للحجز , كم يشيل القسم'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'050 416 1306',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'059 271 7888',city:'الرياض',type:'استفسـار',source:'Google',contact:'اتصـال',request:'مسبح',details:'استفسار بخصوص , العاب مائية ,  مسابح'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'050 024 2100',city:'الرياض',type:'استفسـار',source:'FaceBook',contact:'اتصـال',request:'صالة طعام',details:'استفسار بخصوص , متوفر للحجز , صاله طعام'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'053 653 7689',city:'الرياض',type:'استفسـار',source:'Google',contact:'اتصـال',request:'مسبح',details:'استفسار بخصوص , العاب مائية ,  مسابح'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'053 384 4223',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'المساحة',details:'استفسار بخصوص , كم يشيل القسمين , كم فيه غرف'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'055 454 1446',city:'الرياض',type:'استفسـار',source:'Instagram',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار, وسط الاسبوع'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'054 940 7680',city:'الرياض',type:'استفسـار',source:'Snap chat',contact:'اتصـال',request:'صالة طعام',details:'استفسار بخصوص , الاسعار, صاله طعام , متوفر للحجز'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'050 800 0402',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'المساحة',details:'استفسار بخصوص '},
+  {day:7,employee:'احمد ادريس',name:'',phone:'050 384 9649',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'العاب مائية',details:'استفسار بخصوص , كم يشيل القسم , العاب مائية'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'050 728 8322',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'اتصـال',request:'تعارض في الحجز',details:'استفسار بخصوص, متوفر للحجز'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'059 079 5677',city:'الرياض',type:'استفسـار',source:'Instagram',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار, نهايه الاسبوع'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'053 841 3036',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , نهايه الاسبوع , وسط الاسبوع'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'053 513 2677',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'واتسـاب',request:'تعارض في الحجز',details:'استفسار بخصوص , الاسعار, طاولات طعام , متوفر للحجز'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'056 952 1127',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'واتسـاب',request:'العاب مائية',details:'استفسار بخصوص , الاسعار,  مسابح , العاب مائية'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'050 055 9308',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'واتسـاب',request:'صالة طعام',details:'استفسار بخصوص , صاله طعام'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'050 521 3119',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'واتسـاب',request:'مسبح',details:'استفسار بخصوص , الاسعار,  مسابح'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'055 800 2924',city:'الرياض',type:'استفسـار',source:'Snap chat',contact:'واتسـاب',request:'تعارض في الحجز',details:'استفسار بخصوص , الاسعار, متوفر للحجز'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'050 458 7920',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'واتسـاب',request:'السعر',details:'استفسار بخصوص , الاسعار, العاب مائية , كم يشيل القسمين'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'055 511 2744',city:'الرياض',type:'استفسـار',source:'Google',contact:'واتسـاب',request:'السعر',details:'استفسار بخصوص , الاسعار'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'050 017 9141',city:'الرياض',type:'استفسـار',source:'FaceBook',contact:'واتسـاب',request:'العاب مائية',details:'استفسار بخصوص ,  مسابح , العاب مائية'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'056 534 4405',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'واتسـاب',request:'السعر',details:'استفسار بخصوص , الاسعار, نهايه الاسبوع'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'056 604 0024',city:'الرياض',type:'استفسار',source:'Unknown',contact:'اتصال',request:'مسبح',details:'استفسار بخصوص , الاسعار,  مسابح'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'050 253 7217',city:'الرياض',type:'استفسار',source:'Unknown',contact:'اتصال',request:'العاب مائية',details:'استفسار بخصوص , العاب مائية , الاسعار بعد التجديد'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'056 501 6401',city:'الرياض',type:'استفسار',source:'Unknown',contact:'اتصال',request:'تعارض في الحجز',details:'استفسار بخصوص , الاسعار'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'055 668 8557',city:'الرياض',type:'استفسار',source:'Unknown',contact:'اتصال',request:'السعر',details:'استفسار بخصوص , العاب مائية ,  مسابح'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'056 555 4177',city:'الرياض',type:'استفسار',source:'Unknown',contact:'اتصال',request:'تعارض في الحجز',details:'استفسار بخصوص , متوفر للحجز'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'056 233 9563',city:'الرياض',type:'استفسار',source:'Unknown',contact:'واتساب',request:'تعارض في الحجز',details:'استفسار بخصوص , الاسعار, وسط الاسبوع'},
+  {day:7,employee:'احمد ادريس',name:'',phone:'056 519 8359',city:'الرياض',type:'استفسار',source:'Unknown',contact:'واتساب',request:'العاب مائية',details:'استفسار بخصوص , الاسعار, العاب مائية'},
+];
+
+// Add unique IDs + assign fullDate to all records that have day but no fullDate
+let data = RAW_DATA.map((r,i) => {
+  const fd = r.fullDate || (r.day ? '2026-07-' + String(r.day).padStart(2,'0') : '');
+  return {...r, id: i+1, fullDate: fd};
+});
+let nextId = data.length + 1;
+
+// Pagination
+let currentPage = 1;
+const perPage = 20;
+let sortKey = '';
+let sortDir = 1;
+let filteredData = [...data];
+
+// ==================== CHARTS ====================
+let charts = {};
+function buildCharts(d) {
+  const COUNT = (arr, key) => arr.reduce((acc,r)=>{acc[r[key]]=(acc[r[key]]||0)+1;return acc;},{});
+  const COLORS = ['#3182ce','#38a169','#dd6b20','#805ad5','#e53e3e','#319795','#d53f8c','#2b6cb0','#c05621'];
+  function destroy(id) { if(charts[id]) { charts[id].destroy(); delete charts[id]; } }
+
+  // Requests chart
+  destroy('chart-requests');
+  const reqCounts = COUNT(d, 'request');
+  charts['chart-requests'] = new Chart(document.getElementById('chart-requests'), {
+    type:'doughnut',
+    data:{ labels:Object.keys(reqCounts), datasets:[{data:Object.values(reqCounts), backgroundColor:COLORS, borderWidth:2, borderColor:'#fff'}] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:true, position:'bottom', labels:{font:{size:11},boxWidth:12}}, tooltip:{rtl:true} } }
+  });
+
+  // Sources chart
+  destroy('chart-sources');
+  const srcCounts = COUNT(d, 'source');
+  charts['chart-sources'] = new Chart(document.getElementById('chart-sources'), {
+    type:'bar',
+    data:{ labels:Object.keys(srcCounts), datasets:[{label:'عدد العملاء', data:Object.values(srcCounts), backgroundColor:'#3182ce', borderRadius:4}] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales:{ x:{ticks:{font:{size:10}}}, y:{beginAtZero:true, ticks:{stepSize:1}} } }
+  });
+
+  // Daily chart
+  destroy('chart-daily');
+  const dayCounts = {};
+  d.forEach(r=>{
+    const label = r.fullDate ? new Date(r.fullDate+'T00:00:00').toLocaleDateString('ar-SA',{month:'numeric',day:'numeric'}) : (r.day+'/7');
+    dayCounts[label]=(dayCounts[label]||0)+1;
+  });
+  charts['chart-daily'] = new Chart(document.getElementById('chart-daily'), {
+    type:'line',
+    data:{ labels:Object.keys(dayCounts), datasets:[{label:'العملاء', data:Object.values(dayCounts), borderColor:'#e94560', backgroundColor:'rgba(233,69,96,0.1)', fill:true, tension:0.4, pointRadius:4, pointBackgroundColor:'#e94560'}] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales:{ x:{ticks:{font:{size:10}}}, y:{beginAtZero:true} } }
+  });
+
+  // Contact type chart
+  destroy('chart-contact');
+  const ctCounts = COUNT(d, 'contact');
+  const ctLabels = Object.keys(ctCounts);
+  const ctVals = Object.values(ctCounts);
+  charts['chart-contact'] = new Chart(document.getElementById('chart-contact'), {
+    type:'pie',
+    data:{ labels:ctLabels, datasets:[{data:ctVals, backgroundColor:['#3182ce','#38a169','#dd6b20','#805ad5'], borderWidth:2, borderColor:'#fff'}] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:true, position:'bottom', labels:{font:{size:11},boxWidth:12}} } }
+  });
+
+  // Type chart
+  destroy('chart-type');
+  const typeCounts = COUNT(d, 'type');
+  charts['chart-type'] = new Chart(document.getElementById('chart-type'), {
+    type:'doughnut',
+    data:{ labels:Object.keys(typeCounts), datasets:[{data:Object.values(typeCounts), backgroundColor:['#38a169','#e94560','#dd6b20'], borderWidth:2, borderColor:'#fff'}] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:true, position:'bottom', labels:{font:{size:11},boxWidth:12}} } }
+  });
+}
+
+function buildReportCharts(d) {
+  const COUNT = (arr, key) => arr.reduce((acc,r)=>{acc[r[key]]=(acc[r[key]]||0)+1;return acc;},{});
+  const COLORS = ['#3182ce','#38a169','#dd6b20','#805ad5','#e53e3e','#319795','#d53f8c','#2b6cb0'];
+  ['rep-chart-req','rep-chart-src','rep-chart-contact'].forEach(id=>{if(charts[id]){charts[id].destroy();delete charts[id];}});
+
+  const reqC = COUNT(d, 'request');
+  charts['rep-chart-req'] = new Chart(document.getElementById('rep-chart-req'), {
+    type:'doughnut', data:{labels:Object.keys(reqC),datasets:[{data:Object.values(reqC),backgroundColor:COLORS,borderWidth:2,borderColor:'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{font:{size:10},boxWidth:10}}}}
+  });
+  const srcC = COUNT(d, 'source');
+  charts['rep-chart-src'] = new Chart(document.getElementById('rep-chart-src'), {
+    type:'bar', data:{labels:Object.keys(srcC),datasets:[{label:'المصادر',data:Object.values(srcC),backgroundColor:'#3182ce',borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:9}}},y:{beginAtZero:true}}}
+  });
+  const ctC = COUNT(d, 'contact');
+  charts['rep-chart-contact'] = new Chart(document.getElementById('rep-chart-contact'), {
+    type:'pie', data:{labels:Object.keys(ctC),datasets:[{data:Object.values(ctC),backgroundColor:['#3182ce','#38a169','#dd6b20'],borderWidth:2,borderColor:'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{font:{size:10},boxWidth:10}}}}
+  });
+}
+
+// ==================== METRICS ====================
+function buildMetrics(d, containerId) {
+  const total = d.length;
+  const booked = d.filter(r=>r.type==='ججز').length;
+  const pools = d.filter(r=>r.request==='مسبح').length;
+  const water = d.filter(r=>r.request==='العاب مائية').length;
+  const gmap = d.filter(r=>r.source==='Google Map').length;
+  const container = document.getElementById(containerId);
+  if(!container) return;
+  const cards = [
+    {label:'إجمالي العملاء', value:total, sub:'الشهر الحالي', color:'blue'},
+    {label:'حجوزات مؤكدة', value:booked, sub:'نوع: ججز', color:'green'},
+    {label:'استفسار مسبح', value:pools, sub:'طلب رئيسي', color:'orange'},
+    {label:'العاب مائية', value:water, sub:'طلب رئيسي', color:'purple'},
+    {label:'من Google Map', value:gmap, sub:'أكبر مصدر', color:'red'},
+  ];
+  container.innerHTML = cards.map(c=>`
+    <div class="metric-card ${c.color}">
+      <div class="metric-label">${c.label}</div>
+      <div class="metric-value">${c.value}</div>
+      <div class="metric-sub">${c.sub}</div>
+    </div>`).join('');
+}
+
+// ==================== TABLE ====================
+function getBadgeClass(req) {
+  if(!req) return '';
+  if(req.includes('تعارض')) return 'badge-تعارض';
+  if(req.includes('مسبح')) return 'badge-مسبح';
+  if(req.includes('العاب') || req.includes('مائية')) return 'badge-العاب';
+  if(req.includes('صال') || req.includes('طعام') && req.length < 12) return 'badge-صالة';
+  if(req.includes('طاولات')) return 'badge-طاولات';
+  if(req.includes('المساحة')) return 'badge-المساحة';
+  if(req.includes('شاشة')) return 'badge-شاشة';
+  return 'badge-السعر';
+}
+
+function getApplied() {
+  let d = [...data];
+  const s = document.getElementById('search-input')?.value?.toLowerCase()||'';
+  const src = document.getElementById('filter-source')?.value||'';
+  const req = document.getElementById('filter-request')?.value||'';
+  const contact = document.getElementById('filter-contact')?.value||'';
+  const type = document.getElementById('filter-type')?.value||'';
+  const dfrom = document.getElementById('filter-date-from')?.value||'';
+  const dto = document.getElementById('filter-date-to')?.value||'';
+  if(s) d = d.filter(r=>(r.name||'').toLowerCase().includes(s)||(r.phone||'').toLowerCase().includes(s)||(r.details||'').toLowerCase().includes(s));
+  if(src) d = d.filter(r=>r.source===src);
+  if(req) d = d.filter(r=>(r.request||'').includes(req));
+  if(contact) d = d.filter(r=>(r.contact||'').replace(/‏|\s/g,'').includes(contact.replace(/‏|\s/g,'')));
+  if(type) d = d.filter(r=>(r.type||'').replace(/‏|\s/g,'').includes(type.replace(/‏|\s/g,'')));
+  if(dfrom||dto) d = d.filter(r=>{
+    const rd = r.fullDate || (r.day ? `2026-07-${String(r.day).padStart(2,'0')}` : '');
+    return (!dfrom||rd>=dfrom)&&(!dto||rd<=dto);
+  });
+  if(sortKey) d.sort((a,b)=>{ const av=a[sortKey]||''; const bv=b[sortKey]||''; return av>bv?sortDir:-sortDir; });
+  return d;
+}
+
+function resetFilters() {
+  document.getElementById('search-input').value='';
+  ['filter-source','filter-request','filter-contact','filter-type'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['filter-date-from','filter-date-to'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  filterAndRender();
+}
+
+function filterAndRender() {
+  filteredData = getApplied();
+  currentPage = 1;
+  renderTable();
+}
+
+function renderTable() {
+  const start = (currentPage-1)*perPage;
+  const pageData = filteredData.slice(start, start+perPage);
+  const tbody = document.getElementById('table-body');
+  tbody.innerHTML = pageData.map((r,i)=>`
+    <tr>
+      <td>${start+i+1}</td>
+      <td>${r.name||'<span style="color:#a0aec0">—</span>'}</td>
+      <td style="direction:ltr;text-align:right">${r.phone}</td>
+      <td>${r.fullDate ? new Date(r.fullDate+'T00:00:00').toLocaleDateString('ar-SA',{year:'numeric',month:'numeric',day:'numeric'}) : ''}</td>
+      <td><span class="source-icon">${r.source}</span></td>
+      <td>${r.contact}</td>
+      <td><span class="badge ${getBadgeClass(r.request)}">${r.request}</span></td>
+      <td><span class="badge ${r.type==='ججز'?'badge-حجز':'badge-استفسار'}">${r.type}</span></td>
+      <td style="max-width:260px;font-size:12px;color:#718096">${r.details||''}</td>
+      <td>${r.employee}</td>
+      <td>
+        <div class="actions-cell">
+          <button class="icon-btn" onclick="editRecord(${r.id})">✏️</button>
+          <button class="icon-btn del" onclick="deleteRecord(${r.id})">🗑️</button>
+        </div>
+      </td>
+    </tr>`).join('') || '<tr><td colspan="11" class="empty-state">لا توجد نتائج</td></tr>';
+  document.getElementById('count-display').textContent = filteredData.length;
+  renderPagination();
+}
+
+function renderPagination() {
+  const total = filteredData.length;
+  const pages = Math.ceil(total/perPage);
+  document.getElementById('page-info').textContent = `عرض ${Math.min((currentPage-1)*perPage+1,total)}–${Math.min(currentPage*perPage,total)} من ${total}`;
+  const pb = document.getElementById('page-btns');
+  let btns = '';
+  for(let p=1;p<=pages;p++) {
+    if(p===1||p===pages||Math.abs(p-currentPage)<=1) btns+=`<button class="page-btn${p===currentPage?' active':''}" onclick="goPage(${p})">${p}</button>`;
+    else if(Math.abs(p-currentPage)===2) btns+='<span style="padding:6px 4px;color:#a0aec0">…</span>';
+  }
+  pb.innerHTML = (currentPage>1?'<button class="page-btn" onclick="goPage('+(currentPage-1)+')">‹</button>':'')+btns+(currentPage<pages?'<button class="page-btn" onclick="goPage('+(currentPage+1)+')">›</button>':'');
+}
+
+function goPage(p) { currentPage=p; renderTable(); }
+
+function sortTable(key) {
+  if(sortKey===key) sortDir*=-1; else { sortKey=key; sortDir=1; }
+  filterAndRender();
+}
+
+// ==================== MODAL ====================
+let editingId = null;
+function openModal(id=null) {
+  editingId = id;
+  document.getElementById('modal-title').textContent = id ? 'تعديل السجل' : 'إضافة سجل جديد';
+  if(id) {
+    const r = data.find(x=>x.id===id);
+    if(r) {
+      document.getElementById('f-name').value=r.name||'';
+      document.getElementById('f-phone').value=r.phone||'';
+      document.getElementById('f-day').value=r.fullDate||(r.day?`2026-07-0${r.day}`:'');
+      document.getElementById('f-city').value=r.city||'الرياض';
+      document.getElementById('f-source').value=r.source||'Google Map';
+      document.getElementById('f-contact').value=(r.contact||'').includes('واتس')?'واتساب':'اتصال';
+      document.getElementById('f-type').value=(r.type||'').includes('جز')?'حجز':(r.type||'').includes('شكو')?'شكوى':'استفسار';
+      document.getElementById('f-request').value=r.request||'';
+      document.getElementById('f-employee').value=r.employee||'احمد ادريس';
+      document.getElementById('f-details').value=r.details||'';
+    }
+  } else {
+    ['f-name','f-phone','f-details','f-request'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('f-city').value='الرياض';
+    document.getElementById('f-employee').value='احمد ادريس';
+    document.getElementById('f-day').value=new Date().toISOString().split('T')[0];
+  }
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); editingId=null; }
+async function saveRecord() {
+  const fullDate = document.getElementById('f-day').value;
+  const dayNum = fullDate ? parseInt(fullDate.split('-')[2]) : 0;
+  const rec = {
+    name:document.getElementById('f-name').value,
+    phone:document.getElementById('f-phone').value,
+    fullDate:fullDate,
+    day:dayNum,
+    city:document.getElementById('f-city').value,
+    source:document.getElementById('f-source').value,
+    contact:document.getElementById('f-contact').value,
+    type:document.getElementById('f-type').value,
+    request:document.getElementById('f-request').value,
+    employee:document.getElementById('f-employee').value,
+    details:document.getElementById('f-details').value,
+  };
+  if(!rec.phone){alert('رقم الجوال مطلوب');return;}
+  if(editingId) {
+    rec.id = editingId;
+    const idx = data.findIndex(x=>x.id===editingId);
+    if(idx>-1) data[idx]={...data[idx],...rec};
+    await saveRecordDB(data[idx]);
+  } else {
+    rec.id = crypto.randomUUID();
+    data.push(rec);
+    await saveRecordDB(rec);
+  }
+  closeModal();
+  filterAndRender();
+  buildMetrics(data, 'metrics-row');
+  buildCharts(data);
+}
+function editRecord(id) { showTab('records'); openModal(id); }
+async function deleteRecord(id) {
+  if(!confirm('هل تريد حذف هذا السجل؟')) return;
+  await deleteRecordDB(id);
+  data = data.filter(x=>x.id!==id);
+  filterAndRender();
+  buildMetrics(data, 'metrics-row');
+  buildCharts(data);
+}
+
+// ==================== TABS ====================
+function showTab(name) {
+  ['dashboard','records','report'].forEach(t=>{
+    document.getElementById('tab-'+t).style.display = t===name?'block':'none';
+  });
+  document.querySelectorAll('.tab').forEach((el,i)=>{
+    el.classList.toggle('active', ['dashboard','records','report'][i]===name);
+  });
+  if(name==='records') { filteredData=getApplied(); renderTable(); }
+  if(name==='report') renderReport();
+}
+
+// ==================== REPORT ====================
+function getReportData() {
+  let d = [...data];
+  const src = document.getElementById('report-source')?.value||'';
+  const req = document.getElementById('report-request')?.value||'';
+  const contact = document.getElementById('report-contact')?.value||'';
+  const type = document.getElementById('report-type')?.value||'';
+  const dfrom = document.getElementById('report-date-from')?.value||'';
+  const dto = document.getElementById('report-date-to')?.value||'';
+  if(src) d=d.filter(r=>r.source===src);
+  if(req) d=d.filter(r=>(r.request||'').includes(req));
+  if(contact) { const cn=contact.replace(/[\u200f\s]/g,''); d=d.filter(r=>(r.contact||'').replace(/[\u200f\s]/g,'').includes(cn)); }
+  if(type) { const tn=type.replace(/[\u200f\s]/g,''); d=d.filter(r=>(r.type||'').replace(/[\u200f\s]/g,'').includes(tn)); }
+  if(dfrom||dto) d=d.filter(r=>{
+    const rd = r.fullDate || (r.day ? `2026-07-${String(r.day).padStart(2,'0')}` : '');
+    return (!dfrom||rd>=dfrom)&&(!dto||rd<=dto);
+  });
+  return d;
+}
+
+function generateRecommendations(d) {
+  if (!d || d.length === 0) return '<p style="color:#a0aec0">لا توجد بيانات كافية لتوليد توصيات.</p>';
+  const recs = [];
+
+  // Count sources
+  const srcCount = {};
+  d.forEach(r => { srcCount[r.source] = (srcCount[r.source]||0)+1; });
+  const topSrc = Object.entries(srcCount).sort((a,b)=>b[1]-a[1]);
+
+  // Count requests
+  const reqCount = {};
+  d.forEach(r => { if(r.request) reqCount[r.request] = (reqCount[r.request]||0)+1; });
+  const topReqs = Object.entries(reqCount).sort((a,b)=>b[1]-a[1]);
+
+  // Count types
+  const typeCount = {};
+  d.forEach(r => { const t=(r.type||'').replace(/[‏\s]/g,''); typeCount[t]=(typeCount[t]||0)+1; });
+
+  // Count contact
+  const contactCount = {};
+  d.forEach(r => { const c=(r.contact||'').replace(/[‏\s]/g,''); contactCount[c]=(contactCount[c]||0)+1; });
+
+  // Count by day
+  const dayCount = {};
+  d.forEach(r => { dayCount[r.day]=(dayCount[r.day]||0)+1; });
+  const peakDay = Object.entries(dayCount).sort((a,b)=>b[1]-a[1])[0];
+
+  // Count employees
+  const empCount = {};
+  d.forEach(r => { if(r.employee) empCount[r.employee]=(empCount[r.employee]||0)+1; });
+  const topEmp = Object.entries(empCount).sort((a,b)=>b[1]-a[1]);
+
+  const total = d.length;
+  const bookings = Object.entries(typeCount).filter(([k])=>k.includes('حجز')).reduce((s,[,v])=>s+v,0);
+  const inquiries = Object.entries(typeCount).filter(([k])=>k.includes('استفسار')).reduce((s,[,v])=>s+v,0);
+  const bookingRate = total > 0 ? Math.round((bookings/total)*100) : 0;
+
+  // Source recommendations
+  if (topSrc.length > 0) {
+    const best = topSrc[0];
+    recs.push(`📢 <strong>المصدر الأعلى أداءً:</strong> "${best[0]}" جلب ${best[1]} عميل (${Math.round(best[1]/total*100)}% من الإجمالي) — يُنصح بزيادة الاستثمار في هذا القناة.`);
+    if (topSrc.length > 1 && topSrc[topSrc.length-1][1] === 1) {
+      recs.push(`⚠️ <strong>مصادر ضعيفة:</strong> "${topSrc[topSrc.length-1][0]}" لم يجلب سوى عميل واحد — راجع فاعلية هذه القناة أو أعد توجيه ميزانيتها.`);
+    }
+  }
+
+  // Booking rate
+  if (bookingRate > 0) {
+    if (bookingRate >= 50) {
+      recs.push(`✅ <strong>معدل التحويل ممتاز:</strong> ${bookingRate}% من الاستفسارات تحولت لحجوزات — استمر في نفس الأسلوب.`);
+    } else if (bookingRate >= 25) {
+      recs.push(`📊 <strong>معدل التحويل متوسط:</strong> ${bookingRate}% فقط من الاستفسارات تحولت لحجوزات — فكر في تحسين رد الفريق وسرعة الاستجابة.`);
+    } else {
+      recs.push(`🔴 <strong>معدل التحويل منخفض:</strong> ${bookingRate}% من الاستفسارات تحولت لحجوزات — تحقق من أسباب التردد لدى العملاء، وفكر في عروض أو حوافز لتحسين النسبة.`);
+    }
+  }
+
+  // Top request (concern)
+  if (topReqs.length > 0) {
+    recs.push(`🔍 <strong>أكثر الاستفسارات شيوعاً:</strong> "${topReqs[0][0]}" بـ ${topReqs[0][1]} استفسار — تأكد من وضوح المعلومات المتعلقة بهذا الجانب في قنوات التواصل.`);
+  }
+
+  // Contact preference
+  const whatsappKeys = Object.keys(contactCount).filter(k=>k.includes('واتس'));
+  const callKeys = Object.keys(contactCount).filter(k=>k.includes('اتصال'));
+  const wpTotal = whatsappKeys.reduce((s,k)=>s+contactCount[k],0);
+  const callTotal = callKeys.reduce((s,k)=>s+contactCount[k],0);
+  if (wpTotal > callTotal) {
+    recs.push(`📱 <strong>قناة التواصل المفضلة:</strong> واتساب (${wpTotal} عميل) — استثمر في الردود السريعة والقوالب الجاهزة على واتساب.`);
+  } else if (callTotal > wpTotal) {
+    recs.push(`📞 <strong>قناة التواصل المفضلة:</strong> الاتصال الهاتفي (${callTotal} عميل) — تأكد من توافر فريق لتلقي المكالمات في أوقات الذروة.`);
+  }
+
+  // Peak day
+  if (peakDay) {
+    recs.push(`📅 <strong>يوم الذروة:</strong> يوم ${peakDay[0]} سجّل أعلى عدد من العملاء (${peakDay[1]}) — خصص موارد إضافية في هذا اليوم.`);
+  }
+
+  // Low data warning
+  if (total < 5) {
+    recs.push(`ℹ️ <strong>ملاحظة:</strong> البيانات الحالية قليلة (${total} سجل فقط) — التوصيات ستكون أكثر دقة مع زيادة البيانات.`);
+  }
+
+  return recs.map((r,i) => `<div contenteditable="true" style="padding:8px 12px; border-bottom:1px solid #f0f0f0; border-radius:6px; outline:none; cursor:text;" onmouseover="this.style.background='#f7fafc'" onmouseout="this.style.background=''">${r}</div>`).join('') || '<p style="color:#a0aec0">لا توجد بيانات كافية.</p>';
+}
+
+function renderReport() {
+  const d = getReportData();
+  buildMetrics(d, 'report-metrics');
+  buildReportCharts(d);
+  // Generate smart recommendations
+  const recEl = document.getElementById('rec-content');
+  if (recEl) recEl.innerHTML = generateRecommendations(d);
+  document.getElementById('report-count').textContent = `إجمالي السجلات: ${d.length}`;
+}
+
+function printReport(size) {
+  // Make sure report is rendered first
+  renderReport();
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('ar-SA',{year:'numeric',month:'long',day:'numeric'});
+  const pageSize = size==='a4' ? 'A4 landscape' : 'A3 landscape';
+  const margin = size==='a4' ? '6mm' : '8mm';
+
+  // Collect chart images AFTER charts are drawn
+  setTimeout(()=>{
+    const getChart = id => { try { return document.getElementById(id)?.toDataURL('image/png','1.0')||''; } catch(e){return '';} };
+
+    // Metrics HTML
+    const metricsEl = document.getElementById('report-metrics');
+    const metricsHTML = metricsEl ? metricsEl.outerHTML : '';
+
+    // Chart images
+    const chartReq = getChart('rep-chart-req');
+    const chartSrc = getChart('rep-chart-src');
+    const chartContact = getChart('rep-chart-contact');
+
+    // Recommendations
+    const recEl = document.getElementById('rec-content');
+    const recHTML = recEl ? recEl.innerHTML : '';
+
+    const COLORS = {blue:'#3182ce',green:'#38a169',orange:'#dd6b20',purple:'#805ad5',red:'#e53e3e'};
+
+    const printHTML = `<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>تقرير العملاء - ${dateStr}</title>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  body { font-family:'Segoe UI',Tahoma,Arial,sans-serif; background:#fff; color:#1a1a2e; direction:rtl; font-size:9px; }
+  @page { size:${pageSize}; margin:${margin}; }
+
+  .ph { display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #1a1a2e; padding-bottom:5px; margin-bottom:7px; }
+  .ph-title { font-size:14px; font-weight:700; color:#1a1a2e; }
+  .ph-date { font-size:8px; color:#718096; }
+
+  .metrics-row { display:grid; grid-template-columns:repeat(4,1fr); gap:5px; margin-bottom:7px; }
+  .metric-card { border-radius:6px; padding:6px 8px; border:1px solid #e2e8f0; border-top-width:3px; }
+  .metric-card.blue { border-top-color:#3182ce; }
+  .metric-card.green { border-top-color:#38a169; }
+  .metric-card.orange { border-top-color:#dd6b20; }
+  .metric-card.purple { border-top-color:#805ad5; }
+  .metric-card.red { border-top-color:#e53e3e; }
+  .metric-label { font-size:7px; color:#718096; margin-bottom:2px; }
+  .metric-value { font-size:18px; font-weight:700; color:#1a1a2e; }
+  .metric-sub { font-size:7px; color:#a0aec0; margin-top:1px; }
+
+  .charts-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:5px; margin-bottom:7px; }
+  .chart-card { border:1px solid #e2e8f0; border-radius:6px; padding:5px; }
+  .chart-title { font-size:8px; font-weight:600; color:#2d3748; margin-bottom:3px; }
+  .chart-card img { width:100%; height:110px; object-fit:contain; }
+
+  .rec-box { border:1px solid #e2e8f0; border-radius:6px; padding:6px 8px; }
+  .rec-title { font-size:9px; font-weight:700; color:#1a1a2e; margin-bottom:4px; }
+  .rec-item { padding:2px 4px; border-bottom:1px solid #f0f0f0; font-size:7.5px; color:#4a5568; line-height:1.5; }
+  .rec-item:last-child { border-bottom:none; }
+
+  .footer { text-align:center; font-size:7px; color:#b0b8c8; margin-top:5px; }
+</style>
+</head>
+<body>
+  <div class="ph">
+    <div class="ph-title">📋 تقرير العملاء</div>
+    <div class="ph-date">تاريخ الطباعة: ${dateStr}</div>
+  </div>
+
+  ${metricsHTML}
+
+  <div class="charts-row">
+    <div class="chart-card"><div class="chart-title">توزيع الطلبات</div><img src="${chartReq}"/></div>
+    <div class="chart-card"><div class="chart-title">مصادر التواصل</div><img src="${chartSrc}"/></div>
+    <div class="chart-card"><div class="chart-title">نوع التواصل</div><img src="${chartContact}"/></div>
+  </div>
+
+  <div class="rec-box">
+    <div class="rec-title">💡 التوصيات</div>
+    <div>${recHTML.replace(/<div contenteditable[^>]*>/g,'<div class="rec-item">').replace(/<div style="padding[^>]*>/g,'<div class="rec-item">')}</div>
+  </div>
+
+  <div class="footer">جميع الحقوق محفوظة لـ سمو © تطوير A. Shaker</div>
+
+<script>window.onload=()=>{ setTimeout(()=>{ window.print(); setTimeout(()=>window.close(),500); },300); }<\/script>
+</body></html>`;
+
+    const win = window.open('','_blank','width=1200,height=800');
+    win.document.write(printHTML);
+    win.document.close();
+  }, 600);
+}
+
+// ==================== DASHBOARD FILTER ====================
+function applyDashFilter() {
+  const dfrom = document.getElementById('dash-date-from')?.value||'';
+  const dto = document.getElementById('dash-date-to')?.value||'';
+  let d = [...data];
+  if(dfrom||dto) d = d.filter(r=>{
+    const rd = r.fullDate || (r.day ? `2026-07-${String(r.day).padStart(2,'0')}` : '');
+    return (!dfrom||rd>=dfrom)&&(!dto||rd<=dto);
+  });
+  buildMetrics(d,'metrics-row');
+  buildCharts(d);
+}
+function clearDashFilter() {
+  ['dash-date-from','dash-date-to'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  buildMetrics(data,'metrics-row');
+  buildCharts(data);
+}
+
+// ==================== INIT ====================
+
+// ==================== EXPORT EXCEL ====================
+function exportExcel() {
+  const d = filteredData.length > 0 ? filteredData : data;
+  const headers = ['#','اسم العميل','رقم الجوال','المدينة','التاريخ','المصدر','التواصل','الطلب','النوع','تفاصيل التواصل','الموظف'];
+
+  // Build CSV with BOM for Arabic support
+  const bom = '\uFEFF';
+  const rows = [headers];
+  d.forEach((r, i) => {
+    const dateStr = r.fullDate ? new Date(r.fullDate + 'T00:00:00').toLocaleDateString('ar-SA', {year:'numeric',month:'numeric',day:'numeric'}) : (r.day + '/7/2026');
+    rows.push([
+      i + 1,
+      r.name || '—',
+      r.phone || '',
+      r.city || '',
+      dateStr,
+      r.source || '',
+      (r.contact || '').replace(/[\u200f]/g, '').trim(),
+      r.request || '',
+      (r.type || '').replace(/[\u200f]/g, '').trim(),
+      (r.details || '').replace(/,/g, '،'),
+      r.employee || ''
+    ]);
+  });
+
+  const csv = bom + rows.map(row =>
+    row.map(cell => {
+      const val = String(cell).replace(/"/g, '""');
+      return val.includes(',') || val.includes('\n') || val.includes('"') ? `"${val}"` : val;
+    }).join(',')
+  ).join('\n');
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const now = new Date();
+  const fname = 'سجلات_العملاء_' + now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0') + '.csv';
+  a.href = url;
+  a.download = fname;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+window.onload = async function() {
+  // Register service worker
+  if ('serviceWorker' in navigator) {
+    try {
+      await navigator.serviceWorker.register('/sw.js');
+      // Listen for sync complete messages
+      navigator.serviceWorker.addEventListener('message', e => {
+        if (e.data?.type === 'SYNC_COMPLETE') {
+          showToast('✅ تمت المزامنة', 'success');
+          loadAllRecords();
+        }
+      });
+    } catch(e) { console.warn('SW registration failed:', e); }
+  }
+
+  // Open IndexedDB
+  idb = await openIDB();
+  await idbSaveConfig();
+
+  // Set online status badge
+  updateOnlineStatus();
+
+  // Load all records
+  await loadAllRecords();
+
+  // Subscribe to realtime if online + cloud configured
+  if (USE_CLOUD && isOnline) subscribeRealtime();
+
+  // Show config warning if not set
+  if (!USE_CLOUD) {
+    showToast('💡 لتفعيل السحابة: أضف Supabase URL و KEY في الكود', 'warn');
+  }
+};
+</script>
+
+<!-- FOOTER -->
+<div style="text-align:center;padding:10px;margin-top:8px;font-size:9px;color:#b0b8c8;letter-spacing:0.3px;">
+  جميع الحقوق محفوظة لـ سمو &copy; تطوير A. Shaker
+</div>
+
+<style>
+@media print {
+  .footer-copyright { display: block !important; }
+}
+</style>
+
+</body>
+</html>

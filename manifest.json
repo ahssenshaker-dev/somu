@@ -1,0 +1,19 @@
+{
+  "name": "داشبورد العملاء - سمو",
+  "short_name": "سمو CRM",
+  "description": "نظام إدارة علاقات العملاء",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#1a1a2e",
+  "orientation": "any",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='32' fill='%231a1a2e'/><text y='130' x='50' font-size='110' font-family='Arial'>📊</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ]
+}
