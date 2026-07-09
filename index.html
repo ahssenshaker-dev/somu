@@ -166,6 +166,8 @@
   </div>
   <div class="header-actions">
     <button class="btn btn-secondary" onclick="exportExcel()" style="background:rgba(56,161,105,0.85);border-color:rgba(56,161,105,0.5);color:#fff;">📊 تصدير Excel</button>
+    <button class="btn btn-secondary" onclick="document.getElementById('import-input').click()" style="background:rgba(49,130,206,0.85);border-color:rgba(49,130,206,0.5);color:#fff;">📥 استيراد CSV</button>
+    <input type="file" id="import-input" accept=".csv" style="display:none" onchange="importCSV(this)">
     <button class="btn btn-primary btn-add" onclick="openModal()">+ إضافة سجل جديد</button>
     <button class="btn btn-print" onclick="showTab('report')">📊 التقرير والطباعة</button>
   </div>
@@ -248,6 +250,7 @@
         </select>
         <button class="btn btn-secondary" style="color:#1a1a2e; border-color:#e2e8f0;" onclick="resetFilters()">إعادة تعيين</button>
         <button class="btn btn-secondary" style="color:#fff;background:#38a169;border-color:#38a169;" onclick="exportExcel()">📊 Excel</button>
+        <button class="btn btn-secondary" style="color:#fff;background:#3182ce;border-color:#3182ce;" onclick="document.getElementById('import-input').click()">📥 استيراد</button>
         <button class="btn btn-primary btn-add" onclick="openModal()">+ إضافة جديد</button>
       </div>
     </div>
@@ -1570,6 +1573,114 @@ function clearDashFilter() {
 }
 
 // ==================== INIT ====================
+
+
+// ==================== IMPORT CSV ====================
+async function importCSV(input) {
+  const file = input.files[0];
+  if (!file) return;
+  input.value = '';
+
+  const text = await file.text();
+  const lines = text.replace(/\r/g, '').split('\n').filter(l => l.trim());
+  if (lines.length < 2) { showToast('الملف فارغ', 'error'); return; }
+
+  // Parse CSV (handle quoted fields)
+  function parseRow(line) {
+    const result = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') { inQ = !inQ; }
+      else if (ch === ',' && !inQ) { result.push(cur.trim()); cur = ''; }
+      else { cur += ch; }
+    }
+    result.push(cur.trim());
+    return result;
+  }
+
+  // Convert Arabic-Indic date like ١/٧/٢٠٢٦ to 2026-07-01
+  function parseArabicDate(str) {
+    if (!str) return '';
+    // Remove RTL marks and spaces
+    str = str.replace(/[\u200f\u200e\s]/g, '');
+    // Convert Arabic-Indic numerals to Western
+    str = str.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+    // Now format: d/m/yyyy or d‏/m‏/yyyy
+    const parts = str.split('/');
+    if (parts.length === 3) {
+      const d = String(parts[0]).padStart(2,'0');
+      const m = String(parts[1]).padStart(2,'0');
+      const y = parts[2];
+      return `${y}-${m}-${d}`;
+    }
+    return '';
+  }
+
+  const headers = parseRow(lines[0]);
+  // Map headers to field names
+  const colMap = {
+    'اسم العميل': 'name',
+    'رقم الجوال': 'phone',
+    'المدينة': 'city',
+    'التاريخ': 'fullDate',
+    'المصدر': 'source',
+    'التواصل': 'contact',
+    'الطلب': 'request',
+    'النوع': 'type',
+    'تفاصيل التواصل': 'details',
+    'الموظف': 'employee'
+  };
+
+  const imported = [];
+  let skipped = 0;
+
+  for (let i = 1; i < lines.length; i++) {
+    const cols = parseRow(lines[i]);
+    if (cols.length < 3) continue;
+
+    const rec = {};
+    headers.forEach((h, idx) => {
+      const key = colMap[h.trim()];
+      if (key) rec[key] = (cols[idx] || '').replace(/^—$/, '').trim();
+    });
+
+    if (!rec.phone) { skipped++; continue; }
+
+    // Parse Arabic date
+    if (rec.fullDate) rec.fullDate = parseArabicDate(rec.fullDate);
+    rec.day = rec.fullDate ? parseInt(rec.fullDate.split('-')[2]) || 0 : 0;
+
+    // Check for duplicate by phone + date
+    const exists = data.find(x =>
+      x.phone === rec.phone &&
+      x.fullDate === rec.fullDate
+    );
+    if (exists) { skipped++; continue; }
+
+    rec.id = crypto.randomUUID();
+    imported.push(rec);
+  }
+
+  if (imported.length === 0) {
+    showToast('لا توجد سجلات جديدة (كلها مكررة أو ناقصة)', 'warn');
+    return;
+  }
+
+  showToast('جاري استيراد ' + imported.length + ' سجل...', 'info');
+
+  // Save to DB
+  for (const rec of imported) {
+    data.push(rec);
+    await saveRecordDB(rec);
+  }
+
+  filteredData = [...data];
+  buildMetrics(data, 'metrics-row');
+  buildCharts(data);
+  renderTable();
+  showToast('✅ تم استيراد ' + imported.length + ' سجل' + (skipped > 0 ? ' (تخطي ' + skipped + ' مكرر)' : ''), 'success');
+}
 
 // ==================== EXPORT EXCEL ====================
 function exportExcel() {
