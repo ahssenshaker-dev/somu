@@ -495,6 +495,106 @@
 <script>
 // ==================== DATA ====================
 // =============================================
+
+// ==================== NUMBER LABELS PLUGIN ====================
+// Custom plugin: bar numbers on top + pie % inside + count outside with arrow line
+const numberLabelsPlugin = {
+  id: 'numberLabels',
+  afterDatasetsDraw(chart) {
+    const { ctx, chartArea } = chart;
+    if (!chartArea) return;
+    ctx.save();
+
+    // ── BAR: number above each bar ──
+    if (chart.config.type === 'bar') {
+      chart.data.datasets.forEach((dataset, di) => {
+        const meta = chart.getDatasetMeta(di);
+        meta.data.forEach((bar, i) => {
+          const val = dataset.data[i];
+          if (!val) return;
+          const pos = bar.tooltipPosition();
+          ctx.fillStyle = '#1a1a2e';
+          ctx.font = 'bold 12px Segoe UI, Arial';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'bottom';
+          ctx.fillText(val, pos.x, pos.y - 4);
+        });
+      });
+      ctx.restore();
+      return;
+    }
+
+    // ── PIE: % inside slice + count outside with leader line ──
+    if (chart.config.type === 'pie' || chart.config.type === 'doughnut') {
+      const dataset = chart.data.datasets[0];
+      const meta    = chart.getDatasetMeta(0);
+      const total   = dataset.data.reduce((a, b) => a + b, 0) || 1;
+      const cx      = (chartArea.left + chartArea.right)  / 2;
+      const cy      = (chartArea.top  + chartArea.bottom) / 2;
+      const outerR  = Math.min(chartArea.width, chartArea.height) / 2;
+
+      meta.data.forEach((arc, i) => {
+        const val  = dataset.data[i];
+        const pct  = Math.round(val / total * 100);
+        if (!val) return;
+
+        // Mid-angle of this slice
+        const midAngle = (arc.startAngle + arc.endAngle) / 2;
+        const cos = Math.cos(midAngle);
+        const sin = Math.sin(midAngle);
+
+        // ── % INSIDE the slice (only if slice is big enough) ──
+        if (pct >= 7) {
+          const innerR = outerR * 0.58;
+          const ix = cx + innerR * cos;
+          const iy = cy + innerR * sin;
+          ctx.fillStyle = '#fff';
+          ctx.font = 'bold 12px Segoe UI, Arial';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(pct + '%', ix, iy);
+        }
+
+        // ── COUNT OUTSIDE with leader line ──
+        const lineStart = outerR * 1.05;   // start of line (just outside pie)
+        const lineEnd   = outerR * 1.28;   // end of line (label anchor)
+        const labelGap  = outerR * 1.38;   // where the text sits
+
+        const x1 = cx + lineStart * cos;
+        const y1 = cy + lineStart * sin;
+        const x2 = cx + lineEnd   * cos;
+        const y2 = cy + lineEnd   * sin;
+        const lx = cx + labelGap  * cos;
+        const ly = cy + labelGap  * sin;
+
+        // Draw leader line
+        const sliceColor = dataset.backgroundColor[i] || '#666';
+        ctx.strokeStyle = sliceColor;
+        ctx.lineWidth   = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+
+        // Small horizontal tick
+        const tickDir = cos > 0 ? 1 : -1;
+        ctx.lineTo(x2 + tickDir * 10, y2);
+        ctx.stroke();
+
+        // Draw count label
+        ctx.fillStyle   = '#1a1a2e';
+        ctx.font        = 'bold 11px Segoe UI, Arial';
+        ctx.textAlign   = cos > 0 ? 'left' : 'right';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(val, x2 + tickDir * 13, y2);
+      });
+
+      ctx.restore();
+    }
+  }
+};
+Chart.register(numberLabelsPlugin);
+
+
 // ⚙️ إعدادات Supabase — ضع بياناتك هنا
 // =============================================
 const SUPABASE_URL = 'https://taxzgrrsxtlkivphxfub.supabase.co';
@@ -1161,25 +1261,29 @@ function buildCharts(d) {
   });
   const PIE_OPTS = () => ({
     responsive:true, maintainAspectRatio:false,
+    layout:{padding:28},
     plugins:{legend:{display:true,position:'bottom',labels:{font:{size:10},boxWidth:10,padding:6}}}
   });
   function destroy(id) { if(charts[id]) { charts[id].destroy(); delete charts[id]; } }
   function barChart(id, counts, color) {
     const el = document.getElementById(id); if(!el) return;
     destroy(id);
+    const vals = Object.values(counts);
+    const bgColors = Array.isArray(color) ? color : vals.map((_,i)=>Array.isArray(COLORS)?COLORS[i%COLORS.length]:color);
     charts[id] = new Chart(el, {
       type:'bar',
-      data:{labels:Object.keys(counts), datasets:[{data:Object.values(counts), backgroundColor:color||COLORS, borderRadius:5, borderSkipped:false}]},
-      options:BAR_OPTS(color)
+      data:{labels:Object.keys(counts), datasets:[{data:vals, backgroundColor:bgColors, borderRadius:6, borderSkipped:false}]},
+      options:{ ...BAR_OPTS(color) },
     });
   }
   function pieChart(id, counts, colors) {
     const el = document.getElementById(id); if(!el) return;
     destroy(id);
+    const vals = Object.values(counts);
     charts[id] = new Chart(el, {
       type:'pie',
-      data:{labels:Object.keys(counts), datasets:[{data:Object.values(counts), backgroundColor:colors||COLORS, borderWidth:2, borderColor:'#fff'}]},
-      options:PIE_OPTS()
+      data:{labels:Object.keys(counts), datasets:[{data:vals, backgroundColor:colors||COLORS, borderWidth:2, borderColor:'#fff'}]},
+      options:{ ...PIE_OPTS(), layout:{padding:28} }
     });
   }
 
@@ -1221,31 +1325,45 @@ function buildReportCharts(d) {
   const COLORS = ['#3182ce','#38a169','#dd6b20','#805ad5','#e53e3e','#319795','#d53f8c','#2b6cb0','#c05621','#6b46c1'];
   const REP_IDS = ['rep-chart-req','rep-chart-src','rep-chart-contact','rep-chart-gender','rep-chart-occasion','rep-chart-days'];
   REP_IDS.forEach(id=>{if(charts[id]){charts[id].destroy();delete charts[id];}});
+
+  const total = d.length || 1;
+
+  // Bar chart: numbers on top of each bar
   function repBar(id, counts, color) {
     const el = document.getElementById(id); if(!el) return;
+    const vals = Object.values(counts);
+    const bgColors = Array.isArray(color) ? color : vals.map((_,i)=>COLORS[i%COLORS.length]);
     charts[id] = new Chart(el, {
       type:'bar',
-      data:{labels:Object.keys(counts),datasets:[{data:Object.values(counts),backgroundColor:color||COLORS,borderRadius:5,borderSkipped:false}]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:9}},grid:{display:false}},y:{beginAtZero:true,ticks:{stepSize:1,font:{size:9}}}}}
+      data:{ labels:Object.keys(counts), datasets:[{ data:vals, backgroundColor:bgColors, borderRadius:6, borderSkipped:false }] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{ticks:{font:{size:10}},grid:{display:false}}, y:{beginAtZero:true,ticks:{stepSize:1,font:{size:10}}} } }
     });
   }
+
   function repPie(id, counts, colors) {
     const el = document.getElementById(id); if(!el) return;
+    const vals = Object.values(counts);
     charts[id] = new Chart(el, {
       type:'pie',
-      data:{labels:Object.keys(counts),datasets:[{data:Object.values(counts),backgroundColor:colors||COLORS,borderWidth:2,borderColor:'#fff'}]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{font:{size:9},boxWidth:9,padding:5}}}}
+      data:{ labels:Object.keys(counts), datasets:[{ data:vals, backgroundColor:colors||COLORS, borderWidth:2, borderColor:'#fff' }] },
+      options:{ responsive:true, maintainAspectRatio:false, layout:{padding:28}, plugins:{ legend:{ display:true, position:'bottom', labels:{font:{size:10},boxWidth:9,padding:6} } } }
     });
   }
-  repBar('rep-chart-src', COUNT(d,'source'), '#3182ce');
-  repBar('rep-chart-req', COUNT(d,'request'), COLORS);
-  repPie('rep-chart-contact', COUNT(d,'contact'), ['#3182ce','#38a169']);
-  repPie('rep-chart-gender', COUNT(d,'gender'), ['#3182ce','#d53f8c','#a0aec0']);
-  repBar('rep-chart-occasion', COUNT(d,'occasion'), COLORS);
+
+  repBar('rep-chart-src',     COUNT(d,'source'),   COLORS);
+  repBar('rep-chart-req',     COUNT(d,'request'),  COLORS);
+  repPie('rep-chart-contact', COUNT(d,'contact'),  ['#3182ce','#38a169']);
+  repPie('rep-chart-gender',  COUNT(d,'gender'),   ['#3182ce','#d53f8c','#a0aec0']);
+  repBar('rep-chart-occasion',COUNT(d,'occasion'), COLORS);
+
   const daysCounts = {};
   d.forEach(r=>{ if(r.days){ const k=r.days+' يوم'; daysCounts[k]=(daysCounts[k]||0)+1; } });
-  if(Object.keys(daysCounts).length) repBar('rep-chart-days', daysCounts, '#805ad5');
-  else { const el=document.getElementById('rep-chart-days'); if(el){ const ctx=el.getContext('2d'); ctx.fillStyle='#a0aec0'; ctx.font='13px Arial'; ctx.textAlign='center'; ctx.fillText('لا توجد بيانات أيام حجز',el.width/2,el.height/2); } }
+  if(Object.keys(daysCounts).length) {
+    repBar('rep-chart-days', daysCounts, '#805ad5');
+  } else {
+    const el=document.getElementById('rep-chart-days');
+    if(el){ const ctx=el.getContext('2d'); ctx.fillStyle='#a0aec0'; ctx.font='13px Arial'; ctx.textAlign='center'; ctx.fillText('لا توجد بيانات',el.width/2,el.height/2); }
+  }
 }
 
 // ==================== METRICS ====================
