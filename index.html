@@ -110,39 +110,225 @@
   .date-filter label { font-size: 13px; color: #4a5568; font-weight: 500; }
 
   /* PRINT STYLES - forced single page */
-  @media print {
+  /* Old report print — only fires when body.print-report is set */
+  body.print-report {
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box !important; }
+  }
+  @media print {
     html, body { height: auto !important; overflow: visible !important; background: #fff !important; margin: 0 !important; padding: 0 !important; }
-    .header, .nav-tabs, .modal-overlay, .btn-add,
-    #tab-dashboard, #tab-records,
-    .print-controls, #report-count { display: none !important; }
-    #tab-report { display: block !important; }
-    .content { padding: 0 !important; margin: 0 !important; }
-    .table-section { box-shadow: none !important; border: none !important; padding: 0 !important; margin: 0 !important; }
-    .print-only-header { display: flex !important; justify-content: space-between; align-items: center; margin-bottom: 5px; padding-bottom: 5px; border-bottom: 1.5px solid #1a1a2e; }
-    .print-only-header .ph-title { font-size: 12px; font-weight: 700; color: #1a1a2e; }
-    .print-only-header .ph-date { font-size: 9px; color: #718096; }
-    .metrics-row { display: grid !important; grid-template-columns: repeat(4,1fr) !important; gap: 4px !important; margin-bottom: 5px !important; }
-    .metric-card { box-shadow: none !important; border: 1px solid #e2e8f0 !important; border-top-width: 3px !important; padding: 5px 7px !important; border-radius: 5px !important; }
-    .metric-label { font-size: 7px !important; margin-bottom: 1px !important; }
-    .metric-value { font-size: 15px !important; }
-    .metric-sub { font-size: 7px !important; }
-    .charts-row { display: grid !important; grid-template-columns: 1fr 1fr 1fr !important; gap: 4px !important; margin-bottom: 5px !important; }
-    .chart-card { box-shadow: none !important; border: 1px solid #e2e8f0 !important; padding: 5px !important; border-radius: 5px !important; page-break-inside: avoid; break-inside: avoid; }
-    .chart-card > div:first-child { font-size: 8px !important; font-weight: 600; margin-bottom: 2px !important; }
-    .chart-wrap { height: 100px !important; }
-    .chart-wrap canvas { height: 100px !important; max-height: 100px !important; width: 100% !important; }
-    #report-recommendations { border: 1px solid #e2e8f0 !important; border-radius: 5px !important; padding: 5px 7px !important; margin-top: 4px !important; page-break-inside: avoid; break-inside: avoid; }
-    #report-recommendations > div:first-child { font-size: 9px !important; font-weight: 700; margin-bottom: 3px !important; }
-    #report-recommendations .rec-hint { display: none !important; }
-    #report-recommendations [contenteditable] { font-size: 7.5px !important; padding: 1px 3px !important; line-height: 1.4 !important; border: none !important; }
-    body > div[style*="text-align:center"] { font-size: 7px !important; padding: 3px !important; margin-top: 3px !important; }
-    @page { size: A3 landscape; margin: 7mm; }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    /* Hide everything by default */
+    .header, .nav-tabs, .modal-overlay, .btn-add, .s-toolbar,
+    #tab-dashboard, #tab-records, #tab-entry, #tab-sales-entry, #tab-sales-records,
+    #tab-report, #tab-sales-report, #tab-sales-compare,
+    #pin-overlay, #pin-change-modal, #sr2-edit-overlay,
+    .print-controls, #report-count,
+    #cmp-tab-sales, #cmp-tab-inquiries { display: none !important; }
+
+    /* ── Print: old التقرير والطباعة (body.print-old-report) ── */
+    body.print-old-report #tab-report { display: block !important; }
+    body.print-old-report .content { padding: 0 !important; margin: 0 !important; }
+    body.print-old-report .table-section { box-shadow: none !important; border: none !important; padding: 0 !important; margin: 0 !important; }
+    body.print-old-report .print-only-header { display: flex !important; justify-content: space-between; align-items: center; margin-bottom: 5px; padding-bottom: 5px; border-bottom: 1.5px solid #1a1a2e; }
+    body.print-old-report .print-only-header .ph-title { font-size: 12px; font-weight: 700; color: #1a1a2e; }
+    body.print-old-report .print-only-header .ph-date { font-size: 9px; color: #718096; }
+    body.print-old-report .metrics-row { display: grid !important; grid-template-columns: repeat(4,1fr) !important; gap: 4px !important; margin-bottom: 5px !important; }
+    body.print-old-report .metric-card { box-shadow: none !important; border: 1px solid #e2e8f0 !important; border-top-width: 3px !important; padding: 5px 7px !important; border-radius: 5px !important; }
+    body.print-old-report .metric-label { font-size: 7px !important; margin-bottom: 1px !important; }
+    body.print-old-report .metric-value { font-size: 15px !important; }
+    body.print-old-report .metric-sub { font-size: 7px !important; }
+    body.print-old-report .charts-row { display: grid !important; grid-template-columns: 1fr 1fr 1fr !important; gap: 4px !important; margin-bottom: 5px !important; }
+    body.print-old-report .chart-card { box-shadow: none !important; border: 1px solid #e2e8f0 !important; padding: 5px !important; border-radius: 5px !important; page-break-inside: avoid; break-inside: avoid; }
+    body.print-old-report .chart-card > div:first-child { font-size: 8px !important; font-weight: 600; margin-bottom: 2px !important; }
+    body.print-old-report .chart-wrap { height: 100px !important; }
+    body.print-old-report .chart-wrap canvas { height: 100px !important; max-height: 100px !important; width: 100% !important; }
+    body.print-old-report #report-recommendations { border: 1px solid #e2e8f0 !important; border-radius: 5px !important; padding: 5px 7px !important; margin-top: 4px !important; page-break-inside: avoid; break-inside: avoid; }
+    body.print-old-report #report-recommendations > div:first-child { font-size: 9px !important; font-weight: 700; margin-bottom: 3px !important; }
+    body.print-old-report #report-recommendations .rec-hint { display: none !important; }
+    body.print-old-report #report-recommendations [contenteditable] { font-size: 7.5px !important; padding: 1px 3px !important; line-height: 1.4 !important; border: none !important; }
+
+    /* ── Print: تقرير المبيعات (body.print-sales-report) ── */
+    body.print-sales-report #tab-sales-report { display: block !important; }
+    body.print-sales-report #tab-sales-report .content { padding: 4px !important; margin: 0 !important; }
+    body.print-sales-report #tab-sales-report #sr-kpis { grid-template-columns: repeat(5,1fr) !important; gap: 4px !important; margin-bottom: 5px !important; }
+    body.print-sales-report #tab-sales-report .s-kpi { padding: 5px 8px !important; box-shadow: none !important; border: 1px solid #dde3ec !important; }
+    body.print-sales-report #tab-sales-report .s-kpi-val { font-size: 13px !important; }
+    body.print-sales-report #tab-sales-report .s-kpi-lbl { font-size: 8px !important; margin-top: 1px !important; }
+    body.print-sales-report #tab-sales-report .s-calendar-wrap { padding: 6px !important; box-shadow: none !important; border: 1px solid #dde3ec !important; }
+    body.print-sales-report #tab-sales-report .s-cal-cell { min-height: 28px !important; }
+    body.print-sales-report #tab-sales-report .s-cal-num { font-size: 9px !important; }
+    body.print-sales-report #tab-sales-report .s-cal-booking { font-size: 7.5px !important; }
+    body.print-sales-report #tab-sales-report canvas { max-height: 80px !important; }
+    body.print-sales-report #tab-sales-report .s-chart-card { box-shadow: none !important; border: 1px solid #dde3ec !important; }
+
+    /* ── Print: مقارنة المبيعات (body.print-cmp-sales) ── */
+    body.print-cmp-sales #tab-sales-compare { display: block !important; }
+    body.print-cmp-sales #cmp-section-sales { display: block !important; }
+    body.print-cmp-sales #cmp-section-inquiries { display: none !important; }
+    body.print-cmp-sales #tab-sales-compare .s-compare-panel { padding: 8px !important; box-shadow: none !important; border: 1px solid #dde3ec !important; }
+    body.print-cmp-sales #tab-sales-compare canvas { max-height: 85px !important; }
+    body.print-cmp-sales #tab-sales-compare .pct-badge { font-size: 10px !important; padding: 2px 5px !important; }
+    body.print-cmp-sales #tab-sales-compare .s-compare-chart-wrap { box-shadow: none !important; border: 1px solid #dde3ec !important; }
+
+    /* ── Print: مقارنة الاستفسارات (body.print-cmp-inq) ── */
+    body.print-cmp-inq #tab-sales-compare { display: block !important; }
+    body.print-cmp-inq #cmp-section-inquiries { display: block !important; }
+    body.print-cmp-inq #cmp-section-sales { display: none !important; }
+    body.print-cmp-inq #tab-sales-compare .s-compare-panel { padding: 8px !important; box-shadow: none !important; border: 1px solid #dde3ec !important; }
+    body.print-cmp-inq #tab-sales-compare canvas { max-height: 85px !important; }
+    body.print-cmp-inq #tab-sales-compare .pct-badge { font-size: 10px !important; padding: 2px 5px !important; }
+    body.print-cmp-inq #tab-sales-compare .s-compare-chart-wrap { box-shadow: none !important; border: 1px solid #dde3ec !important; }
+
+    @page { size: A4 landscape; margin: 8mm; }
   }
   .print-only-header { display: none; }
   .print-report-header { display: none; }
 
   .empty-state { text-align: center; padding: 40px; color: #a0aec0; font-size: 14px; }
+
+  /* ENTRY TAB - Excel-like */
+  .entry-toolbar { background:#fff; border-radius:12px; padding:16px 20px; box-shadow:0 1px 4px rgba(0,0,0,0.08); margin-bottom:16px; display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+  .entry-date-label { font-size:15px; font-weight:700; color:#1a1a2e; }
+  .entry-date-input { padding:8px 14px; border:2px solid #e94560; border-radius:8px; font-size:14px; font-family:inherit; outline:none; color:#1a1a2e; font-weight:600; direction:ltr; }
+  .entry-date-input:focus { border-color:#c73652; }
+  .entry-row-count { font-size:13px; color:#718096; margin-right:auto; }
+  .entry-btn-add { padding:8px 20px; border-radius:8px; border:none; cursor:pointer; font-size:13px; font-weight:700; font-family:inherit; background:#38a169; color:#fff; transition:all 0.2s; }
+  .entry-btn-add:hover { background:#2d7a5a; transform:translateY(-1px); }
+  .entry-btn-save-all { padding:8px 20px; border-radius:8px; border:none; cursor:pointer; font-size:13px; font-weight:700; font-family:inherit; background:#3182ce; color:#fff; transition:all 0.2s; }
+  .entry-btn-save-all:hover { background:#2563a8; transform:translateY(-1px); }
+  .entry-btn-clear { padding:8px 16px; border-radius:8px; border:1px solid #e2e8f0; cursor:pointer; font-size:13px; font-weight:600; font-family:inherit; background:#fff; color:#e53e3e; transition:all 0.2s; }
+  .entry-btn-clear:hover { background:#fff5f5; border-color:#e53e3e; }
+
+  .excel-wrapper { background:#fff; border-radius:12px; box-shadow:0 1px 4px rgba(0,0,0,0.08); overflow:hidden; border:2px solid #c8d0dc; }
+  .excel-scroll { overflow-x:auto; }
+  .excel-table { border-collapse:collapse; min-width:1300px; width:100%; font-size:13px; }
+  .excel-table thead tr { background:#2d3a52; position:sticky; top:0; z-index:10; }
+  .excel-table thead th { padding:11px 10px; text-align:center; font-weight:700; color:#fff; border-left:2px solid #4a5a78; white-space:nowrap; font-size:12px; letter-spacing:0.3px; }
+  .excel-table thead th:last-child { border-left:none; }
+  .excel-table thead th.col-num { width:44px; background:#e94560; border-left:none; }
+  .excel-table thead th.col-employee { background:#0f3460; }
+  .excel-table thead th.col-name { background:#1a3a5c; }
+  .excel-table thead th.col-phone { background:#2c4a6e; }
+  .excel-table thead th.col-date { background:#3a3a5c; }
+  .excel-table thead th.col-type { background:#6b46c1; }
+  .excel-table thead th.col-city { background:#2d5a4a; }
+  .excel-table thead th.col-source { background:#1a6b4a; }
+  .excel-table thead th.col-contact2 { background:#1a5e7a; }
+  .excel-table thead th.col-req { background:#b7421a; }
+  .excel-table thead th.col-days { background:#7a5a1a; }
+  .excel-table thead th.col-details { background:#374a1e; }
+  .excel-table thead th.col-del { background:#2d3a52; width:36px; }
+  .excel-table tbody tr { border-bottom:2px solid #c8d0dc; transition:background 0.1s; }
+  .excel-table tbody tr:nth-child(even) { background:#f5f7fb; }
+  .excel-table tbody tr:nth-child(odd) { background:#fff; }
+  .excel-table tbody tr:hover { background:#e8f0fe !important; }
+  .excel-table tbody tr.row-saved { background:#eafaf1 !important; }
+  .excel-table tbody tr.row-saved:hover { background:#d5f5e3 !important; }
+  .excel-table tbody tr.row-error td { background:#fff5f5 !important; }
+  .excel-table tbody td { padding:4px 4px; vertical-align:top; border-left:2px solid #c8d0dc; border-bottom:1px solid #dde3ec; }
+  .excel-table tbody td:last-child { border-left:none; vertical-align:middle; }
+  .excel-table tbody td.cell-num { border-left:none; text-align:center; color:#8a96a8; font-weight:700; font-size:11px; background:#f0f3f8; border-left:none; vertical-align:middle; padding-top:8px; }
+
+  .excel-input { width:100%; padding:6px 8px; border:1px solid transparent; border-radius:4px; font-size:12px; font-family:inherit; background:transparent; outline:none; color:#1a1a2e; transition:all 0.15s; direction:rtl; }
+  .excel-input:focus { border-color:#e94560; background:#fff; box-shadow:0 0 0 3px rgba(233,69,96,0.12); border-radius:4px; }
+  .excel-select { width:100%; padding:5px 6px; border:1px solid transparent; border-radius:4px; font-size:12px; font-family:inherit; background:transparent; outline:none; color:#1a1a2e; cursor:pointer; transition:all 0.15s; direction:rtl; }
+  .excel-select:focus { border-color:#e94560; background:#fff; box-shadow:0 0 0 3px rgba(233,69,96,0.12); }
+  .excel-textarea { width:100%; padding:6px 8px; border:1px solid #d0d7e2; border-radius:4px; font-size:12px; font-family:inherit; background:#fafbfc; outline:none; color:#1a1a2e; resize:vertical; min-height:56px; max-height:140px; transition:border-color 0.15s, box-shadow 0.15s; direction:rtl; overflow-y:auto; line-height:1.5; }
+  .excel-textarea:focus { border-color:#e94560; background:#fff; box-shadow:0 0 0 3px rgba(233,69,96,0.12); }
+  .excel-textarea:hover { border-color:#a0aec0; }
+
+  .cell-num { text-align:center; font-weight:700; color:#a0aec0; font-size:11px; padding:0 4px; }
+  .cell-status { text-align:center; }
+  .status-dot { width:10px; height:10px; border-radius:50%; display:inline-block; }
+  .status-dot.saved { background:#38a169; }
+  .status-dot.unsaved { background:#e53e3e; }
+  .status-dot.empty { background:#cbd5e0; }
+  .row-del-btn { padding:3px 7px; border:none; background:none; cursor:pointer; font-size:14px; color:#e53e3e; opacity:0.45; transition:opacity 0.15s; line-height:1; }
+  .row-del-btn:hover { opacity:1; }
+  .entry-footer { padding:12px 20px; background:#f0f3f8; border-top:2px solid #c8d0dc; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .entry-footer-info { font-size:12px; color:#596070; }
+  .entry-save-notice { font-size:12px; color:#38a169; font-weight:700; display:none; background:#eafaf1; padding:4px 10px; border-radius:6px; border:1px solid #38a169; }
+  .entry-save-notice.show { display:inline; }
+
+
+  /* ===== SALES TABS ===== */
+  .s-toolbar { background:#fff; border-radius:12px; padding:14px 20px; box-shadow:0 1px 4px rgba(0,0,0,0.08); margin-bottom:14px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .s-label { font-size:14px; font-weight:700; color:#1a1a2e; }
+  .s-select { padding:7px 12px; border:2px solid #e2e8f0; border-radius:8px; font-size:13px; font-family:inherit; outline:none; color:#1a1a2e; background:#f7fafc; cursor:pointer; }
+  .s-select:focus { border-color:#e94560; }
+  .s-btn { padding:8px 18px; border-radius:8px; border:none; cursor:pointer; font-size:13px; font-weight:700; font-family:inherit; transition:all 0.2s; }
+  .s-btn-primary { background:#e94560; color:#fff; }
+  .s-btn-primary:hover { background:#c73652; transform:translateY(-1px); }
+  .s-btn-green { background:#38a169; color:#fff; }
+  .s-btn-green:hover { background:#2d7a5a; transform:translateY(-1px); }
+  .s-btn-blue { background:#3182ce; color:#fff; }
+  .s-btn-blue:hover { background:#2563a8; transform:translateY(-1px); }
+  .s-btn-outline { background:#fff; color:#e94560; border:2px solid #e94560; }
+  .s-btn-outline:hover { background:#fff5f7; }
+  .s-spacer { flex:1; }
+
+  /* KPI cards row */
+  .s-kpi-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:16px; }
+  .s-kpi { background:#fff; border-radius:10px; padding:10px 14px; box-shadow:0 1px 4px rgba(0,0,0,0.08); border-right:4px solid #e94560; }
+  .s-kpi.green { border-right-color:#38a169; }
+  .s-kpi.blue { border-right-color:#3182ce; }
+  .s-kpi.purple { border-right-color:#6b46c1; }
+  .s-kpi.orange { border-right-color:#dd6b20; }
+  .s-kpi-val { font-size:18px; font-weight:800; color:#1a1a2e; line-height:1.1; }
+  .s-kpi-lbl { font-size:10px; color:#718096; font-weight:600; margin-top:3px; }
+
+  /* Calendar */
+  .s-calendar-wrap { background:#fff; border-radius:12px; padding:20px; box-shadow:0 1px 4px rgba(0,0,0,0.08); margin-bottom:16px; }
+  .s-cal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+  .s-cal-title { font-size:16px; font-weight:800; color:#1a1a2e; }
+  .s-cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+  .s-cal-day-header { text-align:center; font-size:11px; font-weight:700; color:#718096; padding:6px 0; }
+  .s-cal-cell { min-height:44px; border-radius:5px; padding:3px 4px; font-size:10px; position:relative; border:1px solid #edf0f3; background:#fafbfc; transition:all 0.15s; }
+  .s-cal-cell.booked-men { background:#bfdbfe; border-color:#3b82f6; border-width:2px; }
+  .s-cal-cell.booked-women { background:#fbcfe8; border-color:#ec4899; border-width:2px; }
+  .s-cal-cell.booked-both { background:#d8b4fe; border-color:#9333ea; border-width:2px; }
+  .s-cal-cell.today { outline:2px solid #e94560; outline-offset:-2px; }
+  .s-cal-cell.empty { background:transparent; border-color:transparent; }
+  .s-cal-num { font-weight:700; color:#374151; font-size:11px; }
+  .s-cal-booking { font-size:8.5px; margin-top:2px; line-height:1.25; }
+  .s-cal-booking .bname { color:#1e40af; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:block; }
+  .s-cal-booking .bamt { color:#047857; font-weight:700; }
+  .s-cal-booking.women .bname { color:#9d174d; }
+  .s-cal-legend { display:flex; gap:12px; font-size:11px; }
+  .s-cal-legend span { display:flex; align-items:center; gap:4px; }
+
+  /* Print styles moved to main @media print block above */
+
+  /* Charts grid */
+  .s-charts-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin-bottom:16px; }
+  .s-chart-card { background:#fff; border-radius:12px; padding:18px; box-shadow:0 1px 4px rgba(0,0,0,0.08); }
+  .s-chart-card.full { grid-column:1/-1; }
+  .s-chart-card.half2 { grid-column:span 2; }
+  .s-chart-title { font-size:14px; font-weight:700; color:#1a1a2e; margin-bottom:14px; }
+  .s-chart-canvas { width:100%; }
+
+  /* Compare */
+  .s-compare-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px; }
+  .s-compare-panel { background:#fff; border-radius:12px; padding:18px; box-shadow:0 1px 4px rgba(0,0,0,0.08); }
+  .s-compare-title { font-size:14px; font-weight:700; color:#1a1a2e; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+  .s-compare-badge { padding:2px 10px; border-radius:20px; font-size:12px; font-weight:700; }
+  .badge-a { background:#dbeafe; color:#1e40af; }
+  .badge-b { background:#fce7f3; color:#9d174d; }
+  .s-compare-kpi-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .s-cmp-kpi { background:#f7fafc; border-radius:8px; padding:10px 12px; }
+  .s-cmp-kpi-val { font-size:20px; font-weight:800; color:#1a1a2e; }
+  .s-cmp-kpi-lbl { font-size:10px; color:#718096; margin-top:2px; }
+  .s-cmp-winner { font-size:11px; font-weight:700; padding:2px 7px; border-radius:4px; }
+  .win-a { background:#dbeafe; color:#1e40af; }
+  .win-b { background:#fce7f3; color:#9d174d; }
+  .win-tie { background:#f0fdf4; color:#166534; }
+  .pct-badge { font-size:12px; font-weight:800; padding:3px 8px; border-radius:6px; display:inline-block; }
+  .pct-up { background:#dcfce7; color:#166534; }
+  .pct-dn { background:#fee2e2; color:#991b1b; }
+  .pct-eq { background:#f1f5f9; color:#475569; }
+  .s-compare-chart-wrap { background:#fff; border-radius:12px; padding:18px; box-shadow:0 1px 4px rgba(0,0,0,0.08); margin-bottom:14px; }
+
+  @media (max-width:900px) { .s-charts-grid { grid-template-columns:1fr 1fr; } .s-compare-grid { grid-template-columns:1fr; } }
 
   .actions-cell { display: flex; gap: 6px; }
   .icon-btn { padding: 4px 8px; border: 1px solid #e2e8f0; border-radius: 6px; background: #f7fafc; cursor: pointer; font-size: 12px; font-family: inherit; transition: all 0.15s; }
@@ -153,6 +339,74 @@
 <body>
 
 <!-- HEADER -->
+<!-- ========== PIN LOGIN SCREEN ========== -->
+<div id="pin-overlay" style="position:fixed;inset:0;background:linear-gradient(135deg,#0f3460 0%,#1a1a2e 60%,#16213e 100%);display:flex;align-items:center;justify-content:center;z-index:9999;">
+  <div style="background:#fff;border-radius:20px;padding:40px 36px;width:340px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+    <div style="font-size:42px;margin-bottom:8px;">🏠</div>
+    <div style="font-size:20px;font-weight:800;color:#1a1a2e;margin-bottom:4px;">سمو</div>
+    <div style="font-size:12px;color:#718096;margin-bottom:28px;">أدخل رمز الدخول PIN</div>
+    <!-- Role selector -->
+    <div style="display:flex;gap:8px;margin-bottom:20px;">
+      <button id="pin-role-admin" onclick="pinSelectRole('admin')" style="flex:1;padding:10px;border:2px solid #e94560;border-radius:10px;background:#e94560;color:#fff;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;">🔐 مدير</button>
+      <button id="pin-role-staff" onclick="pinSelectRole('staff')" style="flex:1;padding:10px;border:2px solid #e2e8f0;border-radius:10px;background:#f7fafc;color:#4a5568;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;">👤 موظف</button>
+    </div>
+    <!-- PIN dots -->
+    <div style="display:flex;justify-content:center;gap:12px;margin-bottom:24px;" id="pin-dots">
+      <div class="pin-dot"></div><div class="pin-dot"></div>
+      <div class="pin-dot"></div><div class="pin-dot"></div>
+    </div>
+    <!-- Error message -->
+    <div id="pin-error" style="color:#e53e3e;font-size:12px;font-weight:600;min-height:18px;margin-bottom:10px;"></div>
+    <!-- Numpad -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+      <button class="pin-btn" onclick="pinPress('1')">1</button>
+      <button class="pin-btn" onclick="pinPress('2')">2</button>
+      <button class="pin-btn" onclick="pinPress('3')">3</button>
+      <button class="pin-btn" onclick="pinPress('4')">4</button>
+      <button class="pin-btn" onclick="pinPress('5')">5</button>
+      <button class="pin-btn" onclick="pinPress('6')">6</button>
+      <button class="pin-btn" onclick="pinPress('7')">7</button>
+      <button class="pin-btn" onclick="pinPress('8')">8</button>
+      <button class="pin-btn" onclick="pinPress('9')">9</button>
+      <button class="pin-btn" onclick="pinClear()" style="font-size:18px;color:#e53e3e;">⌫</button>
+      <button class="pin-btn" onclick="pinPress('0')">0</button>
+      <button class="pin-btn" onclick="pinSubmit()" style="background:#e94560;color:#fff;font-weight:800;">✓</button>
+    </div>
+    <!-- Role label -->
+    <div id="pin-role-label" style="margin-top:16px;font-size:11px;color:#a0aec0;"></div>
+    <button onclick="pinShowChangeModal()" style="margin-top:10px;background:none;border:none;color:#a0aec0;font-size:11px;cursor:pointer;text-decoration:underline;font-family:inherit;">⚙️ تغيير رمز الدخول</button>
+  </div>
+</div>
+
+<!-- PIN CHANGE MODAL -->
+<div id="pin-change-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:10000;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:16px;padding:28px 32px;width:380px;max-width:95vw;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.4);direction:rtl;">
+    <div style="font-size:18px;font-weight:800;color:#1a1a2e;margin-bottom:6px;">⚙️ تغيير رمز الدخول PIN</div>
+    <div style="font-size:12px;color:#718096;margin-bottom:20px;">أدخل الرمز الحالي ثم الرمز الجديد</div>
+    <div style="display:flex;gap:8px;margin-bottom:16px;">
+      <button id="pcm-role-admin" onclick="pcmSelectRole('admin')" style="flex:1;padding:8px;border:2px solid #e94560;border-radius:8px;background:#e94560;color:#fff;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;">🔐 مدير</button>
+      <button id="pcm-role-staff" onclick="pcmSelectRole('staff')" style="flex:1;padding:8px;border:2px solid #e2e8f0;border-radius:8px;background:#f7fafc;color:#4a5568;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;">👤 موظف</button>
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:12px;color:#718096;display:block;margin-bottom:4px;text-align:right;">الرمز الحالي</label>
+      <input id="pcm-current" type="password" maxlength="4" placeholder="●●●●" style="width:100%;padding:10px;border:2px solid #e2e8f0;border-radius:8px;font-size:18px;text-align:center;letter-spacing:8px;box-sizing:border-box;font-family:inherit;">
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:12px;color:#718096;display:block;margin-bottom:4px;text-align:right;">الرمز الجديد</label>
+      <input id="pcm-new" type="password" maxlength="4" placeholder="●●●●" style="width:100%;padding:10px;border:2px solid #e2e8f0;border-radius:8px;font-size:18px;text-align:center;letter-spacing:8px;box-sizing:border-box;font-family:inherit;">
+    </div>
+    <div style="margin-bottom:16px;">
+      <label style="font-size:12px;color:#718096;display:block;margin-bottom:4px;text-align:right;">تأكيد الرمز الجديد</label>
+      <input id="pcm-confirm" type="password" maxlength="4" placeholder="●●●●" style="width:100%;padding:10px;border:2px solid #e2e8f0;border-radius:8px;font-size:18px;text-align:center;letter-spacing:8px;box-sizing:border-box;font-family:inherit;">
+    </div>
+    <div id="pcm-error" style="color:#e53e3e;font-size:12px;font-weight:600;min-height:18px;margin-bottom:12px;"></div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="pcmSave()" style="flex:1;padding:10px;background:#e94560;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">💾 تغيير الرمز</button>
+      <button onclick="pinHideChangeModal()" style="flex:1;padding:10px;background:#f7fafc;color:#4a5568;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">إلغاء</button>
+    </div>
+  </div>
+</div>
+
 <div class="header">
   <div class="header-logo">
     <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABkAAAAZACAYAAAAhDI6nAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAKlwSURBVHhe7N0LyGVXeTjuf2YyuWuMifVSjbZWrbfa1l/VemlttRVb7Q21LV5KrVSLFS1WVCoqimJIiESUSCQiBkUUUSRBDCIGkRQJEQkSDCFICCEhhCGEIYRQ/L/v3u+xx69nZr5v5jvn7L3W88BLMjPnsta7Lmfvvfbl/wMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAe+L7v+7/a0xTNz2R2TwAAAABJRU5ErkJggg==" style="height:64px;width:auto;border-radius:10px;" alt="Logo">
@@ -169,15 +423,21 @@
     <button class="btn btn-secondary" onclick="document.getElementById('import-input').click()" style="background:rgba(49,130,206,0.85);border-color:rgba(49,130,206,0.5);color:#fff;">📥 استيراد CSV</button>
     <input type="file" id="import-input" accept=".csv" style="display:none" onchange="importCSV(this)">
     <button class="btn btn-primary btn-add" onclick="openModal()">+ إضافة سجل جديد</button>
+    <button onclick="pinLogout()" style="padding:6px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.1);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;" title="تسجيل الخروج">🔒 خروج</button>
     <button class="btn btn-print" onclick="showTab('report')">📊 التقرير والطباعة</button>
   </div>
 </div>
 
 <!-- NAV TABS -->
 <div class="nav-tabs">
-  <div class="tab active" onclick="showTab('dashboard')">لوحة البيانات</div>
-  <div class="tab" onclick="showTab('records')">سجلات العملاء</div>
-  <div class="tab" onclick="showTab('report')">التقرير والطباعة</div>
+  <div class="tab active" onclick="showTab('dashboard')" data-roles="admin">لوحة البيانات</div>
+  <div class="tab" onclick="showTab('report')" data-roles="admin">التقرير والطباعة</div>
+  <div class="tab" onclick="showTab('entry')" data-roles="staff,admin">📝 تواصل - الإدخال</div>
+  <div class="tab" onclick="showTab('sales-entry')" data-roles="staff,admin">💰 مبيعات - الإدخال</div>
+  <div class="tab" onclick="showTab('records')" data-roles="staff,admin">📋 سجلات التواصل</div>
+  <div class="tab" onclick="showTab('sales-records')" data-roles="staff,admin">📋 سجل المبيعات</div>
+  <div class="tab" onclick="showTab('sales-report')" data-roles="admin">📊 تقرير المبيعات</div>
+  <div class="tab" onclick="showTab('sales-compare')" data-roles="admin">⚖️ مقارنة الفترات</div>
 </div>
 
 <!-- DASHBOARD TAB -->
@@ -235,7 +495,7 @@
 <div class="content" id="tab-records" style="display:none">
   <div class="table-section">
     <div class="table-header">
-      <div class="table-title">سجلات العملاء (<span id="count-display">0</span>)</div>
+      <div class="table-title">سجلات التواصل (<span id="count-display">0</span>)</div>
       <div class="table-controls">
         <input class="search-box" type="text" id="search-input" placeholder="بحث باسم أو رقم..." oninput="filterAndRender()">
         <select class="filter-sel" id="filter-source" onchange="filterAndRender()">
@@ -406,6 +666,298 @@
       <div id="rec-content" style="font-size:13px; color:#4a5568; line-height:1.9;">جاري تحليل البيانات...</div>
     </div>
     <div style="text-align:center; margin-top:12px; color:#a0aec0; font-size:12px;" id="report-count"></div>
+  </div>
+</div>
+
+<!-- ENTRY TAB - إضافة السجلات -->
+<div class="content" id="tab-entry" style="display:none">
+  <!-- Toolbar -->
+  <div class="entry-toolbar">
+    <span class="entry-date-label">📅 تاريخ اليوم:</span>
+    <input type="date" class="entry-date-input" id="entry-date" onchange="entryDateChanged()">
+    <button class="entry-btn-add" onclick="entryAddRow()">+ إضافة صف</button>
+    <button class="entry-btn-save-all" onclick="entrySaveAll()">💾 حفظ الكل</button>
+    <button class="entry-btn-clear" onclick="entryClearSaved()">🗑️ مسح المحفوظة</button>
+    <span class="entry-row-count" id="entry-row-count">0 صفوف</span>
+    <span class="entry-save-notice" id="entry-save-notice">✅ تم الحفظ التلقائي</span>
+  </div>
+  <!-- Excel grid -->
+  <div class="excel-wrapper">
+    <div class="excel-scroll">
+      <table class="excel-table" id="excel-table">
+        <thead>
+          <tr>
+            <th class="col-num" style="min-width:44px">الرقم</th>
+            <th class="col-employee" style="min-width:110px">الموظف</th>
+            <th class="col-name" style="min-width:130px">اسم العميل</th>
+            <th class="col-phone" style="min-width:120px">رقم الجوال</th>
+            <th class="col-date" style="min-width:105px">التاريخ</th>
+            <th class="col-type" style="min-width:90px">نوع الطلب</th>
+            <th class="col-city" style="min-width:90px">المدينة</th>
+            <th class="col-source" style="min-width:120px">التواصل عبر موقع</th>
+            <th class="col-contact2" style="min-width:90px">وصل / واتساب</th>
+            <th class="col-req" style="min-width:160px">طلبات العملاء</th>
+            <th class="col-days" style="min-width:75px">أيام الحجز</th>
+            <th class="col-details" style="min-width:220px">تفاصيل التواصل</th>
+            <th class="col-del" style="min-width:36px"></th>
+          </tr>
+        </thead>
+        <tbody id="excel-body"></tbody>
+      </table>
+    </div>
+    <div class="entry-footer">
+      <span class="entry-footer-info">💡 اضغط Tab للانتقال بين الخلايا — الحفظ تلقائي عند الانتقال من الصف</span>
+      <span class="entry-footer-info" id="entry-footer-saved">المحفوظة: <b id="entry-saved-count">0</b> سجل</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SALES ENTRY TAB ===== -->
+<div class="content" id="tab-sales-entry" style="display:none">
+  <div class="s-toolbar">
+    <span class="s-label">📅 التاريخ:</span>
+    <input type="date" class="entry-date-input" id="se-date">
+    <button class="s-btn s-btn-green" onclick="seAddRow()">+ إضافة صف</button>
+    <button class="s-btn s-btn-blue" onclick="seSaveAll()">💾 حفظ الكل</button>
+    <button class="s-btn s-btn-outline" onclick="seClearSaved()">🗑️ مسح المحفوظة</button>
+    <span class="s-spacer"></span>
+    <span id="se-count" style="font-size:13px;color:#718096;"></span>
+    <span id="se-notice" style="font-size:12px;color:#38a169;font-weight:700;display:none;background:#eafaf1;padding:4px 10px;border-radius:6px;">✅ تم الحفظ</span>
+  </div>
+  <div class="excel-wrapper">
+    <div class="excel-scroll">
+      <table class="excel-table" id="se-table">
+        <thead><tr>
+          <th class="col-num" style="min-width:44px">الرقم</th>
+          <th style="min-width:140px;background:#1a3a5c">اسم العميل</th>
+          <th style="min-width:125px;background:#2c4a6e">رقم الجوال</th>
+          <th style="min-width:105px;background:#3a3a5c">التاريخ</th>
+          <th style="min-width:115px;background:#6b46c1">القسم</th>
+          <th style="min-width:85px;background:#7a5a1a">مدة الحجز</th>
+          <th style="min-width:110px;background:#1a6b4a">المصدر</th>
+          <th style="min-width:100px;background:#0f4a2a">إجمالي المبلغ</th>
+          <th style="min-width:85px;background:#374a1e">حالة الحجز</th>
+          <th style="min-width:160px;background:#374a1e">ملاحظات</th>
+          <th class="col-del" style="min-width:36px;background:#2d3a52"></th>
+        </tr></thead>
+        <tbody id="se-body"></tbody>
+      </table>
+    </div>
+    <div class="entry-footer">
+      <span class="entry-footer-info">💡 Tab للانتقال — الحفظ تلقائي عند إدخال البيانات</span>
+      <span class="entry-footer-info">المحفوظة: <b id="se-saved-count">0</b> حجز | الإجمالي: <b id="se-total">0</b> ر.س</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SALES REPORT TAB ===== -->
+<div class="content" id="tab-sales-report" style="display:none">
+  <div class="s-toolbar" style="padding:10px 16px;gap:10px;">
+    <span class="s-label" style="font-size:13px;">📊 تقرير المبيعات</span>
+    <select class="s-select" id="sr-filter-type" onchange="salesReportInit()" style="padding:5px 10px;font-size:12px;">
+      <option value="month">شهري</option><option value="range">فترة مخصصة</option>
+    </select>
+    <select class="s-select" id="sr-month" onchange="salesReportInit()" style="padding:5px 10px;font-size:12px;">
+      <option value="5">مايو 2026</option><option value="6">يونيو 2026</option>
+      <option value="7" selected>يوليو 2026</option><option value="8">أغسطس 2026</option>
+    </select>
+    <span id="sr-range-wrap" style="display:none;gap:8px;align-items:center;">
+      <input type="date" class="entry-date-input" id="sr-from" style="border-width:1px;padding:5px 10px;font-size:12px;" onchange="salesReportInit()">
+      <span style="font-size:12px;color:#718096;">إلى</span>
+      <input type="date" class="entry-date-input" id="sr-to" style="border-width:1px;padding:5px 10px;font-size:12px;" onchange="salesReportInit()">
+    </span>
+    <span class="s-spacer"></span>
+    <span id="sr-summary-label" style="font-size:12px;color:#718096;font-weight:600;"></span>
+    <button class="s-btn s-btn-primary" onclick="srPrint()" style="padding:6px 16px;font-size:12px;">🖨️ طباعة</button>
+  </div>
+
+  <!-- KPI Row -->
+  <div id="sr-kpis" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px;"></div>
+
+  <!-- ROW 1: Calendar + 2 bar charts stacked -->
+  <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:10px;margin-bottom:10px;">
+    <div class="s-calendar-wrap" style="padding:10px;margin:0;">
+      <div class="s-cal-header" style="margin-bottom:8px;">
+        <span class="s-cal-title" id="sr-cal-title" style="font-size:13px;font-weight:700;">كالندر الحجوزات</span>
+        <div style="display:flex;gap:8px;font-size:10px;">
+          <span style="display:flex;align-items:center;gap:3px;"><i style="background:#dbeafe;border:1px solid #93c5fd;width:10px;height:10px;border-radius:2px;display:inline-block;"></i>رجال</span>
+          <span style="display:flex;align-items:center;gap:3px;"><i style="background:#fce7f3;border:1px solid #f9a8d4;width:10px;height:10px;border-radius:2px;display:inline-block;"></i>حريم</span>
+          <span style="display:flex;align-items:center;gap:3px;"><i style="background:#ede9fe;border:1px solid #c4b5fd;width:10px;height:10px;border-radius:2px;display:inline-block;"></i>قسمين</span>
+        </div>
+      </div>
+      <div id="sr-calendar" style="font-size:9.5px;"></div>
+    </div>
+    <div style="display:grid;grid-template-rows:1fr 1fr;gap:10px;">
+      <div class="s-chart-card" style="padding:10px;">
+        <div class="s-chart-title" style="font-size:11px;margin-bottom:6px;">📅 الحجوزات اليومية</div>
+        <canvas id="sr-bar-chart" height="95"></canvas>
+      </div>
+      <div class="s-chart-card" style="padding:10px;">
+        <div class="s-chart-title" style="font-size:11px;margin-bottom:6px;">💰 المبيعات اليومية</div>
+        <canvas id="sr-daily-chart" height="95"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 2: All pie/doughnut charts side by side -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+    <div class="s-chart-card" style="padding:10px;display:flex;flex-direction:column;">
+      <div class="s-chart-title" style="font-size:11px;margin-bottom:6px;">🏠 توزيع الأقسام</div>
+      <div style="display:flex;align-items:center;justify-content:center;flex:1;max-height:165px;">
+        <canvas id="sr-section-pie" height="155"></canvas>
+      </div>
+    </div>
+    <div class="s-chart-card" style="padding:10px;display:flex;flex-direction:column;">
+      <div class="s-chart-title" style="font-size:11px;margin-bottom:6px;">📣 مصادر المبيعات</div>
+      <div style="display:flex;align-items:center;justify-content:center;flex:1;max-height:165px;">
+        <canvas id="sr-source-pie" height="155"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SALES COMPARE TAB ===== -->
+<div class="content" id="tab-sales-compare" style="display:none">
+  <div class="s-toolbar" style="padding:10px 16px;gap:8px;flex-wrap:wrap;">
+    <span class="s-label" style="font-size:13px;">⚖️ مقارنة الفترات</span>
+    <span class="s-compare-badge badge-a">أ</span>
+    <select class="s-select" id="cmp-a-type" onchange="salesCompareInit()" style="padding:5px 8px;font-size:12px;">
+      <option value="month">شهر</option><option value="range">فترة</option>
+    </select>
+    <select class="s-select" id="cmp-a-month" onchange="salesCompareInit()" style="padding:5px 8px;font-size:12px;">
+      <option value="5">مايو</option><option value="6">يونيو</option>
+      <option value="7" selected>يوليو</option><option value="8">أغسطس</option>
+    </select>
+    <span id="cmp-a-range" style="display:none;gap:6px;align-items:center;">
+      <input type="date" class="entry-date-input" id="cmp-a-from" style="border-width:1px;padding:4px 8px;font-size:11px;" onchange="salesCompareInit()">
+      <span style="font-size:11px;">→</span>
+      <input type="date" class="entry-date-input" id="cmp-a-to" style="border-width:1px;padding:4px 8px;font-size:11px;" onchange="salesCompareInit()">
+    </span>
+    <span style="color:#cbd5e0;font-size:16px;">|</span>
+    <span class="s-compare-badge badge-b">ب</span>
+    <select class="s-select" id="cmp-b-type" onchange="salesCompareInit()" style="padding:5px 8px;font-size:12px;">
+      <option value="month">شهر</option><option value="range">فترة</option>
+    </select>
+    <select class="s-select" id="cmp-b-month" onchange="salesCompareInit()" style="padding:5px 8px;font-size:12px;">
+      <option value="5">مايو</option><option value="6" selected>يونيو</option>
+      <option value="7">يوليو</option><option value="8">أغسطس</option>
+    </select>
+    <span id="cmp-b-range" style="display:none;gap:6px;align-items:center;">
+      <input type="date" class="entry-date-input" id="cmp-b-from" style="border-width:1px;padding:4px 8px;font-size:11px;" onchange="salesCompareInit()">
+      <span style="font-size:11px;">→</span>
+      <input type="date" class="entry-date-input" id="cmp-b-to" style="border-width:1px;padding:4px 8px;font-size:11px;" onchange="salesCompareInit()">
+    </span>
+    <span class="s-spacer"></span>
+    <button class="s-btn s-btn-primary" onclick="cmpPrint()" style="padding:6px 14px;font-size:12px;">🖨️ طباعة</button>
+  </div>
+
+  <!-- Sub-tabs -->
+  <div style="display:flex;gap:0;margin-bottom:10px;background:#fff;border-radius:10px;padding:4px;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
+    <button id="cmp-tab-sales" onclick="cmpSwitchSection('sales')" style="flex:1;padding:7px;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit;background:#e94560;color:#fff;">💰 المبيعات والحجوزات</button>
+    <button id="cmp-tab-inquiries" onclick="cmpSwitchSection('inquiries')" style="flex:1;padding:7px;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit;background:transparent;color:#718096;">📞 الاستفسارات والعملاء</button>
+  </div>
+
+  <!-- SALES section -->
+  <div id="cmp-section-sales">
+    <div class="s-compare-grid" id="cmp-panels" style="gap:10px;margin-bottom:10px;"></div>
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin-bottom:10px;">
+      <div class="s-compare-chart-wrap" style="padding:10px;margin:0;">
+        <div class="s-chart-title" style="font-size:11px;margin-bottom:6px;">📊 مقارنة الإجمالي والحجوزات</div>
+        <canvas id="cmp-bar-chart" height="100"></canvas>
+      </div>
+      <div class="s-compare-chart-wrap" style="padding:10px;margin:0;">
+        <div class="s-chart-title" style="font-size:11px;margin-bottom:6px;">🏠 الأقسام</div>
+        <canvas id="cmp-section-chart" height="100"></canvas>
+      </div>
+      <div class="s-compare-chart-wrap" style="padding:10px;margin:0;">
+        <div class="s-chart-title" style="font-size:11px;margin-bottom:6px;">📣 المصادر</div>
+        <canvas id="cmp-source-chart" height="100"></canvas>
+      </div>
+    </div>
+    <div class="s-compare-chart-wrap" style="padding:10px;margin:0;">
+      <div class="s-chart-title" style="font-size:11px;margin-bottom:6px;">📅 أيام الأسبوع</div>
+      <canvas id="cmp-days-chart" height="70"></canvas>
+    </div>
+  </div>
+
+  <!-- INQUIRIES section -->
+  <div id="cmp-section-inquiries" style="display:none;">
+    <div class="s-compare-grid" id="cmp-inq-panels" style="gap:10px;margin-bottom:10px;"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
+      <div class="s-compare-chart-wrap" style="padding:10px;margin:0;">
+        <div class="s-chart-title" style="font-size:11px;margin-bottom:6px;">📊 الاستفسارات والحجوزات</div>
+        <canvas id="cmp-inq-bar" height="120"></canvas>
+      </div>
+      <div class="s-compare-chart-wrap" style="padding:10px;margin:0;">
+        <div class="s-chart-title" style="font-size:11px;margin-bottom:6px;">📣 مصادر التواصل</div>
+        <canvas id="cmp-inq-source" height="120"></canvas>
+      </div>
+      <div class="s-compare-chart-wrap" style="padding:10px;margin:0;">
+        <div class="s-chart-title" style="font-size:11px;margin-bottom:6px;">📞 نوع التواصل</div>
+        <canvas id="cmp-inq-contact" height="120"></canvas>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="s-compare-chart-wrap" style="padding:10px;margin:0;">
+        <div class="s-chart-title" style="font-size:11px;margin-bottom:6px;">🏙️ المدن</div>
+        <canvas id="cmp-inq-city" height="100"></canvas>
+      </div>
+      <div class="s-compare-chart-wrap" style="padding:10px;margin:0;">
+        <div class="s-chart-title" style="font-size:11px;margin-bottom:6px;">📋 نوع الطلب</div>
+        <canvas id="cmp-inq-type" height="100"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SALES RECORDS TAB ========== -->
+<div class="content" id="tab-sales-records" style="display:none">
+  <div class="s-toolbar" style="padding:10px 16px;gap:10px;flex-wrap:wrap;">
+    <span class="s-label" style="font-size:13px;">📋 سجل المبيعات</span>
+    <select class="s-select" id="sr2-filter" onchange="salesRecordsInit()" style="padding:5px 10px;font-size:12px;">
+      <option value="all">جميع الشهور</option>
+      <option value="5">مايو 2026</option>
+      <option value="6">يونيو 2026</option>
+      <option value="7" selected>يوليو 2026</option>
+      <option value="8">أغسطس 2026</option>
+    </select>
+    <select class="s-select" id="sr2-section" onchange="salesRecordsInit()" style="padding:5px 10px;font-size:12px;">
+      <option value="all">جميع الأقسام</option>
+      <option value="قسم الرجال">قسم الرجال</option>
+      <option value="قسم الحريم">قسم الحريم</option>
+      <option value="قسمين">قسمين</option>
+    </select>
+    <select class="s-select" id="sr2-status" onchange="salesRecordsInit()" style="padding:5px 10px;font-size:12px;">
+      <option value="all">جميع الحالات</option>
+      <option value="مؤكد">مؤكد</option>
+      <option value="مؤقت">مؤقت</option>
+      <option value="ملغي">ملغي</option>
+    </select>
+    <span class="s-spacer"></span>
+    <span id="sr2-summary" style="font-size:12px;color:#718096;font-weight:700;"></span>
+  </div>
+  <!-- KPI strip -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;" id="sr2-kpis"></div>
+  <!-- Table -->
+  <div class="excel-wrapper">
+    <div class="excel-scroll">
+      <table class="excel-table" id="sr2-table" style="min-width:900px;">
+        <thead><tr>
+          <th class="col-num" style="min-width:44px">رقم</th>
+          <th style="min-width:140px;background:#1a3a5c">اسم العميل</th>
+          <th style="min-width:105px;background:#3a3a5c">التاريخ</th>
+          <th style="min-width:115px;background:#6b46c1">القسم</th>
+          <th style="min-width:85px;background:#7a5a1a">مدة الحجز</th>
+          <th style="min-width:110px;background:#1a6b4a">المصدر</th>
+          <th style="min-width:110px;background:#0f4a2a">إجمالي المبلغ</th>
+          <th style="min-width:85px;background:#374a1e">الحالة</th>
+          <th style="min-width:120px;background:#2c4a6e">رقم الجوال</th>
+          <th style="min-width:160px;background:#374a1e">ملاحظات</th>
+          <th style="min-width:80px;background:#2d3a52">إجراءات</th>
+        </tr></thead>
+        <tbody id="sr2-body"></tbody>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -1565,14 +2117,20 @@ async function deleteRecord(id) {
 
 // ==================== TABS ====================
 function showTab(name) {
-  ['dashboard','records','report'].forEach(t=>{
-    document.getElementById('tab-'+t).style.display = t===name?'block':'none';
+  ['dashboard','records','report','entry','sales-entry','sales-records','sales-report','sales-compare'].forEach(t=>{
+    const el = document.getElementById('tab-'+t);
+    if(el) el.style.display = t===name?'block':'none';
   });
-  document.querySelectorAll('.tab').forEach((el,i)=>{
-    el.classList.toggle('active', ['dashboard','records','report'][i]===name);
+  document.querySelectorAll('.tab[data-roles]').forEach(el=>{
+    el.classList.toggle('active', el.getAttribute('onclick')===`showTab('${name}')`);
   });
   if(name==='records') { filteredData=getApplied(); renderTable(); }
   if(name==='report') renderReport();
+  if(name==='entry') entryInit();
+  if(name==='sales-entry') salesEntryInit();
+  if(name==='sales-records') salesRecordsInit();
+  if(name==='sales-report') salesReportInit();
+  if(name==='sales-compare') salesCompareInit();
 }
 
 // ==================== REPORT ====================
@@ -2021,6 +2579,1056 @@ function exportExcel() {
   URL.revokeObjectURL(url);
 }
 
+// ==================== ENTRY TAB (Excel-like daily entry) ====================
+let entryRows = [];       // { id, fields, saved }
+let entryAutoSaveTimer = null;
+
+function entryInit() {
+  // Set today's date if not set
+  const inp = document.getElementById('entry-date');
+  if (!inp.value) {
+    const today = new Date();
+    inp.value = today.toISOString().split('T')[0];
+  }
+  // If no rows, add 5 empty rows to start
+  if (entryRows.length === 0) {
+    for (let i = 0; i < 5; i++) entryRows.push(entryNewRowObj());
+  }
+  entryRender();
+}
+
+function entryNewRowObj() {
+  return {
+    _eid: crypto.randomUUID(),
+    saved: false,
+    name: '', phone: '', city: 'الرياض',
+    source: 'Google Map', contact: 'اتصال', type: 'استفسار',
+    request: '', gender: '', occasion: '', days: '', details: '', employee: 'احمد ادريس'
+  };
+}
+
+function entryDateChanged() {
+  // Reset unsaved rows' date association (saved rows stay)
+  entryRender();
+}
+
+function entryAddRow() {
+  entryRows.push(entryNewRowObj());
+  entryRender();
+  // Scroll to last row and focus first cell
+  setTimeout(() => {
+    const body = document.getElementById('excel-body');
+    const lastRow = body.lastElementChild;
+    if (lastRow) {
+      lastRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      const firstInput = lastRow.querySelector('.excel-input,.excel-select,.excel-textarea');
+      if (firstInput) firstInput.focus();
+    }
+  }, 50);
+}
+
+function entryDeleteRow(eid) {
+  entryRows = entryRows.filter(r => r._eid !== eid);
+  entryRender();
+}
+
+function entryClearSaved() {
+  if (!confirm('هل تريد مسح الصفوف المحفوظة من الشبكة؟ (لن تُحذف من قاعدة البيانات)')) return;
+  entryRows = entryRows.filter(r => !r.saved);
+  if (entryRows.length === 0) {
+    for (let i = 0; i < 3; i++) entryRows.push(entryNewRowObj());
+  }
+  entryRender();
+}
+
+function entryGetField(eid, field) {
+  const r = entryRows.find(r => r._eid === eid);
+  return r ? r[field] : '';
+}
+
+async function entrySaveRow(r) {
+  const dateVal = document.getElementById('entry-date').value;
+  if (!dateVal) { showToast('⚠️ اختر التاريخ أولاً', 'warn'); return; }
+  if (!r.phone && !r.name) return;
+
+  const rec = {
+    id: r._eid,
+    name: r.name, phone: r.phone, city: r.city || 'الرياض',
+    source: r.source, contact: r.contact, type: r.type,
+    request: r.request, gender: r.gender, occasion: r.occasion,
+    days: r.days ? parseInt(r.days) : null,
+    details: r.details, employee: r.employee,
+    fullDate: dateVal,
+    day: parseInt(dateVal.split('-')[2]) || 0
+  };
+
+  // Check if already exists in data array
+  const existIdx = data.findIndex(x => x.id === r._eid);
+  if (existIdx > -1) {
+    data[existIdx] = rec;
+  } else {
+    data.push(rec);
+  }
+  await saveRecordDB(rec);
+
+  r.saved = true;
+
+  // Update row visuals without full re-render
+  const tr = document.querySelector(`tr[data-eid="${r._eid}"]`);
+  if (tr) {
+    tr.classList.add('row-saved');
+    // Make name+phone green
+    tr.querySelectorAll('[data-field="name"],[data-field="phone"]').forEach(el => {
+      el.style.color = '#1a6b4a';
+      el.style.fontWeight = '600';
+    });
+    // Green border on all cells
+    tr.querySelectorAll('td').forEach(td => td.style.borderBottomColor = '#b2dfcb');
+  }
+
+  // Show save notice
+  const notice = document.getElementById('entry-save-notice');
+  if (notice) {
+    notice.classList.add('show');
+    clearTimeout(notice._hideTimer);
+    notice._hideTimer = setTimeout(() => notice.classList.remove('show'), 2500);
+  }
+
+  entryUpdateCounts();
+  filteredData = [...data];
+  buildMetrics(data, 'metrics-row');
+}
+
+async function entrySaveAll() {
+  const unsaved = entryRows.filter(r => !r.saved && (r.name || r.phone));
+  if (unsaved.length === 0) { showToast('لا يوجد سجلات جديدة للحفظ', 'info'); return; }
+  const dateVal = document.getElementById('entry-date').value;
+  if (!dateVal) { showToast('⚠️ اختر التاريخ أولاً', 'warn'); return; }
+  showToast('جاري الحفظ...', 'info');
+  for (const r of unsaved) await entrySaveRow(r);
+  showToast('✅ تم حفظ ' + unsaved.length + ' سجل', 'success');
+  entryRender();
+}
+
+function entryUpdateCounts() {
+  const total = entryRows.length;
+  const saved = entryRows.filter(r => r.saved).length;
+  const countEl = document.getElementById('entry-row-count');
+  const savedEl = document.getElementById('entry-saved-count');
+  if (countEl) countEl.textContent = total + ' صفوف';
+  if (savedEl) savedEl.textContent = saved;
+}
+
+function entryRender() {
+  const body = document.getElementById('excel-body');
+  if (!body) return;
+  body.innerHTML = '';
+
+  const dateVal = document.getElementById('entry-date').value;
+
+  entryRows.forEach((r, idx) => {
+    const tr = document.createElement('tr');
+    tr.setAttribute('data-eid', r._eid);
+    if (r.saved) tr.classList.add('row-saved');
+
+    // Column order matching image: الرقم | الموظف | اسم العميل | رقم الجوال | التاريخ | نوع الطلب | المدينة | التواصل عبر موقع | وصل/واتساب | طلبات العملاء | تفاصيل التواصل | حذف
+    tr.innerHTML = `
+      <td class="cell-num">${idx + 1}</td>
+      <td><input class="excel-input" placeholder="اسم الموظف" value="${escH(r.employee)}" data-field="employee" data-eid="${r._eid}"></td>
+      <td><input class="excel-input" placeholder="اسم العميل" value="${escH(r.name)}" data-field="name" data-eid="${r._eid}" ${r.saved?'style="color:#1a6b4a;font-weight:600;"':''}></td>
+      <td><input class="excel-input" placeholder="05X XXX XXXX" value="${escH(r.phone)}" data-field="phone" data-eid="${r._eid}" ${r.saved?'style="color:#1a6b4a;font-weight:600;"':''}></td>
+      <td><input class="excel-input" type="date" value="${escH(dateVal)}" data-field="_date" data-eid="${r._eid}" style="direction:ltr;font-size:11px;" readonly tabindex="-1"></td>
+      <td><select class="excel-select" data-field="type" data-eid="${r._eid}" style="font-weight:600;">
+        ${['استفسار','حجز','شكوى'].map(v=>`<option value="${v}" ${r.type===v?'selected':''}>${v}</option>`).join('')}
+      </select></td>
+      <td><select class="excel-select" data-field="city" data-eid="${r._eid}">
+        ${['الرياض','جدة','الشرقية','أبها'].map(v=>`<option ${r.city===v?'selected':''}>${v}</option>`).join('')}
+      </select></td>
+      <td><select class="excel-select" data-field="source" data-eid="${r._eid}">
+        ${['Google Map','TikTok','Instagram','Snap chat','Google','FaceBook','YouTube','Unknown'].map(v=>`<option ${r.source===v?'selected':''}>${v}</option>`).join('')}
+      </select></td>
+      <td><select class="excel-select" data-field="contact" data-eid="${r._eid}">
+        ${['اتصال','واتساب'].map(v=>`<option ${r.contact===v?'selected':''}>${v}</option>`).join('')}
+      </select></td>
+      <td><textarea class="excel-textarea" placeholder="السعر / المساحة / ..." data-field="request" data-eid="${r._eid}" rows="2">${escH(r.request)}</textarea></td>
+      <td><input class="excel-input" placeholder="عدد الأيام" value="${escH(r.days)}" data-field="days" data-eid="${r._eid}" type="number" min="1" max="30" style="text-align:center;width:100%;"></td>
+      <td><textarea class="excel-textarea" placeholder="تفاصيل التواصل ..." data-field="details" data-eid="${r._eid}" rows="2">${escH(r.details)}</textarea></td>
+      <td style="text-align:center;"><button class="row-del-btn" onclick="entryDeleteRow('${r._eid}')" title="حذف الصف">✕</button></td>
+    `;
+
+    // Saved row: green tint on type cell
+    if (r.saved) {
+      const cells = tr.querySelectorAll('td');
+      cells.forEach(td => td.style.borderBottomColor = '#b2dfcb');
+    }
+
+    // Attach events
+    tr.querySelectorAll('.excel-input:not([readonly]),.excel-select,.excel-textarea').forEach(el => {
+      const field = el.dataset.field;
+      const eid = el.dataset.eid;
+
+      el.addEventListener('input', () => {
+        entrySetFieldDirect(eid, field, el.value);
+      });
+      el.addEventListener('change', () => {
+        entrySetFieldDirect(eid, field, el.value);
+        // Auto-save immediately on select change if row has data
+        const rowR = entryRows.find(x => x._eid === eid);
+        if (rowR && (rowR.name || rowR.phone)) {
+          clearTimeout(entryAutoSaveTimer);
+          entryAutoSaveTimer = setTimeout(() => entrySaveRow(rowR), 400);
+        }
+      });
+
+      el.addEventListener('blur', () => {
+        const rowR = entryRows.find(x => x._eid === eid);
+        if (rowR && (rowR.name || rowR.phone)) {
+          clearTimeout(entryAutoSaveTimer);
+          entryAutoSaveTimer = setTimeout(() => entrySaveRow(rowR), 600);
+        }
+      });
+
+      // Tab from last input → add new row
+      el.addEventListener('keydown', e => {
+        if (e.key === 'Tab' && !e.shiftKey) {
+          const allInputs = Array.from(tr.querySelectorAll('.excel-input:not([readonly]),.excel-select,.excel-textarea'));
+          const isLast = el === allInputs[allInputs.length - 1];
+          if (isLast) {
+            const isLastRow = entryRows[entryRows.length - 1]._eid === eid;
+            if (isLastRow) {
+              e.preventDefault();
+              entryRows.push(entryNewRowObj());
+              entryRender();
+              setTimeout(() => {
+                const b2 = document.getElementById('excel-body');
+                const lastTr = b2.lastElementChild;
+                if (lastTr) { const fi = lastTr.querySelectorAll('.excel-input:not([readonly]),.excel-select')[0]; if (fi) fi.focus(); }
+              }, 30);
+            }
+          }
+        }
+        // Enter = move to next row same column
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const allInputs = Array.from(tr.querySelectorAll('.excel-input:not([readonly]),.excel-select,.excel-textarea'));
+          const colIdx = allInputs.indexOf(el);
+          const nextTr = tr.nextElementSibling;
+          if (nextTr) {
+            const nextInputs = nextTr.querySelectorAll('.excel-input:not([readonly]),.excel-select,.excel-textarea');
+            if (nextInputs[colIdx]) nextInputs[colIdx].focus();
+          }
+        }
+      });
+    });
+
+    body.appendChild(tr);
+  });
+
+  entryUpdateCounts();
+}
+
+function entrySetFieldDirect(eid, field, value) {
+  const r = entryRows.find(r => r._eid === eid);
+  if (!r || field === '_date') return;
+  r[field] = value;
+  r.saved = false;
+  const tr = document.querySelector(`tr[data-eid="${eid}"]`);
+  if (tr) tr.classList.remove('row-saved');
+  // Instant auto-save after typing stops (1s debounce for text, 0.4s for selects)
+  clearTimeout(entryAutoSaveTimer);
+  entryAutoSaveTimer = setTimeout(() => {
+    if (r.name || r.phone) entrySaveRow(r);
+  }, 1000);
+}
+
+function escH(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ==================== END ENTRY TAB ====================
+
+// ==================== SALES DATA ====================
+const SALES_DATA_KEY = 'smo_sales_records';
+
+// Seed data from Excel
+const SALES_SEED = [{"source":"غير محدد","status":"مؤكد","amount":1700,"section":"قسم الرجال","duration":"يوم","date":"2026-05-08","month":5,"year":2026,"day":8,"dayName":"الجمعة","phone":"050 424 0797","name":"ناصر ابراهيم ناصر ال بازع"},{"source":"غير محدد","status":"مؤكد","amount":4000,"section":"قسمين","duration":"يوم","date":"2026-05-15","month":5,"year":2026,"day":15,"dayName":"الجمعة","phone":"050 020 2538","name":"محمد علي عبدالله الدرعاني"},{"source":"غير محدد","status":"مؤكد","amount":1300,"section":"قسم الرجال","duration":"يوم","date":"2026-05-20","month":5,"year":2026,"day":20,"dayName":"الاربعاء","phone":"053 232 634","name":"محمد الشهري"},{"source":"غير محدد","status":"مؤكد","amount":1800,"section":"قسم الحريم","duration":"يوم","date":"2026-05-22","month":5,"year":2026,"day":22,"dayName":"الجمعة","phone":"050 208 2828","name":"فهد سالم"},{"source":"غير محدد","status":"مؤكد","amount":2500,"section":"قسمين","duration":"يومين","date":"2026-05-24","month":5,"year":2026,"day":24,"dayName":"الاحد","phone":"054 677 8898","name":"سعيد سعد سعيد"},{"source":"غير محدد","status":"مؤكد","amount":3500,"section":"قسم الحريم","duration":"يومين","date":"2026-05-27","month":5,"year":2026,"day":27,"dayName":"الاربعاء","phone":"056 274 9477","name":"سلطان سعد المطيري"},{"source":"غير محدد","status":"مؤكد","amount":3500,"section":"قسم الحريم","duration":"يوم","date":"2026-05-28","month":5,"year":2026,"day":28,"dayName":"الخميس","phone":"995 850 055","name":"ام سامي"},{"source":"غير محدد","status":"مؤكد","amount":3500,"section":"قسم الرجال","duration":"يوم","date":"2026-05-28","month":5,"year":2026,"day":28,"dayName":"الخميس","phone":"055 697 9744","name":"هيله بشير"},{"source":"غير محدد","status":"مؤكد","amount":3500,"section":"قسم الرجال","duration":"يوم","date":"2026-05-29","month":5,"year":2026,"day":29,"dayName":"الجمعة","phone":"059 203 1926","name":"مصعب بن احمد بن سعيد"},{"source":"Google Map","status":"مؤكد","amount":3000,"section":"قسم الرجال","duration":"يوم","date":"2026-05-31","month":5,"year":2026,"day":31,"dayName":"الاحد","phone":"054 1435 919","name":"ريم الحميدي"},{"source":"غير محدد","status":"مؤكد","amount":2000,"section":"قسم الحريم","duration":"يوم","date":"2026-05-31","month":5,"year":2026,"day":31,"dayName":"الاحد","phone":"054 936 4620","name":"شيخة فيصل مفلح"},{"source":"Google Map","status":"مؤكد","amount":1100,"section":"قسم الرجال","duration":"يوم","date":"2026-06-02","month":6,"year":2026,"day":2,"dayName":"الثلاثاء","phone":"053 828 5921","name":"ريم القحطاني"},{"source":"غير محدد","status":"مؤكد","amount":3600,"section":"قسمين","duration":"يوم","date":"2026-06-04","month":6,"year":2026,"day":4,"dayName":"الخميس","phone":"055 455 5401","name":"ناصر السبيعي"},{"source":"غير محدد","status":"مؤكد","amount":3500,"section":"قسمين","duration":"يوم","date":"2026-06-05","month":6,"year":2026,"day":5,"dayName":"الجمعة","phone":"050 292 0039","name":"مشعل مسفر علي ابو حاكم"},{"source":"غير محدد","status":"مؤكد","amount":1500,"section":"قسم الرجال","duration":"يوم","date":"2026-06-06","month":6,"year":2026,"day":6,"dayName":"السبت","phone":"053 392 1189","name":"محمد القحطاني"},{"source":"Instagram","status":"مؤكد","amount":1500,"section":"قسم الحريم","duration":"يوم","date":"2026-06-10","month":6,"year":2026,"day":10,"dayName":"الاربعاء","phone":"053 836 1544","name":"سعيد رشدان مدعث"},{"source":"TikTok","status":"مؤكد","amount":1800,"section":"قسم الحريم","duration":"يوم","date":"2026-06-11","month":6,"year":2026,"day":11,"dayName":"الخميس","phone":"050 348 4070","name":"منى بنت محمد"},{"source":"Google Map","status":"مؤكد","amount":1700,"section":"قسم الرجال","duration":"يوم","date":"2026-06-12","month":6,"year":2026,"day":12,"dayName":"الجمعة","phone":"050 620 0777","name":"عادل المطيري"},{"source":"Google Map","status":"مؤكد","amount":3300,"section":"قسمين","duration":"يوم","date":"2026-06-18","month":6,"year":2026,"day":18,"dayName":"الخميس","phone":"055 558 1002","name":"سفر بن سليم بن دخيل الله"},{"source":"Google Map","status":"مؤكد","amount":1800,"section":"قسم الرجال","duration":"يوم","date":"2026-06-19","month":6,"year":2026,"day":19,"dayName":"الجمعة","phone":"050 340 1727","name":"عبدالله محمد القحطاني"},{"source":"TikTok","status":"مؤكد","amount":1250,"section":"قسم الرجال","duration":"يوم","date":"2026-06-21","month":6,"year":2026,"day":21,"dayName":"الاحد","phone":"050 544 5898","name":"ابو عبدالله"},{"source":"Google Map","status":"مؤكد","amount":3500,"section":"قسمين","duration":"يوم","date":"2026-06-25","month":6,"year":2026,"day":25,"dayName":"الخميس","phone":"050 123 4176","name":"عبد الرحمن سالم مسفر"},{"source":"Snap Chat","status":"مؤكد","amount":1700,"section":"قسم الحريم","duration":"يوم","date":"2026-06-26","month":6,"year":2026,"day":26,"dayName":"الجمعة","phone":"056 189 7070","name":"هدى ناصر بن طلحه"},{"source":"Google Map","status":"مؤكد","amount":1500,"section":"قسم الرجال","duration":"يوم","date":"2026-06-26","month":6,"year":2026,"day":26,"dayName":"الجمعة","phone":"053 836 1544","name":"هيام حسن موسى"},{"source":"Google Map","status":"مؤكد","amount":2300,"section":"قسمين","duration":"يوم","date":"2026-06-27","month":6,"year":2026,"day":27,"dayName":"السبت","phone":"050 523 9243","name":"سعد بن محمد بن سعد"},{"source":"Snap Chat","status":"مؤكد","amount":1250,"section":"قسم الرجال","duration":"يوم","date":"2026-06-28","month":6,"year":2026,"day":28,"dayName":"الاحد","phone":"050 424 8159","name":"نوير مسلط سلطان"},{"source":"Instagram","status":"مؤكد","amount":1200,"section":"قسم الحريم","duration":"يوم","date":"2026-06-30","month":6,"year":2026,"day":30,"dayName":"الثلاثاء","phone":"053 326 3374","name":"زيد بن عبد العزيز"},{"source":"Google Map","status":"مؤكد","amount":2200,"section":"قسم الرجال","duration":"يومين","date":"2026-06-30","month":6,"year":2026,"day":30,"dayName":"الثلاثاء","phone":"053 770 2008","name":"فايز بن عمر"},{"source":"Google Map","status":"مؤكد","amount":1200,"section":"قسم الحريم","duration":"يوم","date":"2026-07-01","month":7,"year":2026,"day":1,"dayName":"الاربعاء","phone":"055 519 3102","name":"هدا عبدالرحمن"},{"source":"Google Map","status":"مؤكد","amount":1200,"section":"قسم الرجال","duration":"يوم","date":"2026-07-01","month":7,"year":2026,"day":1,"dayName":"الاربعاء","phone":"050 029 0457","name":"سعود نادر العتيبي"},{"source":"TikTok","status":"مؤكد","amount":1800,"section":"قسم الرجال","duration":"يوم","date":"2026-07-03","month":7,"year":2026,"day":3,"dayName":"الجمعة","phone":"056 274 6927","name":"فارس الحسين"},{"source":"Google Map","status":"مؤكد","amount":1700,"section":"قسم الحريم","duration":"يوم","date":"2026-07-03","month":7,"year":2026,"day":3,"dayName":"الجمعة","phone":"050 042 0164","name":"محمد بن معجب القحطاني"},{"source":"Google Map","status":"مؤكد","amount":1200,"section":"قسم الحريم","duration":"يوم","date":"2026-07-05","month":7,"year":2026,"day":5,"dayName":"الاحد","phone":"055 131 4111","name":"طارق بن دحيم العتيبي"},{"source":"Instagram","status":"مؤكد","amount":1300,"section":"قسم الرجال","duration":"يوم","date":"2026-07-08","month":7,"year":2026,"day":8,"dayName":"الاربعاء","phone":"053 079 8530","name":"عبد العزيز العتيبي"},{"source":"Google Map","status":"مؤكد","amount":1200,"section":"قسم الحريم","duration":"يوم","date":"2026-07-08","month":7,"year":2026,"day":8,"dayName":"الاربعاء","phone":"050 440 5965","name":"محمد الدريس"},{"source":"Google Map","status":"مؤكد","amount":1800,"section":"قسم الحريم","duration":"يوم","date":"2026-07-09","month":7,"year":2026,"day":9,"dayName":"الخميس","phone":"055 382 5222","name":"عبدالله الجبرين"},{"source":"Google Map","status":"مؤكد","amount":1700,"section":"قسم الرجال","duration":"يوم","date":"2026-07-10","month":7,"year":2026,"day":10,"dayName":"الجمعة","phone":"055 557 1508","name":"محمد سعد الدوسري"},{"source":"Google Map","status":"مؤكد","amount":1700,"section":"قسم الحريم","duration":"يوم","date":"2026-07-10","month":7,"year":2026,"day":10,"dayName":"الجمعة","phone":"055 420 2008","name":"ام نايف بدور"},{"source":"Instagram","status":"مؤكد","amount":1300,"section":"قسم الحريم","duration":"يوم","date":"2026-07-11","month":7,"year":2026,"day":11,"dayName":"السبت","phone":"053 700 6395","name":"جولي نواف المهنا"},{"source":"Google Map","status":"مؤكد","amount":1200,"section":"قسم الرجال","duration":"يوم","date":"2026-07-14","month":7,"year":2026,"day":14,"dayName":"الثلاثاء","phone":"055 617 4744","name":"عبدالله بن عبدالمحسن عثمان"},{"source":"Instagram","status":"مؤكد","amount":1100,"section":"قسم الحريم","duration":"يوم","date":"2026-07-15","month":7,"year":2026,"day":15,"dayName":"الاربعاء","phone":"056 611 1933","name":"منيه حسن الشاهري"},{"source":"Google Map","status":"مؤكد","amount":1800,"section":"قسم الرجال","duration":"يوم","date":"2026-07-16","month":7,"year":2026,"day":16,"dayName":"الخميس","phone":"055 273 8159","name":"عبدالله ماجد النظاري"},{"source":"Google Map","status":"مؤكد","amount":1800,"section":"قسم الحريم","duration":"يوم","date":"2026-07-17","month":7,"year":2026,"day":17,"dayName":"الجمعة","phone":"055 328 2806","name":"رائد الشثري"},{"source":"Instagram","status":"مؤكد","amount":1700,"section":"قسم الرجال","duration":"يوم","date":"2026-07-17","month":7,"year":2026,"day":17,"dayName":"الجمعة","phone":"050 997 7637","name":"فهد الدوسري"},{"source":"Google Map","status":"مؤكد","amount":1400,"section":"قسم الحريم","duration":"يوم","date":"2026-07-18","month":7,"year":2026,"day":18,"dayName":"السبت","phone":"055 375 2045","name":"بدور حبيب العتيبي"},{"source":"Google Map","status":"مؤكد","amount":1200,"section":"قسم الرجال","duration":"يوم","date":"2026-07-21","month":7,"year":2026,"day":21,"dayName":"الثلاثاء","phone":"055 906 0104","name":"عزيزه محارب العتيبي"},{"source":"Google Map","status":"مؤكد","amount":1100,"section":"قسم الحريم","duration":"يوم","date":"2026-07-22","month":7,"year":2026,"day":22,"dayName":"الاربعاء","phone":"059 486 6060","name":"عبد العزيز محمد العواجي"},{"source":"Instagram","status":"مؤكد","amount":1800,"section":"قسم الحريم","duration":"يوم","date":"2026-07-24","month":7,"year":2026,"day":24,"dayName":"الجمعة","phone":"055 568 5459","name":"تهاني احمد سويدان"},{"source":"Google Map","status":"مؤكد","amount":1800,"section":"قسم الرجال","duration":"يوم","date":"2026-07-24","month":7,"year":2026,"day":24,"dayName":"الجمعة","phone":"050 708 0390","name":"منيرة الشريف"},{"source":"Google Map","status":"مؤكد","amount":1200,"section":"قسم الحريم","duration":"يوم","date":"2026-07-26","month":7,"year":2026,"day":26,"dayName":"الاحد","phone":"050 550 4061","name":"منى منصور المسعري"},{"source":"Google Map","status":"مؤكد","amount":1200,"section":"قسم الحريم","duration":"يوم","date":"2026-07-28","month":7,"year":2026,"day":28,"dayName":"الثلاثاء","phone":"059 208 5353","name":"مشاري بن حمود العتيبي"},{"source":"TikTok","status":"مؤكد","amount":1200,"section":"قسم الحريم","duration":"يوم","date":"2026-07-29","month":7,"year":2026,"day":29,"dayName":"الاربعاء","phone":"056 990 9029","name":"محمد بن عبد المحسن"},{"source":"Google Map","status":"مؤكد","amount":1200,"section":"قسم الرجال","duration":"يوم","date":"2026-07-29","month":7,"year":2026,"day":29,"dayName":"الاربعاء","phone":"053 169 6298","name":"محمد بن علي الغامدي"},{"source":"Google Map","status":"مؤكد","amount":1800,"section":"قسم الحريم","duration":"يوم","date":"2026-07-31","month":7,"year":2026,"day":31,"dayName":"الجمعة","phone":"055 885 1277","name":"سعد البشير"},{"source":"TikTok","status":"مؤكد","amount":1800,"section":"قسم الرجال","duration":"يوم","date":"2026-07-31","month":7,"year":2026,"day":31,"dayName":"الجمعة","phone":"055 502 2038","name":"هيا خالد سعد"},{"source":"Google Map","status":"مؤكد","amount":1300,"section":"قسم الحريم","duration":"يوم","date":"2026-08-01","month":8,"year":2026,"day":1,"dayName":"السبت","phone":"059 888 0388","name":"ام عبدالعزيز الفليج"},{"source":"Google Map","status":"مؤكد","amount":2300,"section":"قسمين","duration":"يوم","date":"2026-08-04","month":8,"year":2026,"day":4,"dayName":"الثلاثاء","phone":"054 669 9960","name":"نورة القحطاني"},{"source":"Instagram","status":"مؤكد","amount":1200,"section":"قسم الرجال","duration":"يوم","date":"2026-08-05","month":8,"year":2026,"day":5,"dayName":"الاربعاء","phone":"050 680 2410","name":"فاتن شخبوط بن سلطان"},{"source":"Google Map","status":"مؤكد","amount":1800,"section":"قسم الحريم","duration":"يوم","date":"2026-08-07","month":8,"year":2026,"day":7,"dayName":"الجمعة","phone":"059 990 9259","name":"ام مضاوي الهاجري"},{"source":"Google Map","status":"مؤكد","amount":1200,"section":"قسم الرجال","duration":"يوم","date":"2026-08-12","month":8,"year":2026,"day":12,"dayName":"الاربعاء","phone":"053 086 6137","name":"حسن عمر الراشدي"},{"source":"Instagram","status":"مؤكد","amount":1800,"section":"قسم الرجال","duration":"يوم","date":"2026-08-14","month":8,"year":2026,"day":14,"dayName":"الجمعة","phone":"054 285 3338","name":"محمد بن حسن السرحان"},{"source":"Google Map","status":"مؤكد","amount":1700,"section":"قسم الحريم","duration":"يوم","date":"2026-08-14","month":8,"year":2026,"day":14,"dayName":"الجمعة","phone":"055 449 3912","name":"هياء بنت زيد الربيع"},{"source":"Instagram","status":"مؤكد","amount":1800,"section":"قسم الرجال","duration":"يوم","date":"2026-08-21","month":8,"year":2026,"day":21,"dayName":"الجمعة","phone":"054 614 1645","name":"ابراهيم بن عبدالله الخنفور"},{"source":"Google Map","status":"مؤكد","amount":1800,"section":"قسم الرجال","duration":"يوم","date":"2026-08-28","month":8,"year":2026,"day":28,"dayName":"الجمعة","phone":"056 636 8099","name":"بدرية محمد نويجم"}];
+
+let salesData = [];
+let seRows = [];
+let seAutoTimer = null;
+const MONTH_NAMES = {1:'يناير',2:'فبراير',3:'مارس',4:'أبريل',5:'مايو',6:'يونيو',7:'يوليو',8:'أغسطس',9:'سبتمبر',10:'أكتوبر',11:'نوفمبر',12:'ديسمبر'};
+
+function salesLoadData() {
+  try {
+    const stored = localStorage.getItem(SALES_DATA_KEY);
+    if (stored) {
+      salesData = JSON.parse(stored);
+    } else {
+      salesData = SALES_SEED.map(r => ({...r, _id: crypto.randomUUID()}));
+      localStorage.setItem(SALES_DATA_KEY, JSON.stringify(salesData));
+    }
+  } catch(e) { salesData = SALES_SEED.map(r => ({...r, _id: crypto.randomUUID()})); }
+}
+
+function salesSaveData() {
+  try { localStorage.setItem(SALES_DATA_KEY, JSON.stringify(salesData)); } catch(e) {}
+}
+
+function salesGetFiltered(m, y, from, to) {
+  if (from && to) {
+    return salesData.filter(r => r.date >= from && r.date <= to);
+  }
+  return salesData.filter(r => r.month === parseInt(m) && r.year === (y||2026));
+}
+
+// ===== SALES ENTRY =====
+function salesEntryInit() {
+  salesLoadData();
+  const inp = document.getElementById('se-date');
+  if (!inp.value) inp.value = new Date().toISOString().split('T')[0];
+  if (seRows.length === 0) for(let i=0;i<5;i++) seRows.push(seNewRow());
+  seRender();
+}
+
+function seNewRow() {
+  return { _id: crypto.randomUUID(), saved: false, name:'', phone:'', date:'', section:'قسم الرجال', duration:'يوم', source:'Google Map', amount:'', status:'مؤكد', notes:'' };
+}
+
+function seAddRow() {
+  seRows.push(seNewRow());
+  seRender();
+  setTimeout(()=>{ const b=document.getElementById('se-body'); if(b&&b.lastElementChild){ const fi=b.lastElementChild.querySelector('.excel-input,.excel-select'); if(fi)fi.focus(); }},40);
+}
+
+function seDeleteRow(id) { seRows=seRows.filter(r=>r._id!==id); seRender(); }
+function seClearSaved() { if(!confirm('مسح الصفوف المحفوظة؟'))return; seRows=seRows.filter(r=>!r.saved); if(!seRows.length)for(let i=0;i<3;i++)seRows.push(seNewRow()); seRender(); }
+
+function seSetField(id, field, val) {
+  const r = seRows.find(r=>r._id===id); if(!r)return;
+  r[field]=val; r.saved=false;
+  const tr=document.querySelector(`#se-body tr[data-seid="${id}"]`);
+  if(tr) tr.classList.remove('row-saved');
+  clearTimeout(seAutoTimer);
+  seAutoTimer = setTimeout(()=>{ if(r.name||r.phone) seSaveRow(r); }, 900);
+}
+
+async function seSaveRow(r) {
+  const dateInp = document.getElementById('se-date');
+  const dateVal = r.date || dateInp.value;
+  if (!dateVal || (!r.name && !r.phone)) return;
+  const d = new Date(dateVal);
+  const rec = { _id: r._id, name: r.name, phone: r.phone, date: dateVal,
+    month: d.getMonth()+1, year: d.getFullYear(), day: d.getDate(),
+    section: r.section, duration: r.duration, source: r.source,
+    amount: parseFloat(r.amount)||0, status: r.status, notes: r.notes };
+  const idx = salesData.findIndex(x=>x._id===r._id);
+  if(idx>-1) salesData[idx]=rec; else salesData.push(rec);
+  salesSaveData();
+  r.saved=true;
+  const tr=document.querySelector(`#se-body tr[data-seid="${r._id}"]`);
+  if(tr){ tr.classList.add('row-saved'); tr.querySelectorAll('[data-field="name"],[data-field="phone"]').forEach(el=>{el.style.color='#1a6b4a';el.style.fontWeight='600';}); }
+  const n=document.getElementById('se-notice'); if(n){n.style.display='inline';clearTimeout(n._t);n._t=setTimeout(()=>n.style.display='none',2500);}
+  seUpdateCounts();
+}
+
+async function seSaveAll() {
+  const unsaved=seRows.filter(r=>!r.saved&&(r.name||r.phone));
+  if(!unsaved.length){showToast('لا يوجد سجلات جديدة','info');return;}
+  for(const r of unsaved) await seSaveRow(r);
+  showToast('✅ تم حفظ '+unsaved.length+' حجز','success');
+  seRender();
+}
+
+function seUpdateCounts() {
+  const saved=seRows.filter(r=>r.saved).length;
+  const total=seRows.reduce((s,r)=>s+(parseFloat(r.amount)||0),0);
+  const el=document.getElementById('se-count'); if(el) el.textContent=seRows.length+' صفوف';
+  const sc=document.getElementById('se-saved-count'); if(sc)sc.textContent=saved;
+  const st=document.getElementById('se-total'); if(st)st.textContent=total.toLocaleString('ar-SA');
+}
+
+function seRender() {
+  const body=document.getElementById('se-body'); if(!body)return;
+  const dateVal=document.getElementById('se-date').value;
+  body.innerHTML='';
+  seRows.forEach((r,idx)=>{
+    const tr=document.createElement('tr');
+    tr.setAttribute('data-seid',r._id);
+    if(r.saved)tr.classList.add('row-saved');
+    tr.innerHTML=`
+      <td class="cell-num">${idx+1}</td>
+      <td><input class="excel-input" placeholder="اسم العميل" value="${escH(r.name)}" data-field="name" data-seid="${r._id}" ${r.saved?'style="color:#1a6b4a;font-weight:600;"':''}></td>
+      <td><input class="excel-input" placeholder="05X XXX XXXX" value="${escH(r.phone)}" data-field="phone" data-seid="${r._id}"></td>
+      <td><input class="excel-input" type="date" value="${escH(r.date||dateVal)}" data-field="date" data-seid="${r._id}" style="direction:ltr;font-size:11px;"></td>
+      <td><select class="excel-select" data-field="section" data-seid="${r._id}">
+        ${['قسم الرجال','قسم الحريم','قسمين'].map(v=>`<option ${r.section===v?'selected':''}>${v}</option>`).join('')}
+      </select></td>
+      <td><select class="excel-select" data-field="duration" data-seid="${r._id}">
+        ${['يوم','يومين','3 أيام'].map(v=>`<option ${r.duration===v?'selected':''}>${v}</option>`).join('')}
+      </select></td>
+      <td><select class="excel-select" data-field="source" data-seid="${r._id}">
+        ${['Google Map','TikTok','Instagram','Snap Chat','Facebook','غير محدد'].map(v=>`<option ${r.source===v?'selected':''}>${v}</option>`).join('')}
+      </select></td>
+      <td><input class="excel-input" placeholder="المبلغ بالريال" value="${escH(r.amount)}" data-field="amount" data-seid="${r._id}" type="number" style="text-align:center;"></td>
+      <td><select class="excel-select" data-field="status" data-seid="${r._id}">
+        ${['مؤكد','مؤقت','ملغي'].map(v=>`<option ${r.status===v?'selected':''}>${v}</option>`).join('')}
+      </select></td>
+      <td><textarea class="excel-textarea" placeholder="ملاحظات..." data-field="notes" data-seid="${r._id}" rows="2">${escH(r.notes)}</textarea></td>
+      <td style="text-align:center;vertical-align:middle;"><button class="row-del-btn" onclick="seDeleteRow('${r._id}')">✕</button></td>`;
+    tr.querySelectorAll('.excel-input,.excel-select,.excel-textarea').forEach(el=>{
+      el.addEventListener('input',()=>seSetField(el.dataset.seid,el.dataset.field,el.value));
+      el.addEventListener('change',()=>{seSetField(el.dataset.seid,el.dataset.field,el.value);const rv=seRows.find(x=>x._id===el.dataset.seid);if(rv&&(rv.name||rv.phone)){clearTimeout(seAutoTimer);seAutoTimer=setTimeout(()=>seSaveRow(rv),400);}});
+      el.addEventListener('blur',()=>{const rv=seRows.find(x=>x._id===el.dataset.seid);if(rv&&(rv.name||rv.phone)&&!rv.saved){clearTimeout(seAutoTimer);seAutoTimer=setTimeout(()=>seSaveRow(rv),600);}});
+    });
+    body.appendChild(tr);
+  });
+  seUpdateCounts();
+}
+
+// ===== SALES REPORT =====
+let srCharts = {};
+function salesReportInit() {
+  salesLoadData();
+  const ft = document.getElementById('sr-filter-type').value;
+  const rw = document.getElementById('sr-range-wrap');
+  const msel = document.getElementById('sr-month');
+  if(ft==='range'){rw.style.display='flex';msel.style.display='none';}
+  else{rw.style.display='none';msel.style.display='';}
+
+  let filtered;
+  let titleLabel;
+  if(ft==='month'){
+    const m=parseInt(document.getElementById('sr-month').value);
+    filtered=salesGetFiltered(m,2026);
+    titleLabel=MONTH_NAMES[m]+' 2026';
+  } else {
+    const from=document.getElementById('sr-from').value;
+    const to=document.getElementById('sr-to').value;
+    filtered=from&&to?salesGetFiltered(null,null,from,to):[];
+    titleLabel=from&&to?`${from} → ${to}`:'اختر الفترة';
+  }
+
+  document.getElementById('sr-summary-label').textContent=filtered.length+' حجز مسجل';
+  document.getElementById('sr-cal-title').textContent='كالندر الحجوزات — '+titleLabel;
+
+  srRenderKPIs(filtered, titleLabel);
+  srRenderCalendar(filtered, ft);
+  srRenderCharts(filtered);
+}
+
+function srRenderKPIs(d, label) {
+  const total=d.reduce((s,r)=>s+r.amount,0);
+  const cnt=d.length;
+  const days=new Set(d.map(r=>r.date)).size;
+  const srcCount={};
+  d.forEach(r=>{srcCount[r.source]=(srcCount[r.source]||0)+1;});
+  const topSrc=Object.entries(srcCount).sort((a,b)=>b[1]-a[1])[0];
+  const avg=cnt?Math.round(total/cnt):0;
+  const maxDay=days?Math.round(total/days):0;
+  document.getElementById('sr-kpis').innerHTML=`
+    <div class="s-kpi"><div class="s-kpi-val">${total.toLocaleString('ar-SA')} ﷼</div><div class="s-kpi-lbl">إجمالي المبيعات</div></div>
+    <div class="s-kpi green"><div class="s-kpi-val">${cnt}</div><div class="s-kpi-lbl">عدد الحجوزات</div></div>
+    <div class="s-kpi blue"><div class="s-kpi-val">${days}</div><div class="s-kpi-lbl">أيام الحجز</div></div>
+    <div class="s-kpi purple"><div class="s-kpi-val">${avg.toLocaleString('ar-SA')} ﷼</div><div class="s-kpi-lbl">متوسط قيمة الحجز</div></div>
+    <div class="s-kpi orange"><div class="s-kpi-val">${topSrc?topSrc[0]:'-'}</div><div class="s-kpi-lbl">أعلى مصدر (${topSrc?topSrc[1]:0} حجز)</div></div>
+  `;
+}
+
+function srRenderCalendar(d, ft) {
+  const bookingsByDate = {};
+  d.forEach(r=>{ if(!bookingsByDate[r.date]) bookingsByDate[r.date]=[]; bookingsByDate[r.date].push(r); });
+
+  // Get the month to display
+  let year=2026, month;
+  if(ft==='month') { month=parseInt(document.getElementById('sr-month').value); }
+  else {
+    const from=document.getElementById('sr-from').value;
+    month=from?parseInt(from.split('-')[1]):new Date().getMonth()+1;
+    year=from?parseInt(from.split('-')[0]):2026;
+  }
+
+  const firstDay=new Date(year,month-1,1).getDay(); // 0=Sun
+  const daysInMonth=new Date(year,month,0).getDate();
+  const today=new Date().toISOString().split('T')[0];
+  const dayHeaders=['أحد','اثنين','ثلاثاء','أربعاء','خميس','جمعة','سبت'];
+
+  let html=`<div class="s-cal-grid">`;
+  dayHeaders.forEach(d=>html+=`<div class="s-cal-day-header">${d}</div>`);
+
+  // offset — convert Sunday=0 to our grid starting at Sunday
+  const startOffset = firstDay;
+  for(let i=0;i<startOffset;i++) html+=`<div class="s-cal-cell empty"></div>`;
+
+  for(let day=1;day<=daysInMonth;day++){
+    const dateStr=`${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const recs=bookingsByDate[dateStr]||[];
+    let cls='s-cal-cell';
+    if(dateStr===today) cls+=' today';
+    const hasMen=recs.some(r=>r.section==='قسم الرجال');
+    const hasWomen=recs.some(r=>r.section==='قسم الحريم');
+    const hasBoth=recs.some(r=>r.section==='قسمين');
+    if(hasBoth||(hasMen&&hasWomen)) cls+=' booked-both';
+    else if(hasMen) cls+=' booked-men';
+    else if(hasWomen) cls+=' booked-women';
+
+    html+=`<div class="${cls}"><div class="s-cal-num">${day}</div>`;
+    recs.forEach(r=>{
+      const iW=r.section==='قسم الحريم';
+      html+=`<div class="s-cal-booking${iW?' women':''}"><span class="bname">${r.name.split(' ')[0]}</span><span class="bamt">${r.amount?r.amount.toLocaleString('ar-SA')+'﷼':''}</span></div>`;
+    });
+    html+=`</div>`;
+  }
+  html+=`</div>`;
+  document.getElementById('sr-calendar').innerHTML=html;
+}
+
+function srDestroyChart(id){ if(srCharts[id]){srCharts[id].destroy();delete srCharts[id];} }
+
+function srRenderCharts(d) {
+  srDestroyChart('bar'); srDestroyChart('secPie'); srDestroyChart('srcPie'); srDestroyChart('daily');
+  const dayMap={};
+  d.forEach(r=>{ dayMap[r.day]=(dayMap[r.day]||0)+1; });
+  const sortedDays=Object.keys(dayMap).map(Number).sort((a,b)=>a-b);
+  const barCtx=document.getElementById('sr-bar-chart');
+  if(barCtx) srCharts['bar']=new Chart(barCtx,{type:'bar',data:{labels:sortedDays.map(d=>''+d),datasets:[{label:'حجوزات',data:sortedDays.map(d=>dayMap[d]),backgroundColor:'#3b82f6',borderRadius:4}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1,font:{size:9}}},x:{ticks:{font:{size:9}}}}}});
+  const secMap={'قسم الرجال':0,'قسم الحريم':0,'قسمين':0};
+  d.forEach(r=>{const k=r.section in secMap?r.section:'قسم الرجال';secMap[k]++;});
+  const secCtx=document.getElementById('sr-section-pie');
+  if(secCtx) srCharts['secPie']=new Chart(secCtx,{type:'doughnut',data:{labels:Object.keys(secMap),datasets:[{data:Object.values(secMap),backgroundColor:['#3b82f6','#ec4899','#8b5cf6'],hoverOffset:6,borderWidth:3}]},options:{cutout:'50%',plugins:{legend:{position:'bottom',labels:{font:{family:'inherit',size:11},boxWidth:13,padding:8}}}}});
+  const srcMap={};
+  d.forEach(r=>{srcMap[r.source]=(srcMap[r.source]||0)+1;});
+  const srcColors=['#10b981','#f59e0b','#ef4444','#6366f1','#06b6d4','#84cc16'];
+  const srcCtx=document.getElementById('sr-source-pie');
+  if(srcCtx) srCharts['srcPie']=new Chart(srcCtx,{type:'doughnut',data:{labels:Object.keys(srcMap),datasets:[{data:Object.values(srcMap),backgroundColor:srcColors,hoverOffset:6,borderWidth:3}]},options:{cutout:'50%',plugins:{legend:{position:'bottom',labels:{font:{family:'inherit',size:11},boxWidth:13,padding:8}}}}});
+  const revMap={};
+  d.forEach(r=>{revMap[r.day]=(revMap[r.day]||0)+r.amount;});
+  const sortedRevDays=Object.keys(revMap).map(Number).sort((a,b)=>a-b);
+  const dailyCtx=document.getElementById('sr-daily-chart');
+  if(dailyCtx) srCharts['daily']=new Chart(dailyCtx,{type:'line',data:{labels:sortedRevDays.map(d=>''+d),datasets:[{label:'ر.س',data:sortedRevDays.map(d=>revMap[d]),borderColor:'#e94560',backgroundColor:'rgba(233,69,96,0.07)',tension:0.3,fill:true,pointRadius:3,pointBackgroundColor:'#e94560'}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{callback:v=>v>=1000?Math.round(v/1000)+'k':v,font:{size:9}}},x:{ticks:{font:{size:9}}}}}});
+}
+
+function srPrint() {
+  // Add class to body so only sales report shows
+  document.body.classList.remove('print-old-report','print-sales-report','print-cmp-sales','print-cmp-inq');
+  document.body.classList.add('print-sales-report');
+  window.print();
+  document.body.classList.remove('print-sales-report');
+}
+
+function cmpPrint() {
+  document.body.classList.remove('print-old-report','print-sales-report','print-cmp-sales','print-cmp-inq');
+  document.body.classList.add(cmpCurrentSection==='sales' ? 'print-cmp-sales' : 'print-cmp-inq');
+  window.print();
+  document.body.classList.remove('print-cmp-sales','print-cmp-inq');
+}
+
+// ===== SALES COMPARE =====
+let cmpCharts = {};
+let cmpCurrentSection = 'sales';
+
+function cmpSwitchSection(sec) {
+  cmpCurrentSection = sec;
+  document.getElementById('cmp-section-sales').style.display = sec==='sales'?'':'none';
+  document.getElementById('cmp-section-inquiries').style.display = sec==='inquiries'?'':'none';
+  const btnS = document.getElementById('cmp-tab-sales');
+  const btnI = document.getElementById('cmp-tab-inquiries');
+  btnS.style.background = sec==='sales'?'#e94560':'transparent';
+  btnS.style.color = sec==='sales'?'#fff':'#718096';
+  btnI.style.background = sec==='inquiries'?'#e94560':'transparent';
+  btnI.style.color = sec==='inquiries'?'#fff':'#718096';
+  salesCompareInit();
+}
+
+function salesCompareInit() {
+  salesLoadData();
+  ['a','b'].forEach(k=>{
+    const t=document.getElementById(`cmp-${k}-type`).value;
+    const ms=document.getElementById(`cmp-${k}-month`);
+    const rw=document.getElementById(`cmp-${k}-range`);
+    if(ms) ms.style.display=t==='month'?'':'none';
+    if(rw) rw.style.display=t==='range'?'flex':'none';
+  });
+
+  const aData=cmpGetData('a');
+  const bData=cmpGetData('b');
+  const aLabel=cmpGetLabel('a');
+  const bLabel=cmpGetLabel('b');
+
+  if(cmpCurrentSection==='sales'){
+    cmpRenderPanels(aData,bData,aLabel,bLabel);
+    cmpRenderCharts(aData,bData,aLabel,bLabel);
+  } else {
+    cmpRenderInquiryPanels(aLabel,bLabel);
+    cmpRenderInquiryCharts(aLabel,bLabel);
+  }
+}
+
+function cmpGetData(k){
+  const t=document.getElementById(`cmp-${k}-type`).value;
+  if(t==='month'){const m=parseInt(document.getElementById(`cmp-${k}-month`).value);return salesGetFiltered(m,2026);}
+  const from=document.getElementById(`cmp-${k}-from`)?.value;
+  const to=document.getElementById(`cmp-${k}-to`)?.value;
+  return from&&to?salesGetFiltered(null,null,from,to):[];
+}
+
+function cmpGetLabel(k){
+  const t=document.getElementById(`cmp-${k}-type`).value;
+  if(t==='month'){const m=parseInt(document.getElementById(`cmp-${k}-month`).value);return MONTH_NAMES[m];}
+  const from=document.getElementById(`cmp-${k}-from`)?.value;
+  const to=document.getElementById(`cmp-${k}-to`)?.value;
+  return from&&to?`${from}→${to}`:'فترة';
+}
+
+function cmpGetCustomersForPeriod(k) {
+  // Get customer/inquiry records from the main `data` array filtered by period
+  const t=document.getElementById(`cmp-${k}-type`).value;
+  if(!data||!data.length) return [];
+  if(t==='month'){
+    const m=parseInt(document.getElementById(`cmp-${k}-month`).value);
+    return data.filter(r=>{
+      if(!r.fullDate) return false;
+      const d=new Date(r.fullDate);
+      return d.getMonth()+1===m && d.getFullYear()===2026;
+    });
+  }
+  const from=document.getElementById(`cmp-${k}-from`)?.value;
+  const to=document.getElementById(`cmp-${k}-to`)?.value;
+  if(!from||!to) return [];
+  return data.filter(r=> r.fullDate && r.fullDate>=from && r.fullDate<=to);
+}
+
+function pctChange(a,b){
+  if(b===0) return a>0?'+100%':'—';
+  const p=Math.round((a-b)/b*100);
+  return (p>0?'+':'')+p+'%';
+}
+function pctCls(a,b){ return a>b?'pct-up':a<b?'pct-dn':'pct-eq'; }
+
+function cmpRenderPanels(aD,bD,aL,bL){
+  const aTotal=aD.reduce((s,r)=>s+r.amount,0);
+  const bTotal=bD.reduce((s,r)=>s+r.amount,0);
+  const aAvg=aD.length?Math.round(aTotal/aD.length):0;
+  const bAvg=bD.length?Math.round(bTotal/bD.length):0;
+  const aDays=new Set(aD.map(r=>r.date)).size;
+  const bDays=new Set(bD.map(r=>r.date)).size;
+  function win(a,b){return a>b?'win-a':a<b?'win-b':'win-tie';}
+  const fmt0=(v)=>v.toLocaleString('ar-SA')+' ﷼';
+  const makeRow=(lbl,aVal,bVal,fmt)=>{
+    const pct=pctChange(aVal,bVal); const cls=pctCls(aVal,bVal);
+    const fA=fmt?fmt(aVal):aVal; const fB=fmt?fmt(bVal):bVal;
+    const wCls=win(aVal,bVal);
+    return `<tr>
+      <td style="padding:7px 10px;font-size:12px;font-weight:600;color:#374151;border-bottom:1px solid #f0f4f8;">${lbl}</td>
+      <td style="padding:7px 10px;text-align:center;font-size:14px;font-weight:800;color:#1e40af;border-bottom:1px solid #f0f4f8;">${fA}${wCls==='win-a'?' 🏆':''}</td>
+      <td style="padding:7px 10px;text-align:center;font-size:14px;font-weight:800;color:#9d174d;border-bottom:1px solid #f0f4f8;">${fB}${wCls==='win-b'?' 🏆':''}</td>
+      <td style="padding:7px 10px;text-align:center;border-bottom:1px solid #f0f4f8;"><span class="pct-badge ${cls}">${pct}</span></td>
+    </tr>`;
+  };
+  document.getElementById('cmp-panels').innerHTML=`
+    <div class="s-compare-panel" style="grid-column:1/-1;padding:14px;">
+      <table style="width:100%;border-collapse:collapse;">
+        <thead><tr>
+          <th style="padding:8px 10px;font-size:11px;color:#718096;text-align:right;border-bottom:2px solid #e2e8f0;font-weight:600;">المؤشر</th>
+          <th style="padding:8px 10px;font-size:13px;font-weight:800;color:#1e40af;text-align:center;border-bottom:2px solid #1e40af;background:#eff6ff;border-radius:6px 6px 0 0;">${aL}</th>
+          <th style="padding:8px 10px;font-size:13px;font-weight:800;color:#9d174d;text-align:center;border-bottom:2px solid #9d174d;background:#fdf2f8;border-radius:6px 6px 0 0;">${bL}</th>
+          <th style="padding:8px 10px;font-size:11px;color:#718096;text-align:center;border-bottom:2px solid #e2e8f0;">نسبة التغيير</th>
+        </tr></thead>
+        <tbody>
+          ${makeRow('💰 إجمالي المبيعات',aTotal,bTotal,fmt0)}
+          ${makeRow('📅 عدد الحجوزات',aD.length,bD.length)}
+          ${makeRow('🗓️ أيام الحجز',aDays,bDays)}
+          ${makeRow('📊 متوسط الحجز',aAvg,bAvg,fmt0)}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function cmpRenderInquiryPanels(aL,bL){
+  const aD=cmpGetCustomersForPeriod('a');
+  const bD=cmpGetCustomersForPeriod('b');
+  const aBook=aD.filter(r=>r.type==='حجز').length;
+  const bBook=bD.filter(r=>r.type==='حجز').length;
+  const aInq=aD.filter(r=>r.type==='استفسار').length;
+  const bInq=bD.filter(r=>r.type==='استفسار').length;
+  const aConv=aD.length?Math.round(aBook/aD.length*100):0;
+  const bConv=bD.length?Math.round(bBook/bD.length*100):0;
+  function win(a,b){return a>b?'win-a':a<b?'win-b':'win-tie';}
+  const makeRow=(lbl,aVal,bVal,suffix)=>{
+    const pct=pctChange(aVal,bVal); const cls=pctCls(aVal,bVal);
+    const s=suffix||''; const wCls=win(aVal,bVal);
+    return `<tr>
+      <td style="padding:7px 10px;font-size:12px;font-weight:600;color:#374151;border-bottom:1px solid #f0f4f8;">${lbl}</td>
+      <td style="padding:7px 10px;text-align:center;font-size:14px;font-weight:800;color:#1e40af;border-bottom:1px solid #f0f4f8;">${aVal}${s}${wCls==='win-a'?' 🏆':''}</td>
+      <td style="padding:7px 10px;text-align:center;font-size:14px;font-weight:800;color:#9d174d;border-bottom:1px solid #f0f4f8;">${bVal}${s}${wCls==='win-b'?' 🏆':''}</td>
+      <td style="padding:7px 10px;text-align:center;border-bottom:1px solid #f0f4f8;"><span class="pct-badge ${cls}">${pct}</span></td>
+    </tr>`;
+  };
+  document.getElementById('cmp-inq-panels').innerHTML=`
+    <div class="s-compare-panel" style="grid-column:1/-1;padding:14px;">
+      <table style="width:100%;border-collapse:collapse;">
+        <thead><tr>
+          <th style="padding:8px 10px;font-size:11px;color:#718096;text-align:right;border-bottom:2px solid #e2e8f0;font-weight:600;">المؤشر</th>
+          <th style="padding:8px 10px;font-size:13px;font-weight:800;color:#1e40af;text-align:center;border-bottom:2px solid #1e40af;background:#eff6ff;border-radius:6px 6px 0 0;">${aL}</th>
+          <th style="padding:8px 10px;font-size:13px;font-weight:800;color:#9d174d;text-align:center;border-bottom:2px solid #9d174d;background:#fdf2f8;border-radius:6px 6px 0 0;">${bL}</th>
+          <th style="padding:8px 10px;font-size:11px;color:#718096;text-align:center;border-bottom:2px solid #e2e8f0;">نسبة التغيير</th>
+        </tr></thead>
+        <tbody>
+          ${makeRow('📞 إجمالي المتصلين',aD.length,bD.length)}
+          ${makeRow('✅ عدد الحجوزات',aBook,bBook)}
+          ${makeRow('🔄 نسبة التحويل',aConv,bConv,'%')}
+          ${makeRow('❓ الاستفسارات',aInq,bInq)}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function cmpRenderInquiryCharts(aL,bL){
+  const aD=cmpGetCustomersForPeriod('a');
+  const bD=cmpGetCustomersForPeriod('b');
+  ['inqBar','inqSrc','inqCon','inqCity','inqType'].forEach(k=>{if(cmpCharts[k]){cmpCharts[k].destroy();delete cmpCharts[k];}});
+
+  // Bar: total vs bookings
+  const barCtx=document.getElementById('cmp-inq-bar');
+  if(barCtx) cmpCharts.inqBar=new Chart(barCtx,{type:'bar',data:{labels:['إجمالي التواصل','الحجوزات','الاستفسارات','الشكاوى'],datasets:[{label:aL,data:[aD.length,aD.filter(r=>r.type==='حجز').length,aD.filter(r=>r.type==='استفسار').length,aD.filter(r=>r.type==='شكوى').length],backgroundColor:'rgba(59,130,246,0.75)',borderRadius:5},{label:bL,data:[bD.length,bD.filter(r=>r.type==='حجز').length,bD.filter(r=>r.type==='استفسار').length,bD.filter(r=>r.type==='شكوى').length],backgroundColor:'rgba(236,72,153,0.75)',borderRadius:5}]},options:{plugins:{legend:{position:'bottom',labels:{font:{family:'inherit',size:10}}}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
+
+  // Sources
+  const allSrcs=[...new Set([...aD.map(r=>r.source),...bD.map(r=>r.source)].filter(Boolean))];
+  const srcCtx=document.getElementById('cmp-inq-source');
+  if(srcCtx) cmpCharts.inqSrc=new Chart(srcCtx,{type:'bar',data:{labels:allSrcs,datasets:[{label:aL,data:allSrcs.map(s=>aD.filter(r=>r.source===s).length),backgroundColor:'rgba(59,130,246,0.75)',borderRadius:4},{label:bL,data:allSrcs.map(s=>bD.filter(r=>r.source===s).length),backgroundColor:'rgba(236,72,153,0.75)',borderRadius:4}]},options:{indexAxis:'y',plugins:{legend:{position:'bottom',labels:{font:{family:'inherit',size:10}}}},scales:{x:{beginAtZero:true,ticks:{stepSize:1}}}}});
+
+  // Contact type (اتصال vs واتساب)
+  const conTypes=['اتصال','واتساب'];
+  const conCtx=document.getElementById('cmp-inq-contact');
+  if(conCtx) cmpCharts.inqCon=new Chart(conCtx,{type:'doughnut',data:{labels:conTypes.concat([aL+' غير محدد']),datasets:[{data:conTypes.map(c=>aD.filter(r=>r.contact===c).length).concat([aD.filter(r=>!r.contact||!conTypes.includes(r.contact)).length]),backgroundColor:['#3b82f6','#10b981','#e5e7eb'],hoverOffset:4},{data:conTypes.map(c=>bD.filter(r=>r.contact===c).length).concat([bD.filter(r=>!r.contact||!conTypes.includes(r.contact)).length]),backgroundColor:['rgba(59,130,246,0.4)','rgba(16,185,129,0.4)','rgba(229,231,235,0.4)'],hoverOffset:4}]},options:{plugins:{legend:{position:'bottom',labels:{font:{family:'inherit',size:9},boxWidth:10}}}}});
+
+  // Cities
+  const allCities=[...new Set([...aD.map(r=>r.city),...bD.map(r=>r.city)].filter(Boolean))];
+  const cityCtx=document.getElementById('cmp-inq-city');
+  if(cityCtx) cmpCharts.inqCity=new Chart(cityCtx,{type:'bar',data:{labels:allCities,datasets:[{label:aL,data:allCities.map(c=>aD.filter(r=>r.city===c).length),backgroundColor:'rgba(59,130,246,0.75)',borderRadius:4},{label:bL,data:allCities.map(c=>bD.filter(r=>r.city===c).length),backgroundColor:'rgba(236,72,153,0.75)',borderRadius:4}]},options:{plugins:{legend:{position:'bottom',labels:{font:{family:'inherit',size:10}}}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
+
+  // Request types
+  const allTypes=[...new Set([...aD.map(r=>r.type),...bD.map(r=>r.type)].filter(Boolean))];
+  const typeCtx=document.getElementById('cmp-inq-type');
+  if(typeCtx) cmpCharts.inqType=new Chart(typeCtx,{type:'bar',data:{labels:allTypes,datasets:[{label:aL,data:allTypes.map(t=>aD.filter(r=>r.type===t).length),backgroundColor:'rgba(59,130,246,0.75)',borderRadius:4},{label:bL,data:allTypes.map(t=>bD.filter(r=>r.type===t).length),backgroundColor:'rgba(236,72,153,0.75)',borderRadius:4}]},options:{plugins:{legend:{position:'bottom',labels:{font:{family:'inherit',size:10}}}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
+}
+
+function cmpRenderCharts(aD,bD,aL,bL){
+  ['bar','sec','src','days'].forEach(k=>{if(cmpCharts[k]){cmpCharts[k].destroy();delete cmpCharts[k];}});
+  const aTotal=aD.reduce((s,r)=>s+r.amount,0);
+  const bTotal=bD.reduce((s,r)=>s+r.amount,0);
+  const cmpBar=document.getElementById('cmp-bar-chart');
+  if(cmpBar) cmpCharts.bar=new Chart(cmpBar,{type:'bar',data:{labels:['إجمالي المبيعات (÷100)','عدد الحجوزات','أيام الحجز'],datasets:[{label:aL,data:[Math.round(aTotal/100),aD.length,new Set(aD.map(r=>r.date)).size],backgroundColor:'rgba(59,130,246,0.75)',borderRadius:5},{label:bL,data:[Math.round(bTotal/100),bD.length,new Set(bD.map(r=>r.date)).size],backgroundColor:'rgba(236,72,153,0.75)',borderRadius:5}]},options:{plugins:{legend:{position:'bottom',labels:{font:{family:'inherit',size:10}}}},scales:{y:{beginAtZero:true}}}});
+  const secs=['قسم الرجال','قسم الحريم','قسمين'];
+  const secCtx=document.getElementById('cmp-section-chart');
+  if(secCtx) cmpCharts.sec=new Chart(secCtx,{type:'bar',data:{labels:secs,datasets:[{label:aL,data:secs.map(s=>aD.filter(r=>r.section===s).length),backgroundColor:'rgba(59,130,246,0.75)',borderRadius:4},{label:bL,data:secs.map(s=>bD.filter(r=>r.section===s).length),backgroundColor:'rgba(236,72,153,0.75)',borderRadius:4}]},options:{plugins:{legend:{position:'bottom',labels:{font:{family:'inherit',size:10}}}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
+  const allSrcs=[...new Set([...aD.map(r=>r.source),...bD.map(r=>r.source)])];
+  const srcCtx=document.getElementById('cmp-source-chart');
+  // Source doughnut — two rings (a=outer, b=inner)
+  const srcColorsArr=['#10b981','#f59e0b','#3b82f6','#6366f1','#06b6d4','#ef4444'];
+  if(srcCtx) cmpCharts.src=new Chart(srcCtx,{type:'doughnut',data:{labels:allSrcs,datasets:[
+    {label:aL,data:allSrcs.map(s=>aD.filter(r=>r.source===s).length),backgroundColor:srcColorsArr,hoverOffset:4,borderWidth:2,weight:1.2},
+    {label:bL,data:allSrcs.map(s=>bD.filter(r=>r.source===s).length),backgroundColor:srcColorsArr.map(c=>c+'88'),hoverOffset:4,borderWidth:2,weight:0.8}
+  ]},options:{cutout:'40%',plugins:{legend:{position:'bottom',labels:{font:{family:'inherit',size:9},boxWidth:10,padding:4}},tooltip:{callbacks:{label:function(ctx){return ctx.dataset.label+': '+ctx.parsed;}}}}}});
+  const dayLabels=['أحد','اثنين','ثلاثاء','أربعاء','خميس','جمعة','سبت'];
+  const getDI=r=>{try{return new Date(r.date).getDay();}catch{return 0;}};
+  const daysCtx=document.getElementById('cmp-days-chart');
+  if(daysCtx) cmpCharts.days=new Chart(daysCtx,{type:'bar',data:{labels:dayLabels,datasets:[{label:aL,data:dayLabels.map((_,i)=>aD.filter(r=>getDI(r)===i).length),backgroundColor:'rgba(59,130,246,0.75)',borderRadius:4},{label:bL,data:dayLabels.map((_,i)=>bD.filter(r=>getDI(r)===i).length),backgroundColor:'rgba(236,72,153,0.75)',borderRadius:4}]},options:{plugins:{legend:{position:'bottom',labels:{font:{family:'inherit',size:10}}}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
+}
+
+
+// ==================== PIN LOGIN SYSTEM ====================
+const PIN_CONFIG = {
+  admin: { pin: '1234', label: 'مدير', roles: ['dashboard','records','report','entry','sales-entry','sales-records','sales-report','sales-compare'] },
+  staff: { pin: '5678', label: 'موظف', roles: ['entry','sales-entry','records','sales-records'] }
+};
+
+let pinCurrentRole = 'admin';
+let pinBuffer = '';
+let pinLoggedInRole = null;
+
+function pinSelectRole(role) {
+  pinCurrentRole = role;
+  pinBuffer = '';
+  pinUpdateDots();
+  document.getElementById('pin-error').textContent = '';
+  document.getElementById('pin-role-label').textContent = 'تسجيل الدخول كـ ' + PIN_CONFIG[role].label;
+  ['admin','staff'].forEach(r => {
+    const btn = document.getElementById('pin-role-' + r);
+    if (r === role) { btn.style.background='#e94560'; btn.style.color='#fff'; btn.style.borderColor='#e94560'; }
+    else { btn.style.background='#f7fafc'; btn.style.color='#4a5568'; btn.style.borderColor='#e2e8f0'; }
+  });
+}
+
+function pinPress(digit) {
+  if (pinBuffer.length >= 4) return;
+  pinBuffer += digit;
+  pinUpdateDots();
+  if (pinBuffer.length === 4) setTimeout(pinSubmit, 180);
+}
+
+function pinClear() {
+  pinBuffer = pinBuffer.slice(0, -1);
+  pinUpdateDots();
+  document.getElementById('pin-error').textContent = '';
+}
+
+function pinUpdateDots() {
+  document.querySelectorAll('.pin-dot').forEach((d, i) => {
+    d.classList.toggle('filled', i < pinBuffer.length);
+  });
+}
+
+function pinSubmit() {
+  const cfg = PIN_CONFIG[pinCurrentRole];
+  if (pinBuffer === cfg.pin) {
+    pinLoggedInRole = pinCurrentRole;
+    document.getElementById('pin-overlay').style.display = 'none';
+    pinApplyPermissions();
+    // Go to first allowed tab
+    const firstTab = cfg.roles[0];
+    showTab(firstTab);
+  } else {
+    document.getElementById('pin-error').textContent = '❌ رمز الدخول غير صحيح، حاول مرة أخرى';
+    pinBuffer = '';
+    pinUpdateDots();
+    setTimeout(() => { document.getElementById('pin-error').textContent = ''; }, 2000);
+  }
+}
+
+function pinLogout() {
+  pinLoggedInRole = null;
+  pinBuffer = '';
+  pinUpdateDots();
+  document.getElementById('pin-error').textContent = '';
+  pinSelectRole('admin');
+  document.getElementById('pin-overlay').style.display = 'flex';
+}
+
+function pinApplyPermissions() {
+  if (!pinLoggedInRole) return;
+  const allowed = PIN_CONFIG[pinLoggedInRole].roles;
+  document.querySelectorAll('.tab[data-roles]').forEach(tab => {
+    const tabRoles = tab.getAttribute('data-roles').split(',');
+    const hasAccess = tabRoles.includes(pinLoggedInRole);
+    tab.style.display = hasAccess ? '' : 'none';
+  });
+  // Hide/show header buttons based on role
+  const isAdmin = pinLoggedInRole === 'admin';
+  const addBtn = document.querySelector('.btn-add');
+  if (addBtn) addBtn.style.display = isAdmin ? '' : 'none';
+  const exportBtns = document.querySelectorAll('.btn-secondary');
+  exportBtns.forEach(b => { b.style.display = isAdmin ? '' : 'none'; });
+}
+
+// Override window.onload to show PIN first
+const _origOnload = window.onload;
+window.onload = async function() {
+  if (_origOnload) await _origOnload();
+  pinLoadSavedPins();
+  document.getElementById('pin-overlay').style.display = 'flex';
+  pinSelectRole('admin');
+  // Hide all tabs initially
+  ['dashboard','records','report','entry','sales-entry','sales-records','sales-report','sales-compare'].forEach(t => {
+    const el = document.getElementById('tab-' + t);
+    if (el) el.style.display = 'none';
+  });
+};
+
+// Keyboard PIN support
+document.addEventListener('keydown', function(e) {
+  if (!document.getElementById('pin-overlay') || document.getElementById('pin-overlay').style.display === 'none') return;
+  if (e.key >= '0' && e.key <= '9') pinPress(e.key);
+  else if (e.key === 'Backspace') pinClear();
+  else if (e.key === 'Enter') pinSubmit();
+});
+
+
+// ==================== PIN CHANGE SYSTEM ====================
+let pcmCurrentRole = 'admin';
+
+function pinShowChangeModal() {
+  const modal = document.getElementById('pin-change-modal');
+  modal.style.display = 'flex';
+  document.getElementById('pcm-current').value = '';
+  document.getElementById('pcm-new').value = '';
+  document.getElementById('pcm-confirm').value = '';
+  document.getElementById('pcm-error').textContent = '';
+  pcmSelectRole('admin');
+}
+
+function pinHideChangeModal() {
+  document.getElementById('pin-change-modal').style.display = 'none';
+}
+
+function pcmSelectRole(role) {
+  pcmCurrentRole = role;
+  ['admin','staff'].forEach(r => {
+    const btn = document.getElementById('pcm-role-' + r);
+    if (r === role) { btn.style.background='#e94560'; btn.style.color='#fff'; btn.style.borderColor='#e94560'; }
+    else { btn.style.background='#f7fafc'; btn.style.color='#4a5568'; btn.style.borderColor='#e2e8f0'; }
+  });
+}
+
+function pcmSave() {
+  const current = document.getElementById('pcm-current').value.trim();
+  const newPin = document.getElementById('pcm-new').value.trim();
+  const confirm = document.getElementById('pcm-confirm').value.trim();
+  const errEl = document.getElementById('pcm-error');
+
+  if (current !== PIN_CONFIG[pcmCurrentRole].pin) {
+    errEl.textContent = '❌ الرمز الحالي غير صحيح'; return;
+  }
+  if (!/^\d{4}$/.test(newPin)) {
+    errEl.textContent = '❌ الرمز الجديد يجب أن يكون 4 أرقام'; return;
+  }
+  if (newPin !== confirm) {
+    errEl.textContent = '❌ رمز التأكيد غير متطابق'; return;
+  }
+  PIN_CONFIG[pcmCurrentRole].pin = newPin;
+  try { localStorage.setItem('smo_pins', JSON.stringify({admin: PIN_CONFIG.admin.pin, staff: PIN_CONFIG.staff.pin})); } catch(e) {}
+  errEl.style.color = '#38a169';
+  errEl.textContent = '✅ تم تغيير الرمز بنجاح!';
+  setTimeout(pinHideChangeModal, 1200);
+}
+
+function pinLoadSavedPins() {
+  try {
+    const saved = localStorage.getItem('smo_pins');
+    if (saved) {
+      const p = JSON.parse(saved);
+      if (p.admin) PIN_CONFIG.admin.pin = p.admin;
+      if (p.staff) PIN_CONFIG.staff.pin = p.staff;
+    }
+  } catch(e) {}
+}
+
+// ==================== END PIN CHANGE ====================
+
+// ==================== SALES RECORDS TAB ====================
+function salesRecordsInit() {
+  salesLoadData();
+  const filt = document.getElementById('sr2-filter').value;
+  const secFilt = document.getElementById('sr2-section').value;
+  const statusFilt = document.getElementById('sr2-status').value;
+
+  let filtered = [...salesData];
+  if (filt !== 'all') filtered = filtered.filter(r => r.month === parseInt(filt));
+  if (secFilt !== 'all') filtered = filtered.filter(r => r.section === secFilt);
+  if (statusFilt !== 'all') filtered = filtered.filter(r => r.status === statusFilt);
+
+  // Sort by date desc
+  filtered.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+  const total = filtered.reduce((s, r) => s + (r.amount || 0), 0);
+  const confirmed = filtered.filter(r => r.status === 'مؤكد').length;
+
+  // KPIs
+  document.getElementById('sr2-kpis').innerHTML = `
+    <div class="s-kpi" style="padding:10px 14px;"><div class="s-kpi-val">${filtered.length}</div><div class="s-kpi-lbl">إجمالي الحجوزات</div></div>
+    <div class="s-kpi green" style="padding:10px 14px;"><div class="s-kpi-val">${confirmed}</div><div class="s-kpi-lbl">مؤكدة</div></div>
+    <div class="s-kpi blue" style="padding:10px 14px;"><div class="s-kpi-val">${total.toLocaleString('ar-SA')} ﷼</div><div class="s-kpi-lbl">إجمالي المبيعات</div></div>
+    <div class="s-kpi purple" style="padding:10px 14px;"><div class="s-kpi-val">${filtered.length ? Math.round(total/filtered.length).toLocaleString('ar-SA') : 0} ﷼</div><div class="s-kpi-lbl">متوسط الحجز</div></div>`;
+
+  document.getElementById('sr2-summary').textContent = filtered.length + ' سجل';
+
+  // Table
+  const body = document.getElementById('sr2-body');
+  body.innerHTML = '';
+  filtered.forEach((r, idx) => {
+    const statusColor = r.status === 'مؤكد' ? '#38a169' : r.status === 'ملغي' ? '#e53e3e' : '#dd6b20';
+    const secColor = r.section === 'قسم الرجال' ? '#3b82f6' : r.section === 'قسم الحريم' ? '#ec4899' : '#8b5cf6';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="cell-num">${idx + 1}</td>
+      <td style="padding:6px 8px;font-size:12px;font-weight:600;color:#1a1a2e;">${escH(r.name||'')}</td>
+      <td style="padding:6px 8px;font-size:11px;direction:ltr;text-align:center;">${r.date||''}</td>
+      <td style="padding:6px 8px;text-align:center;"><span style="background:${secColor}22;color:${secColor};font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;">${escH(r.section||'')}</span></td>
+      <td style="padding:6px 8px;font-size:12px;text-align:center;">${escH(r.duration||'')}</td>
+      <td style="padding:6px 8px;font-size:12px;text-align:center;">${escH(r.source||'')}</td>
+      <td style="padding:6px 8px;font-size:13px;font-weight:800;color:#047857;text-align:center;">${r.amount ? r.amount.toLocaleString('ar-SA')+' ﷼' : '—'}</td>
+      <td style="padding:6px 8px;text-align:center;"><span style="background:${statusColor}22;color:${statusColor};font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;">${escH(r.status||'')}</span></td>
+      <td style="padding:6px 8px;font-size:11px;direction:ltr;text-align:center;">${escH(r.phone||'')}</td>
+      <td style="padding:6px 8px;font-size:11px;color:#718096;">${escH(r.notes||'')}</td>
+      <td style="padding:4px 6px;text-align:center;vertical-align:middle;">
+        <button onclick="sr2EditRow('${r._id}')" style="background:#3182ce;color:#fff;border:none;border-radius:5px;padding:3px 8px;font-size:11px;cursor:pointer;margin-bottom:3px;display:block;width:100%;">✏️ تعديل</button>
+        <button onclick="sr2DeleteRow('${r._id}')" style="background:#e53e3e;color:#fff;border:none;border-radius:5px;padding:3px 8px;font-size:11px;cursor:pointer;display:block;width:100%;">🗑️ حذف</button>
+      </td>`;
+    body.appendChild(tr);
+  });
+}
+
+function sr2DeleteRow(id) {
+  if (!confirm('هل تريد حذف هذا السجل؟')) return;
+  salesData = salesData.filter(r => r._id !== id);
+  salesSaveData();
+  salesRecordsInit();
+}
+
+function sr2EditRow(id) {
+  const r = salesData.find(x => x._id === id);
+  if (!r) return;
+  // Inject inline edit overlay
+  const overlay = document.createElement('div');
+  overlay.id = 'sr2-edit-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:8888;';
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:16px;padding:28px 32px;width:480px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,0.4);direction:rtl;">
+      <div style="font-size:16px;font-weight:800;color:#1a1a2e;margin-bottom:20px;">✏️ تعديل سجل المبيعات</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div><label style="font-size:12px;color:#718096;display:block;margin-bottom:4px;">اسم العميل</label><input id="sr2e-name" class="excel-input" style="border:1px solid #e2e8f0;border-radius:6px;padding:7px 10px;width:100%;box-sizing:border-box;" value="${(r.name||'').replace(/"/g,'&quot;')}"></div>
+        <div><label style="font-size:12px;color:#718096;display:block;margin-bottom:4px;">رقم الجوال</label><input id="sr2e-phone" class="excel-input" style="border:1px solid #e2e8f0;border-radius:6px;padding:7px 10px;width:100%;box-sizing:border-box;" value="${(r.phone||'').replace(/"/g,'&quot;')}"></div>
+        <div><label style="font-size:12px;color:#718096;display:block;margin-bottom:4px;">التاريخ</label><input id="sr2e-date" type="date" class="excel-input" style="border:1px solid #e2e8f0;border-radius:6px;padding:7px 10px;width:100%;box-sizing:border-box;direction:ltr;" value="${r.date||''}"></div>
+        <div><label style="font-size:12px;color:#718096;display:block;margin-bottom:4px;">إجمالي المبلغ</label><input id="sr2e-amount" type="number" class="excel-input" style="border:1px solid #e2e8f0;border-radius:6px;padding:7px 10px;width:100%;box-sizing:border-box;" value="${r.amount||''}"></div>
+        <div><label style="font-size:12px;color:#718096;display:block;margin-bottom:4px;">القسم</label>
+          <select id="sr2e-section" class="excel-select" style="border:1px solid #e2e8f0;border-radius:6px;padding:7px 10px;width:100%;box-sizing:border-box;">
+            ${['قسم الرجال','قسم الحريم','قسمين'].map(v=>`<option ${r.section===v?'selected':''}>${v}</option>`).join('')}
+          </select></div>
+        <div><label style="font-size:12px;color:#718096;display:block;margin-bottom:4px;">مدة الحجز</label>
+          <select id="sr2e-duration" class="excel-select" style="border:1px solid #e2e8f0;border-radius:6px;padding:7px 10px;width:100%;box-sizing:border-box;">
+            ${['يوم','يومين','3 أيام'].map(v=>`<option ${r.duration===v?'selected':''}>${v}</option>`).join('')}
+          </select></div>
+        <div><label style="font-size:12px;color:#718096;display:block;margin-bottom:4px;">المصدر</label>
+          <select id="sr2e-source" class="excel-select" style="border:1px solid #e2e8f0;border-radius:6px;padding:7px 10px;width:100%;box-sizing:border-box;">
+            ${['Google Map','TikTok','Instagram','Snap Chat','Facebook','غير محدد'].map(v=>`<option ${r.source===v?'selected':''}>${v}</option>`).join('')}
+          </select></div>
+        <div><label style="font-size:12px;color:#718096;display:block;margin-bottom:4px;">الحالة</label>
+          <select id="sr2e-status" class="excel-select" style="border:1px solid #e2e8f0;border-radius:6px;padding:7px 10px;width:100%;box-sizing:border-box;">
+            ${['مؤكد','مؤقت','ملغي'].map(v=>`<option ${r.status===v?'selected':''}>${v}</option>`).join('')}
+          </select></div>
+      </div>
+      <div style="margin-top:12px;"><label style="font-size:12px;color:#718096;display:block;margin-bottom:4px;">ملاحظات</label><textarea id="sr2e-notes" class="excel-textarea" style="border:1px solid #e2e8f0;border-radius:6px;padding:7px 10px;width:100%;box-sizing:border-box;min-height:50px;">${r.notes||''}</textarea></div>
+      <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-start;">
+        <button onclick="sr2SaveEdit('${id}')" style="background:#e94560;color:#fff;border:none;border-radius:8px;padding:9px 24px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">💾 حفظ التعديل</button>
+        <button onclick="document.getElementById('sr2-edit-overlay').remove()" style="background:#f7fafc;color:#4a5568;border:1px solid #e2e8f0;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">إلغاء</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+}
+
+function sr2SaveEdit(id) {
+  const r = salesData.find(x => x._id === id);
+  if (!r) return;
+  const dateVal = document.getElementById('sr2e-date').value;
+  const d = new Date(dateVal);
+  r.name = document.getElementById('sr2e-name').value;
+  r.phone = document.getElementById('sr2e-phone').value;
+  r.date = dateVal;
+  r.month = d.getMonth()+1; r.year = d.getFullYear(); r.day = d.getDate();
+  r.amount = parseFloat(document.getElementById('sr2e-amount').value)||0;
+  r.section = document.getElementById('sr2e-section').value;
+  r.duration = document.getElementById('sr2e-duration').value;
+  r.source = document.getElementById('sr2e-source').value;
+  r.status = document.getElementById('sr2e-status').value;
+  r.notes = document.getElementById('sr2e-notes').value;
+  salesSaveData();
+  document.getElementById('sr2-edit-overlay').remove();
+  salesRecordsInit();
+}
+
+// ==================== END SALES RECORDS ====================
+
+// ==================== END SALES ====================
+
 window.onload = async function() {
   // Register service worker
   if ('serviceWorker' in navigator) {
@@ -2062,9 +3670,18 @@ window.onload = async function() {
 </div>
 
 <style>
-@media print {
-  .footer-copyright { display: block !important; }
-}
+  /* ===== PIN LOGIN ===== */
+  .pin-btn { padding:14px;border:2px solid #e2e8f0;border-radius:12px;background:#f7fafc;font-size:20px;font-weight:700;font-family:inherit;cursor:pointer;transition:all 0.15s;color:#1a1a2e; }
+  .pin-btn:hover { background:#e94560;color:#fff;border-color:#e94560; }
+  .pin-btn:active { transform:scale(0.94); }
+  .pin-dot { width:14px;height:14px;border-radius:50%;border:2px solid #cbd5e0;background:#f7fafc;transition:all 0.2s; }
+  .pin-dot.filled { background:#e94560;border-color:#e94560; }
+
+  /* ===== USER BADGE in header ===== */
+  .user-badge { display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.12);border-radius:20px;padding:6px 14px;cursor:pointer;transition:background 0.2s; }
+  .user-badge:hover { background:rgba(255,255,255,0.2); }
+  .user-badge-name { font-size:13px;font-weight:700;color:#fff; }
+  .user-badge-role { font-size:10px;color:rgba(255,255,255,0.7); }
 </style>
 
 </body>
