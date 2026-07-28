@@ -3521,19 +3521,7 @@ function pinApplyPermissions() {
   exportBtns.forEach(b => { b.style.display = isAdmin ? '' : 'none'; });
 }
 
-// Override window.onload to show PIN first
-const _origOnload = window.onload;
-window.onload = async function() {
-  if (_origOnload) await _origOnload();
-  pinLoadSavedPins();
-  document.getElementById('pin-overlay').style.display = 'flex';
-  pinSelectRole('admin');
-  // Hide all tabs initially
-  ['dashboard','records','report','entry','sales-entry','sales-records','sales-report','sales-compare'].forEach(t => {
-    const el = document.getElementById('tab-' + t);
-    if (el) el.style.display = 'none';
-  });
-};
+// PIN init integrated into main window.onload below
 
 // Keyboard PIN support
 document.addEventListener('keydown', function(e) {
@@ -3730,11 +3718,10 @@ function sr2SaveEdit(id) {
 // ==================== END SALES ====================
 
 window.onload = async function() {
-  // Register service worker
+  // ── 1. تسجيل Service Worker ──
   if ('serviceWorker' in navigator) {
     try {
       await navigator.serviceWorker.register('/sw.js');
-      // Listen for sync complete messages
       navigator.serviceWorker.addEventListener('message', e => {
         if (e.data?.type === 'SYNC_COMPLETE') {
           showToast('✅ تمت المزامنة', 'success');
@@ -3744,23 +3731,35 @@ window.onload = async function() {
     } catch(e) { console.warn('SW registration failed:', e); }
   }
 
-  // Open IndexedDB
+  // ── 2. فتح IndexedDB ──
   idb = await openIDB();
   await idbSaveConfig();
 
-  // Set online status badge
+  // ── 3. حالة الاتصال ──
   updateOnlineStatus();
 
-  // Load all records
+  // ── 4. تحميل سجلات التواصل ──
   await loadAllRecords();
 
-  // Subscribe to realtime if online + cloud configured
+  // ── 5. Realtime ──
   if (USE_CLOUD && isOnline) subscribeRealtime();
 
-  // Show config warning if not set
   if (!USE_CLOUD) {
     showToast('💡 لتفعيل السحابة: أضف Supabase URL و KEY في الكود', 'warn');
   }
+
+  // ── 6. PIN: تحميل الرموز المحفوظة وإظهار شاشة الدخول ──
+  pinLoadSavedPins();
+  pinSelectRole('admin');
+
+  // إخفاء جميع التبويبات
+  ['dashboard','records','report','entry','sales-entry','sales-records','sales-report','sales-compare'].forEach(t => {
+    const el = document.getElementById('tab-' + t);
+    if (el) el.style.display = 'none';
+  });
+
+  // إظهار شاشة PIN
+  document.getElementById('pin-overlay').style.display = 'flex';
 };
 </script>
 
