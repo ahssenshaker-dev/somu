@@ -1451,6 +1451,8 @@ function showToast(msg, type='info') {
 // =============================================
 function subscribeRealtime() {
   if (!USE_CLOUD || !sbClient) return;
+
+  // Realtime for CRM records
   sbClient.channel('records-changes')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'records' }, payload => {
       if (payload.eventType === 'INSERT') {
@@ -1473,6 +1475,33 @@ function subscribeRealtime() {
       renderTable();
     })
     .subscribe();
+
+  // Realtime for sales_records
+  sbClient.channel('sales-changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'sales_records' }, async payload => {
+      if (payload.eventType === 'INSERT') {
+        if (!salesData.find(x => x._id === payload.new._id)) {
+          salesData.push(payload.new);
+          try { localStorage.setItem(SALES_DATA_KEY, JSON.stringify(salesData)); } catch(e) {}
+        }
+      } else if (payload.eventType === 'UPDATE') {
+        const idx = salesData.findIndex(x => x._id === payload.new._id);
+        if (idx > -1) salesData[idx] = payload.new;
+        else salesData.push(payload.new);
+        try { localStorage.setItem(SALES_DATA_KEY, JSON.stringify(salesData)); } catch(e) {}
+      } else if (payload.eventType === 'DELETE') {
+        salesData = salesData.filter(x => x._id !== payload.old._id);
+        try { localStorage.setItem(SALES_DATA_KEY, JSON.stringify(salesData)); } catch(e) {}
+      }
+      // أعد رسم التبويب النشط إذا كان متعلقاً بالمبيعات
+      const activeSalesTab = document.querySelector('.tab.active[data-roles]');
+      if (activeSalesTab) {
+        const href = activeSalesTab.getAttribute('onclick') || '';
+        if (href.includes('sales')) salesLoaded = false; // force reload
+      }
+    })
+    .subscribe();
+
 }
 
 function mapFromSupabase(r) {
@@ -2127,10 +2156,10 @@ function showTab(name) {
   if(name==='records') { filteredData=getApplied(); renderTable(); }
   if(name==='report') renderReport();
   if(name==='entry') entryInit();
-  if(name==='sales-entry') salesEntryInit();
-  if(name==='sales-records') salesRecordsInit();
-  if(name==='sales-report') salesReportInit();
-  if(name==='sales-compare') salesCompareInit();
+  if(name==='sales-entry') { salesLoaded=false; salesEntryInit(); }
+  if(name==='sales-records') { salesLoaded=false; salesRecordsInit(); }
+  if(name==='sales-report') { salesLoaded=false; salesReportInit(); }
+  if(name==='sales-compare') { salesLoaded=false; salesCompareInit(); }
 }
 
 // ==================== REPORT ====================
@@ -2858,7 +2887,48 @@ let seRows = [];
 let seAutoTimer = null;
 const MONTH_NAMES = {1:'يناير',2:'فبراير',3:'مارس',4:'أبريل',5:'مايو',6:'يونيو',7:'يوليو',8:'أغسطس',9:'سبتمبر',10:'أكتوبر',11:'نوفمبر',12:'ديسمبر'};
 
-function salesLoadData() {
+// ── حالة المبيعات ──
+let salesLoaded = false;  // منعاً للتحميل المزدوج
+
+async function salesLoadData() {
+  // إذا محمّلة مسبقاً ارجع مباشرة
+  if (salesLoaded && salesData.length > 0) return;
+
+  if (USE_CLOUD && isOnline) {
+    try {
+      const { data: rows, error } = await sbClient
+        .from('sales_records')
+        .select('*')
+        .order('date', { ascending: true });
+
+      if (!error && rows && rows.length > 0) {
+        salesData = rows;
+        // حفظ نسخة محلية backup
+        try { localStorage.setItem(SALES_DATA_KEY, JSON.stringify(salesData)); } catch(e) {}
+        salesLoaded = true;
+        return;
+      }
+
+      // Supabase فارغ → seed البيانات
+      if (!error && rows && rows.length === 0) {
+        const seeded = SALES_SEED.map(r => ({...r, _id: crypto.randomUUID()}));
+        // رفع الـ seed دفعة واحدة
+        const chunks = [];
+        for (let i = 0; i < seeded.length; i += 50) chunks.push(seeded.slice(i, i+50));
+        for (const chunk of chunks) {
+          await sbClient.from('sales_records').insert(chunk);
+        }
+        salesData = seeded;
+        try { localStorage.setItem(SALES_DATA_KEY, JSON.stringify(salesData)); } catch(e) {}
+        salesLoaded = true;
+        return;
+      }
+    } catch(e) {
+      console.warn('Supabase sales load failed, using local:', e);
+    }
+  }
+
+  // Fallback: localStorage
   try {
     const stored = localStorage.getItem(SALES_DATA_KEY);
     if (stored) {
@@ -2867,11 +2937,42 @@ function salesLoadData() {
       salesData = SALES_SEED.map(r => ({...r, _id: crypto.randomUUID()}));
       localStorage.setItem(SALES_DATA_KEY, JSON.stringify(salesData));
     }
-  } catch(e) { salesData = SALES_SEED.map(r => ({...r, _id: crypto.randomUUID()})); }
+  } catch(e) {
+    salesData = SALES_SEED.map(r => ({...r, _id: crypto.randomUUID()}));
+  }
+  salesLoaded = true;
 }
 
-function salesSaveData() {
+async function salesSaveData() {
+  // حفظ محلي دائماً (سريع)
   try { localStorage.setItem(SALES_DATA_KEY, JSON.stringify(salesData)); } catch(e) {}
+}
+
+async function salesUpsertRow(rec) {
+  // حفظ Supabase + localStorage
+  if (USE_CLOUD && isOnline) {
+    try {
+      const { error } = await sbClient
+        .from('sales_records')
+        .upsert(rec, { onConflict: '_id' });
+      if (error) console.warn('Sales upsert failed:', error);
+    } catch(e) { console.warn('Sales upsert error:', e); }
+  }
+  await salesSaveData();
+}
+
+async function salesDeleteRow(id) {
+  if (USE_CLOUD && isOnline) {
+    try {
+      const { error } = await sbClient
+        .from('sales_records')
+        .delete()
+        .eq('_id', id);
+      if (error) console.warn('Sales delete failed:', error);
+    } catch(e) { console.warn('Sales delete error:', e); }
+  }
+  salesData = salesData.filter(r => r._id !== id);
+  await salesSaveData();
 }
 
 function salesGetFiltered(m, y, from, to) {
@@ -2882,8 +2983,8 @@ function salesGetFiltered(m, y, from, to) {
 }
 
 // ===== SALES ENTRY =====
-function salesEntryInit() {
-  salesLoadData();
+async function salesEntryInit() {
+  await salesLoadData();
   const inp = document.getElementById('se-date');
   if (!inp.value) inp.value = new Date().toISOString().split('T')[0];
   if (seRows.length === 0) for(let i=0;i<5;i++) seRows.push(seNewRow());
@@ -2923,7 +3024,7 @@ async function seSaveRow(r) {
     amount: parseFloat(r.amount)||0, status: r.status, notes: r.notes };
   const idx = salesData.findIndex(x=>x._id===r._id);
   if(idx>-1) salesData[idx]=rec; else salesData.push(rec);
-  salesSaveData();
+  await salesUpsertRow(rec);
   r.saved=true;
   const tr=document.querySelector(`#se-body tr[data-seid="${r._id}"]`);
   if(tr){ tr.classList.add('row-saved'); tr.querySelectorAll('[data-field="name"],[data-field="phone"]').forEach(el=>{el.style.color='#1a6b4a';el.style.fontWeight='600';}); }
@@ -2987,8 +3088,8 @@ function seRender() {
 
 // ===== SALES REPORT =====
 let srCharts = {};
-function salesReportInit() {
-  salesLoadData();
+async function salesReportInit() {
+  await salesLoadData();
   const ft = document.getElementById('sr-filter-type').value;
   const rw = document.getElementById('sr-range-wrap');
   const msel = document.getElementById('sr-month');
@@ -3139,8 +3240,8 @@ function cmpSwitchSection(sec) {
   salesCompareInit();
 }
 
-function salesCompareInit() {
-  salesLoadData();
+async function salesCompareInit() {
+  await salesLoadData();
   ['a','b'].forEach(k=>{
     const t=document.getElementById(`cmp-${k}-type`).value;
     const ms=document.getElementById(`cmp-${k}-month`);
@@ -3505,8 +3606,8 @@ function pinLoadSavedPins() {
 // ==================== END PIN CHANGE ====================
 
 // ==================== SALES RECORDS TAB ====================
-function salesRecordsInit() {
-  salesLoadData();
+async function salesRecordsInit() {
+  await salesLoadData();
   const filt = document.getElementById('sr2-filter').value;
   const secFilt = document.getElementById('sr2-section').value;
   const statusFilt = document.getElementById('sr2-status').value;
@@ -3557,10 +3658,9 @@ function salesRecordsInit() {
   });
 }
 
-function sr2DeleteRow(id) {
+async function sr2DeleteRow(id) {
   if (!confirm('هل تريد حذف هذا السجل؟')) return;
-  salesData = salesData.filter(r => r._id !== id);
-  salesSaveData();
+  await salesDeleteRow(id);
   salesRecordsInit();
 }
 
@@ -3620,7 +3720,7 @@ function sr2SaveEdit(id) {
   r.source = document.getElementById('sr2e-source').value;
   r.status = document.getElementById('sr2e-status').value;
   r.notes = document.getElementById('sr2e-notes').value;
-  salesSaveData();
+  await salesUpsertRow(r);
   document.getElementById('sr2-edit-overlay').remove();
   salesRecordsInit();
 }
