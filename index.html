@@ -334,6 +334,21 @@
   .icon-btn { padding: 4px 8px; border: 1px solid #e2e8f0; border-radius: 6px; background: #f7fafc; cursor: pointer; font-size: 12px; font-family: inherit; transition: all 0.15s; }
   .icon-btn:hover { background: #e94560; color: #fff; border-color: #e94560; }
   .icon-btn.del:hover { background: #e53e3e; border-color: #e53e3e; }
+
+
+  /* ===== PIN LOGIN ===== */
+  .pin-btn { padding:14px;border:2px solid #e2e8f0;border-radius:12px;background:#f7fafc;font-size:20px;font-weight:700;font-family:inherit;cursor:pointer;transition:all 0.15s;color:#1a1a2e; }
+  .pin-btn:hover { background:#e94560;color:#fff;border-color:#e94560; }
+  .pin-btn:active { transform:scale(0.94); }
+  .pin-dot { width:14px;height:14px;border-radius:50%;border:2px solid #cbd5e0;background:#f7fafc;transition:all 0.2s; }
+  .pin-dot.filled { background:#e94560;border-color:#e94560; }
+
+  /* ===== USER BADGE in header ===== */
+  .user-badge { display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.12);border-radius:20px;padding:6px 14px;cursor:pointer;transition:background 0.2s; }
+  .user-badge:hover { background:rgba(255,255,255,0.2); }
+  .user-badge-name { font-size:13px;font-weight:700;color:#fff; }
+  .user-badge-role { font-size:10px;color:rgba(255,255,255,0.7); }
+
 </style>
 </head>
 <body>
@@ -345,41 +360,36 @@
     <div style="font-size:42px;margin-bottom:8px;">🏠</div>
     <div style="font-size:20px;font-weight:800;color:#1a1a2e;margin-bottom:4px;">سمو</div>
     <div style="font-size:12px;color:#718096;margin-bottom:28px;">أدخل رمز الدخول PIN</div>
-    <!-- Role selector -->
     <div style="display:flex;gap:8px;margin-bottom:20px;">
-      <button id="pin-role-admin" onclick="pinSelectRole('admin')" style="flex:1;padding:10px;border:2px solid #e94560;border-radius:10px;background:#e94560;color:#fff;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;">🔐 مدير</button>
-      <button id="pin-role-staff" onclick="pinSelectRole('staff')" style="flex:1;padding:10px;border:2px solid #e2e8f0;border-radius:10px;background:#f7fafc;color:#4a5568;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;">👤 موظف</button>
+      <button id="pin-role-admin" style="flex:1;padding:10px;border:2px solid #e94560;border-radius:10px;background:#e94560;color:#fff;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;">🔐 مدير</button>
+      <button id="pin-role-staff" style="flex:1;padding:10px;border:2px solid #e2e8f0;border-radius:10px;background:#f7fafc;color:#4a5568;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;">👤 موظف</button>
     </div>
-    <!-- PIN dots -->
     <div style="display:flex;justify-content:center;gap:12px;margin-bottom:24px;" id="pin-dots">
       <div class="pin-dot"></div><div class="pin-dot"></div>
       <div class="pin-dot"></div><div class="pin-dot"></div>
     </div>
-    <!-- Error message -->
     <div id="pin-error" style="color:#e53e3e;font-size:12px;font-weight:600;min-height:18px;margin-bottom:10px;"></div>
-    <!-- Numpad -->
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
-      <button class="pin-btn" onclick="pinPress('1')">1</button>
-      <button class="pin-btn" onclick="pinPress('2')">2</button>
-      <button class="pin-btn" onclick="pinPress('3')">3</button>
-      <button class="pin-btn" onclick="pinPress('4')">4</button>
-      <button class="pin-btn" onclick="pinPress('5')">5</button>
-      <button class="pin-btn" onclick="pinPress('6')">6</button>
-      <button class="pin-btn" onclick="pinPress('7')">7</button>
-      <button class="pin-btn" onclick="pinPress('8')">8</button>
-      <button class="pin-btn" onclick="pinPress('9')">9</button>
-      <button class="pin-btn" onclick="pinClear()" style="font-size:18px;color:#e53e3e;">⌫</button>
-      <button class="pin-btn" onclick="pinPress('0')">0</button>
-      <button class="pin-btn" onclick="pinSubmit()" style="background:#e94560;color:#fff;font-weight:800;">✓</button>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;" id="pin-numpad">
+      <button class="pin-btn" data-pin="1">1</button>
+      <button class="pin-btn" data-pin="2">2</button>
+      <button class="pin-btn" data-pin="3">3</button>
+      <button class="pin-btn" data-pin="4">4</button>
+      <button class="pin-btn" data-pin="5">5</button>
+      <button class="pin-btn" data-pin="6">6</button>
+      <button class="pin-btn" data-pin="7">7</button>
+      <button class="pin-btn" data-pin="8">8</button>
+      <button class="pin-btn" data-pin="9">9</button>
+      <button class="pin-btn" id="pin-clear-btn" style="font-size:18px;color:#e53e3e;">⌫</button>
+      <button class="pin-btn" data-pin="0">0</button>
+      <button class="pin-btn" id="pin-submit-btn" style="background:#e94560;color:#fff;font-weight:800;">✓</button>
     </div>
-    <!-- Role label -->
     <div id="pin-role-label" style="margin-top:16px;font-size:11px;color:#a0aec0;"></div>
-    <button onclick="pinShowChangeModal()" style="margin-top:10px;background:none;border:none;color:#a0aec0;font-size:11px;cursor:pointer;text-decoration:underline;font-family:inherit;">⚙️ تغيير رمز الدخول</button>
+    <button id="pin-change-btn" style="margin-top:10px;background:none;border:none;color:#a0aec0;font-size:11px;cursor:pointer;text-decoration:underline;font-family:inherit;">⚙️ تغيير رمز الدخول</button>
   </div>
 </div>
 
 <!-- PIN CHANGE MODAL -->
-<div id="pin-change-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:10000;align-items:center;justify-content:center;">
+<div id="pin-change-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:10000;align-items:center;justify-content:center;pointer-events:none;">
   <div style="background:#fff;border-radius:16px;padding:28px 32px;width:380px;max-width:95vw;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.4);direction:rtl;">
     <div style="font-size:18px;font-weight:800;color:#1a1a2e;margin-bottom:6px;">⚙️ تغيير رمز الدخول PIN</div>
     <div style="font-size:12px;color:#718096;margin-bottom:20px;">أدخل الرمز الحالي ثم الرمز الجديد</div>
@@ -3523,9 +3533,32 @@ function pinApplyPermissions() {
 
 // PIN init integrated into main window.onload below
 
+// ── PIN Event Listeners (JS-only, no onclick in HTML) ──
+document.addEventListener('DOMContentLoaded', function() {
+  // Numpad digits
+  document.querySelectorAll('#pin-numpad [data-pin]').forEach(btn => {
+    btn.addEventListener('click', function() { pinPress(this.dataset.pin); });
+  });
+  // Clear
+  const clearBtn = document.getElementById('pin-clear-btn');
+  if (clearBtn) clearBtn.addEventListener('click', pinClear);
+  // Submit
+  const submitBtn = document.getElementById('pin-submit-btn');
+  if (submitBtn) submitBtn.addEventListener('click', pinSubmit);
+  // Role buttons
+  const adminBtn = document.getElementById('pin-role-admin');
+  if (adminBtn) adminBtn.addEventListener('click', function() { pinSelectRole('admin'); });
+  const staffBtn = document.getElementById('pin-role-staff');
+  if (staffBtn) staffBtn.addEventListener('click', function() { pinSelectRole('staff'); });
+  // Change PIN button
+  const changeBtn = document.getElementById('pin-change-btn');
+  if (changeBtn) changeBtn.addEventListener('click', pinShowChangeModal);
+});
+
 // Keyboard PIN support
 document.addEventListener('keydown', function(e) {
-  if (!document.getElementById('pin-overlay') || document.getElementById('pin-overlay').style.display === 'none') return;
+  const overlay = document.getElementById('pin-overlay');
+  if (!overlay || overlay.style.display === 'none') return;
   if (e.key >= '0' && e.key <= '9') pinPress(e.key);
   else if (e.key === 'Backspace') pinClear();
   else if (e.key === 'Enter') pinSubmit();
@@ -3538,6 +3571,7 @@ let pcmCurrentRole = 'admin';
 function pinShowChangeModal() {
   const modal = document.getElementById('pin-change-modal');
   modal.style.display = 'flex';
+  modal.style.pointerEvents = 'all';
   document.getElementById('pcm-current').value = '';
   document.getElementById('pcm-new').value = '';
   document.getElementById('pcm-confirm').value = '';
@@ -3546,7 +3580,9 @@ function pinShowChangeModal() {
 }
 
 function pinHideChangeModal() {
-  document.getElementById('pin-change-modal').style.display = 'none';
+  const modal = document.getElementById('pin-change-modal');
+  modal.style.display = 'none';
+  modal.style.pointerEvents = 'none';
 }
 
 function pcmSelectRole(role) {
@@ -3693,7 +3729,7 @@ function sr2EditRow(id) {
   document.body.appendChild(overlay);
 }
 
-function sr2SaveEdit(id) {
+async function sr2SaveEdit(id) {
   const r = salesData.find(x => x._id === id);
   if (!r) return;
   const dateVal = document.getElementById('sr2e-date').value;
@@ -3768,20 +3804,7 @@ window.onload = async function() {
   جميع الحقوق محفوظة لـ سمو &copy; تطوير A. Shaker
 </div>
 
-<style>
-  /* ===== PIN LOGIN ===== */
-  .pin-btn { padding:14px;border:2px solid #e2e8f0;border-radius:12px;background:#f7fafc;font-size:20px;font-weight:700;font-family:inherit;cursor:pointer;transition:all 0.15s;color:#1a1a2e; }
-  .pin-btn:hover { background:#e94560;color:#fff;border-color:#e94560; }
-  .pin-btn:active { transform:scale(0.94); }
-  .pin-dot { width:14px;height:14px;border-radius:50%;border:2px solid #cbd5e0;background:#f7fafc;transition:all 0.2s; }
-  .pin-dot.filled { background:#e94560;border-color:#e94560; }
 
-  /* ===== USER BADGE in header ===== */
-  .user-badge { display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.12);border-radius:20px;padding:6px 14px;cursor:pointer;transition:background 0.2s; }
-  .user-badge:hover { background:rgba(255,255,255,0.2); }
-  .user-badge-name { font-size:13px;font-weight:700;color:#fff; }
-  .user-badge-role { font-size:10px;color:rgba(255,255,255,0.7); }
-</style>
 
 </body>
 </html>
