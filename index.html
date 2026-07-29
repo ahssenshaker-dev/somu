@@ -3042,68 +3042,70 @@ const MONTH_NAMES = {1:'يناير',2:'فبراير',3:'مارس',4:'أبريل'
 let salesLoaded = false;  // منعاً للتحميل المزدوج
 
 async function salesLoadData() {
+  // إذا البيانات محمّلة ← ارجع فوراً
   if (salesLoaded && salesData.length > 0) return;
 
+  const parseBDates = r => {
+    if (r.bookingDates && typeof r.bookingDates === 'string') {
+      try { r.bookingDates = JSON.parse(r.bookingDates); }
+      catch(e) {
+        r.bookingDates = r.bookingDates.includes('|')
+          ? r.bookingDates.split('|').filter(Boolean)
+          : (r.bookingDates ? [r.bookingDates] : []);
+      }
+    }
+    if (!r.bookingDates || !Array.isArray(r.bookingDates) || !r.bookingDates.length) {
+      r.bookingDates = r.date ? [r.date] : [];
+    }
+    return r;
+  };
+
+  // ── 1. حاول Supabase أولاً ──
   if (USE_CLOUD && isOnline) {
     try {
-      // جلب كل البيانات بـ pagination
-      let allSalesRows = [];
+      let allRows = [];
       let from = 0;
-      const pageSize = 1000;
       while (true) {
         const { data: rows, error } = await sbClient
           .from('sales_records')
           .select('*')
           .order('date', { ascending: true })
-          .range(from, from + pageSize - 1);
-        if (error) throw error;
+          .range(from, from + 999);
+        if (error) { console.warn('Supabase range error:', error.message); break; }
         if (!rows || rows.length === 0) break;
-        allSalesRows = allSalesRows.concat(rows);
-        if (rows.length < pageSize) break;
-        from += pageSize;
+        allRows = allRows.concat(rows);
+        if (rows.length < 1000) break;
+        from += 1000;
       }
 
-      salesData = allSalesRows.map(r => {
-        if (r.bookingDates && typeof r.bookingDates === 'string') {
-          try { r.bookingDates = JSON.parse(r.bookingDates); } catch(e) {
-            r.bookingDates = r.bookingDates.includes('|')
-              ? r.bookingDates.split('|').filter(Boolean)
-              : (r.bookingDates ? [r.bookingDates] : []);
-          }
-        }
-        if (!r.bookingDates || !Array.isArray(r.bookingDates)) {
-          r.bookingDates = r.date ? [r.date] : [];
-        }
-        return r;
-      });
-      try { localStorage.setItem(SALES_DATA_KEY, JSON.stringify(salesData)); } catch(e) {}
-      salesLoaded = true;
-      return;
+      if (allRows.length > 0) {
+        salesData = allRows.map(parseBDates);
+        // حفظ نسخة محلية دائماً
+        try { localStorage.setItem(SALES_DATA_KEY, JSON.stringify(salesData)); } catch(e) {}
+        salesLoaded = true;
+        return;
+      }
+      // Supabase فارغ — لا نُرجع صفر بل نكمل للـ localStorage
     } catch(e) {
-      console.warn('Supabase sales load failed, using local:', e);
+      console.warn('Supabase sales failed:', e.message);
     }
   }
 
-  // Fallback: localStorage
+  // ── 2. localStorage ──
   try {
     const stored = localStorage.getItem(SALES_DATA_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
-      salesData = parsed.map(r => {
-        if (r.bookingDates && typeof r.bookingDates === 'string') {
-          try { r.bookingDates = JSON.parse(r.bookingDates); } catch(e) {
-            r.bookingDates = r.bookingDates.includes('|')
-              ? r.bookingDates.split('|').filter(Boolean)
-              : (r.bookingDates ? [r.bookingDates] : []);
-          }
-        }
-        if (!r.bookingDates || !Array.isArray(r.bookingDates)) {
-          r.bookingDates = r.date ? [r.date] : [];
-        }
-        return r;
-      });
-    } else { salesData = []; }
-  } catch(e) { salesData = []; }
+      if (parsed && parsed.length > 0) {
+        salesData = parsed.map(parseBDates);
+        salesLoaded = true;
+        return;
+      }
+    }
+  } catch(e) { console.warn('localStorage sales parse error:', e); }
+
+  // ── 3. لا يوجد بيانات في أي مكان ← ابقَ فارغاً ──
+  salesData = [];
   salesLoaded = true;
 }
 
@@ -3129,32 +3131,35 @@ function salesCleanRec(rec) {
 
 async function salesUpsertRow(rec) {
   const clean = salesCleanRec(rec);
+  // ── حفظ محلي فوري أولاً ──
+  await salesSaveData();
+  // ── ثم Supabase ──
   if (USE_CLOUD && isOnline) {
     try {
       const { error } = await sbClient
         .from('sales_records')
         .upsert(clean, { onConflict: '_id' });
-      if (error) console.warn('Sales upsert failed:', error.message, JSON.stringify(clean).slice(0,200));
+      if (error) console.warn('Sales upsert failed:', error.message);
     } catch(e) { console.warn('Sales upsert error:', e); }
   }
-  await salesSaveData();
 }
 
 async function salesUpsertBatch(recs) {
-  const cleaned = recs.map(salesCleanRec);
+  // ── حفظ محلي فوري أولاً ──
+  await salesSaveData();
+  // ── ثم Supabase batch ──
   if (USE_CLOUD && isOnline) {
+    const cleaned = recs.map(salesCleanRec);
     try {
-      // batch في chunks من 50
       for (let i = 0; i < cleaned.length; i += 50) {
         const chunk = cleaned.slice(i, i + 50);
         const { error } = await sbClient
           .from('sales_records')
           .upsert(chunk, { onConflict: '_id' });
-        if (error) console.warn('Batch upsert failed:', error.message);
+        if (error) console.warn('Batch upsert chunk error:', error.message);
       }
     } catch(e) { console.warn('Batch upsert error:', e); }
   }
-  await salesSaveData();
 }
 
 async function salesDeleteRow(id) {
