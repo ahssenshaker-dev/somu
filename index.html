@@ -1002,7 +1002,7 @@
         <thead><tr>
           <th class="col-num" style="min-width:40px">رقم</th>
           <th style="min-width:130px;background:#1a3a5c">اسم العميل</th>
-          <th style="min-width:100px;background:#3a3a5c">تاريخ البداية</th>
+          <th style="min-width:100px;background:#3a3a5c">تاريخ الطلب</th>
           <th style="min-width:160px;background:#1a4a6e">تواريخ الحجز</th>
           <th style="min-width:65px;background:#7a5a1a">الأيام</th>
           <th style="min-width:105px;background:#6b46c1">القسم</th>
@@ -4064,7 +4064,7 @@ function sr2EditRow(id) {
   const r = salesData.find(x => x._id === id);
   if (!r) return;
 
-  // Find the row in the table
+  // Find the row
   const allRows = document.querySelectorAll('#sr2-body tr');
   let targetRow = null;
   allRows.forEach(tr => {
@@ -4072,10 +4072,9 @@ function sr2EditRow(id) {
     if (editBtn && editBtn.getAttribute('onclick').includes(id)) targetRow = tr;
   });
 
-  // If already editing this row, do nothing
   if (document.getElementById('sr2-inline-' + id)) return;
 
-  // Cancel any other inline edit
+  // Cancel any other inline edit first
   document.querySelectorAll('[id^="sr2-inline-"]').forEach(el => {
     const oldId = el.id.replace('sr2-inline-','');
     sr2CancelInlineEdit(oldId);
@@ -4083,20 +4082,38 @@ function sr2EditRow(id) {
 
   if (!targetRow) return;
 
-  // Replace cells with editable inputs
   const secs = ['قسم الرجال','قسم الحريم','قسمين'];
   const srcs = ['Google Map','TikTok','Instagram','Snap Chat','Facebook','غير محدد'];
   const stats = ['مؤكد','مؤقت','ملغي'];
-  const bDates = (r.bookingDates && r.bookingDates.length) ? r.bookingDates : (r.date ? [r.date] : []);
+  // بيانات التواريخ الحالية
+  let editBDates = (r.bookingDates && r.bookingDates.length) ? [...r.bookingDates] : (r.date ? [r.date] : []);
 
   targetRow.setAttribute('id', 'sr2-inline-' + id);
   targetRow.style.background = '#fffde7';
+
+  // بناء tags HTML للتواريخ الحالية
+  function buildTagsHTML(dates) {
+    return dates.map((d,i) =>
+      `<span style="background:#3b82f6;color:#fff;border-radius:4px;padding:2px 7px;font-size:10px;display:inline-flex;align-items:center;gap:3px;margin:1px;">
+        ${d}<span onclick="sr2iRemoveDate('${id}',${i})" style="cursor:pointer;font-size:13px;line-height:1;">×</span>
+      </span>`
+    ).join('');
+  }
+
   targetRow.innerHTML = `
-    <td class="cell-num">${targetRow.rowIndex}</td>
+    <td class="cell-num"></td>
     <td><input class="excel-input" id="sr2i-name-${id}" value="${(r.name||'').replace(/"/g,'&quot;')}" placeholder="اسم العميل" style="border:1px solid #e94560;border-radius:4px;padding:5px 7px;width:100%;"></td>
-    <td><input class="excel-input" id="sr2i-date-${id}" type="date" value="${r.date||''}" style="border:1px solid #e94560;border-radius:4px;padding:5px 7px;width:100%;direction:ltr;"></td>
-    <td><input class="excel-input" id="sr2i-bdates-${id}" value="${bDates.join('|')}" placeholder="تواريخ مفصولة بـ |" style="border:1px solid #e94560;border-radius:4px;padding:5px 7px;width:100%;direction:ltr;font-size:11px;"></td>
-    <td><input class="excel-input" id="sr2i-days-${id}" type="number" value="${bDates.length||1}" style="border:1px solid #e94560;border-radius:4px;padding:5px 7px;width:60px;text-align:center;" readonly title="يُحسب تلقائياً"></td>
+    <td><input type="date" id="sr2i-date-${id}" value="${r.date||''}" style="border:1px solid #e94560;border-radius:4px;padding:5px 7px;width:100%;direction:ltr;font-size:11px;outline:none;"></td>
+    <td style="min-width:200px;">
+      <div id="sr2i-tags-${id}" style="display:flex;flex-wrap:wrap;gap:3px;padding:4px;border:1px solid #e94560;border-radius:4px;background:#fff;align-items:center;min-height:34px;">
+        ${buildTagsHTML(editBDates)}
+        <input type="date" id="sr2i-date-add-${id}"
+          style="border:none;outline:none;font-size:11px;direction:ltr;flex:1;min-width:105px;background:transparent;"
+          title="اختر تاريخاً لإضافته"
+          onchange="sr2iAddDate('${id}',this.value);this.value='';">
+      </div>
+    </td>
+    <td style="text-align:center;font-size:13px;font-weight:800;color:#7a5a1a;" id="sr2i-days-${id}">${editBDates.length||1}</td>
     <td><select class="excel-select" id="sr2i-section-${id}" style="border:1px solid #e94560;border-radius:4px;padding:5px 7px;width:100%;">${secs.map(v=>'<option'+(r.section===v?' selected':'')+'>'+v+'</option>').join('')}</select></td>
     <td><select class="excel-select" id="sr2i-source-${id}" style="border:1px solid #e94560;border-radius:4px;padding:5px 7px;width:100%;">${srcs.map(v=>'<option'+(r.source===v?' selected':'')+'>'+v+'</option>').join('')}</select></td>
     <td><input class="excel-input" id="sr2i-amount-${id}" type="number" value="${r.amount||''}" style="border:1px solid #e94560;border-radius:4px;padding:5px 7px;width:100%;text-align:center;"></td>
@@ -4108,15 +4125,50 @@ function sr2EditRow(id) {
       <button onclick="sr2CancelInlineEdit('${id}')" style="background:#718096;color:#fff;border:none;border-radius:5px;padding:4px 9px;font-size:11px;cursor:pointer;display:block;width:100%;">✕ إلغاء</button>
     </td>`;
 
-  // Auto-update days when bdates changes
-  const bdInput = document.getElementById('sr2i-bdates-' + id);
-  const daysInput = document.getElementById('sr2i-days-' + id);
-  if (bdInput && daysInput) {
-    bdInput.addEventListener('input', () => {
-      const parts = bdInput.value.split('|').filter(x=>x.trim());
-      daysInput.value = parts.length || 1;
+  // حفظ التواريخ الحالية على الـ row كـ dataset
+  targetRow._editBDates = editBDates;
+}
+
+// إضافة تاريخ جديد في وضع التعديل
+function sr2iAddDate(id, dateVal) {
+  if (!dateVal) return;
+  const row = document.getElementById('sr2-inline-' + id);
+  if (!row) return;
+  if (!row._editBDates) row._editBDates = [];
+  if (row._editBDates.includes(dateVal)) return;
+  row._editBDates.push(dateVal);
+  row._editBDates.sort();
+  sr2iRefreshTags(id);
+}
+
+// حذف تاريخ في وضع التعديل
+function sr2iRemoveDate(id, idx) {
+  const row = document.getElementById('sr2-inline-' + id);
+  if (!row || !row._editBDates) return;
+  row._editBDates.splice(idx, 1);
+  sr2iRefreshTags(id);
+}
+
+// إعادة رسم الـ tags
+function sr2iRefreshTags(id) {
+  const row = document.getElementById('sr2-inline-' + id);
+  if (!row) return;
+  const dates = row._editBDates || [];
+  const tagsWrap = document.getElementById('sr2i-tags-' + id);
+  const addInp = document.getElementById('sr2i-date-add-' + id);
+  const daysEl = document.getElementById('sr2i-days-' + id);
+  if (tagsWrap) {
+    // أزل الـ spans القديمة فقط، وأبقِ الـ input
+    Array.from(tagsWrap.querySelectorAll('span')).forEach(s => s.remove());
+    // أضف الـ tags الجديدة قبل الـ input
+    dates.forEach((d, i) => {
+      const sp = document.createElement('span');
+      sp.style.cssText = 'background:#3b82f6;color:#fff;border-radius:4px;padding:2px 7px;font-size:10px;display:inline-flex;align-items:center;gap:3px;margin:1px;';
+      sp.innerHTML = d + '<span onclick="sr2iRemoveDate(\''+id+'\','+i+')" style="cursor:pointer;font-size:13px;line-height:1;">×</span>';
+      tagsWrap.insertBefore(sp, addInp || tagsWrap.firstChild);
     });
   }
+  if (daysEl) daysEl.textContent = dates.length || 1;
 }
 
 function sr2CancelInlineEdit(id) {
@@ -4130,20 +4182,21 @@ async function sr2SaveInlineEdit(id) {
 
   const dateVal = document.getElementById('sr2i-date-' + id)?.value || r.date;
   const d = new Date(dateVal);
-  const bDatesRaw = document.getElementById('sr2i-bdates-' + id)?.value || '';
-  const bDates = bDatesRaw.split('|').map(s=>s.trim()).filter(Boolean);
+  // اقرأ التواريخ من _editBDates على الـ row
+  const row = document.getElementById('sr2-inline-' + id);
+  const bDates = (row && row._editBDates && row._editBDates.length) ? row._editBDates : [dateVal];
 
   r.name = document.getElementById('sr2i-name-' + id)?.value || r.name;
   r.phone = document.getElementById('sr2i-phone-' + id)?.value || r.phone;
   r.date = dateVal;
-  r.bookingDates = bDates.length ? bDates : [dateVal];
+  r.bookingDates = bDates;
   r.month = d.getMonth()+1; r.year = d.getFullYear(); r.day = d.getDate();
   r.amount = parseFloat(document.getElementById('sr2i-amount-' + id)?.value) || 0;
   r.section = document.getElementById('sr2i-section-' + id)?.value || r.section;
   r.source = document.getElementById('sr2i-source-' + id)?.value || r.source;
   r.status = document.getElementById('sr2i-status-' + id)?.value || r.status;
   r.notes = document.getElementById('sr2i-notes-' + id)?.value || '';
-  r.duration = r.bookingDates.length > 1 ? r.bookingDates.length + ' أيام' : 'يوم';
+  r.duration = bDates.length > 1 ? bDates.length + ' أيام' : 'يوم';
 
   await salesUpsertRow(r);
   salesRecordsInit();
