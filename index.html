@@ -1309,8 +1309,23 @@ async function loadAllRecords() {
   showToast('جاري تحميل البيانات...', 'info');
   try {
     if (USE_CLOUD && isOnline) {
-      const { data: rows, error } = await sbClient.from('records').select('*').order('full_date', { ascending: true });
-      if (error) throw error;
+
+      // ── جلب كل البيانات بدون حد 1000 (pagination) ──
+      let allRows = [];
+      let from = 0;
+      const pageSize = 1000;
+      while (true) {
+        const { data: rows, error } = await sbClient
+          .from('records')
+          .select('*')
+          .order('full_date', { ascending: true })
+          .range(from, from + pageSize - 1);
+        if (error) throw error;
+        if (!rows || rows.length === 0) break;
+        allRows = allRows.concat(rows);
+        if (rows.length < pageSize) break; // آخر صفحة
+        from += pageSize;
+      }
 
       const mapRow = r => ({
         id:       r.id,
@@ -1327,7 +1342,7 @@ async function loadAllRecords() {
         fullDate: r.full_date || ''
       });
 
-      if (rows.length === 0) {
+      if (allRows.length === 0) {
         // Supabase is empty — seed it from RAW_DATA
         showToast('🔄 جاري رفع البيانات الأساسية...', 'info');
         const toInsert = RAW_DATA.map(r => ({
@@ -1337,18 +1352,15 @@ async function loadAllRecords() {
             fullDate: r.fullDate || (r.day ? '2026-07-' + String(r.day).padStart(2,'0') : '')
           })
         }));
-        // Batch insert in chunks of 50
         for (let i = 0; i < toInsert.length; i += 50) {
           await sbClient.from('records').insert(toInsert.slice(i, i + 50));
         }
-        // Reload after seeding
         const { data: seeded } = await sbClient.from('records').select('*').order('full_date', { ascending: true });
         data = (seeded || []).map(mapRow);
       } else {
-        data = rows.map(mapRow);
+        data = allRows.map(mapRow);
       }
 
-      // Update local IndexedDB cache
       for (const r of data) await idbPut(r);
       showToast('✅ تم تحميل ' + data.length + ' سجل من السحابة', 'success');
 
@@ -1552,11 +1564,12 @@ function subscribeRealtime() {
         salesData = salesData.filter(x => x._id !== payload.old._id);
         try { localStorage.setItem(SALES_DATA_KEY, JSON.stringify(salesData)); } catch(e) {}
       }
-      // أعد رسم التبويب النشط إذا كان متعلقاً بالمبيعات
+      // تحديث البيانات المحلية فقط — بدون force reload
       const activeSalesTab = document.querySelector('.tab.active[data-roles]');
       if (activeSalesTab) {
         const href = activeSalesTab.getAttribute('onclick') || '';
-        if (href.includes('sales')) salesLoaded = false; // force reload
+        if (href.includes('sales-records')) salesRecordsInit();
+        else if (href.includes('sales-report')) salesReportInit();
       }
     })
     .subscribe();
@@ -3029,35 +3042,43 @@ const MONTH_NAMES = {1:'يناير',2:'فبراير',3:'مارس',4:'أبريل'
 let salesLoaded = false;  // منعاً للتحميل المزدوج
 
 async function salesLoadData() {
-  // إذا محمّلة مسبقاً ارجع مباشرة
   if (salesLoaded && salesData.length > 0) return;
 
   if (USE_CLOUD && isOnline) {
     try {
-      const { data: rows, error } = await sbClient
-        .from('sales_records')
-        .select('*')
-        .order('date', { ascending: true });
-
-      if (!error && rows) {
-        // Supabase يخزن bookingDates كـ JSON string — نحوّله لـ array
-        salesData = rows.map(r => {
-          if (r.bookingDates && typeof r.bookingDates === 'string') {
-            try { r.bookingDates = JSON.parse(r.bookingDates); } catch(e) {
-              r.bookingDates = r.bookingDates.includes('|')
-                ? r.bookingDates.split('|').filter(Boolean)
-                : (r.bookingDates ? [r.bookingDates] : []);
-            }
-          }
-          if (!r.bookingDates || !Array.isArray(r.bookingDates)) {
-            r.bookingDates = r.date ? [r.date] : [];
-          }
-          return r;
-        });
-        try { localStorage.setItem(SALES_DATA_KEY, JSON.stringify(salesData)); } catch(e) {}
-        salesLoaded = true;
-        return;
+      // جلب كل البيانات بـ pagination
+      let allSalesRows = [];
+      let from = 0;
+      const pageSize = 1000;
+      while (true) {
+        const { data: rows, error } = await sbClient
+          .from('sales_records')
+          .select('*')
+          .order('date', { ascending: true })
+          .range(from, from + pageSize - 1);
+        if (error) throw error;
+        if (!rows || rows.length === 0) break;
+        allSalesRows = allSalesRows.concat(rows);
+        if (rows.length < pageSize) break;
+        from += pageSize;
       }
+
+      salesData = allSalesRows.map(r => {
+        if (r.bookingDates && typeof r.bookingDates === 'string') {
+          try { r.bookingDates = JSON.parse(r.bookingDates); } catch(e) {
+            r.bookingDates = r.bookingDates.includes('|')
+              ? r.bookingDates.split('|').filter(Boolean)
+              : (r.bookingDates ? [r.bookingDates] : []);
+          }
+        }
+        if (!r.bookingDates || !Array.isArray(r.bookingDates)) {
+          r.bookingDates = r.date ? [r.date] : [];
+        }
+        return r;
+      });
+      try { localStorage.setItem(SALES_DATA_KEY, JSON.stringify(salesData)); } catch(e) {}
+      salesLoaded = true;
+      return;
     } catch(e) {
       console.warn('Supabase sales load failed, using local:', e);
     }
