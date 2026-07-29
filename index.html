@@ -3039,7 +3039,20 @@ async function salesLoadData() {
         .order('date', { ascending: true });
 
       if (!error && rows) {
-        salesData = rows;
+        // Supabase يخزن bookingDates كـ JSON string — نحوّله لـ array
+        salesData = rows.map(r => {
+          if (r.bookingDates && typeof r.bookingDates === 'string') {
+            try { r.bookingDates = JSON.parse(r.bookingDates); } catch(e) {
+              r.bookingDates = r.bookingDates.includes('|')
+                ? r.bookingDates.split('|').filter(Boolean)
+                : (r.bookingDates ? [r.bookingDates] : []);
+            }
+          }
+          if (!r.bookingDates || !Array.isArray(r.bookingDates)) {
+            r.bookingDates = r.date ? [r.date] : [];
+          }
+          return r;
+        });
         try { localStorage.setItem(SALES_DATA_KEY, JSON.stringify(salesData)); } catch(e) {}
         salesLoaded = true;
         return;
@@ -3052,7 +3065,22 @@ async function salesLoadData() {
   // Fallback: localStorage
   try {
     const stored = localStorage.getItem(SALES_DATA_KEY);
-    salesData = stored ? JSON.parse(stored) : [];
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      salesData = parsed.map(r => {
+        if (r.bookingDates && typeof r.bookingDates === 'string') {
+          try { r.bookingDates = JSON.parse(r.bookingDates); } catch(e) {
+            r.bookingDates = r.bookingDates.includes('|')
+              ? r.bookingDates.split('|').filter(Boolean)
+              : (r.bookingDates ? [r.bookingDates] : []);
+          }
+        }
+        if (!r.bookingDates || !Array.isArray(r.bookingDates)) {
+          r.bookingDates = r.date ? [r.date] : [];
+        }
+        return r;
+      });
+    } else { salesData = []; }
   } catch(e) { salesData = []; }
   salesLoaded = true;
 }
@@ -3062,15 +3090,47 @@ async function salesSaveData() {
   try { localStorage.setItem(SALES_DATA_KEY, JSON.stringify(salesData)); } catch(e) {}
 }
 
+// الحقول المسموح بها في جدول Supabase sales_records
+const SALES_FIELDS = ['_id','name','phone','date','contactDate','contactMonth','contactYear','bookingDates','month','year','day','section','duration','source','amount','status','notes'];
+
+function salesCleanRec(rec) {
+  // نبقي فقط الحقول الموجودة في الجدول + نحول arrays لـ JSON text
+  const clean = {};
+  SALES_FIELDS.forEach(f => {
+    if (rec[f] !== undefined && rec[f] !== null && rec[f] !== '') {
+      clean[f] = Array.isArray(rec[f]) ? JSON.stringify(rec[f]) : rec[f];
+    }
+  });
+  if (!clean._id) clean._id = rec._id || crypto.randomUUID();
+  return clean;
+}
+
 async function salesUpsertRow(rec) {
-  // حفظ Supabase + localStorage
+  const clean = salesCleanRec(rec);
   if (USE_CLOUD && isOnline) {
     try {
       const { error } = await sbClient
         .from('sales_records')
-        .upsert(rec, { onConflict: '_id' });
-      if (error) console.warn('Sales upsert failed:', error);
+        .upsert(clean, { onConflict: '_id' });
+      if (error) console.warn('Sales upsert failed:', error.message, JSON.stringify(clean).slice(0,200));
     } catch(e) { console.warn('Sales upsert error:', e); }
+  }
+  await salesSaveData();
+}
+
+async function salesUpsertBatch(recs) {
+  const cleaned = recs.map(salesCleanRec);
+  if (USE_CLOUD && isOnline) {
+    try {
+      // batch في chunks من 50
+      for (let i = 0; i < cleaned.length; i += 50) {
+        const chunk = cleaned.slice(i, i + 50);
+        const { error } = await sbClient
+          .from('sales_records')
+          .upsert(chunk, { onConflict: '_id' });
+        if (error) console.warn('Batch upsert failed:', error.message);
+      }
+    } catch(e) { console.warn('Batch upsert error:', e); }
   }
   await salesSaveData();
 }
@@ -3935,12 +3995,13 @@ async function sr2Import(input) {
       
       const fieldNames = headers.map(h => colMap[h] || null);
       let imported = 0; let skipped = 0;
-      
+      const newRecs = [];
+
       for (let i = 1; i < lines.length; i++) {
         const line = lines[i];
         if (!line.trim()) continue;
-        
-        // Parse CSV line (handle quoted commas)
+
+        // Parse CSV — handle quoted commas
         const vals = [];
         let cur = ''; let inQ = false;
         for (const ch of line) {
@@ -3949,57 +4010,71 @@ async function sr2Import(input) {
           else cur += ch;
         }
         vals.push(cur);
-        
+
         const rec = {};
         fieldNames.forEach((f, fi) => {
           if (f) rec[f] = (vals[fi]||'').replace(/"/g,'').trim();
         });
-        
-        // تحقق من البيانات الأساسية
+
         if (!rec.name && !rec.phone) { skipped++; continue; }
-        
-        // أنشئ _id جديد إذا لم يكن موجوداً
         if (!rec._id) rec._id = crypto.randomUUID();
-        
-        // تحويل الأنواع
+
+        // ─── إصلاح date: يأخذ من contactDate إذا لم يكن موجوداً ───
+        if (!rec.date || rec.date === '') rec.date = rec.contactDate || '';
+        if (!rec.contactDate || rec.contactDate === '') rec.contactDate = rec.date;
+
+        // ─── bookingDates ───
+        if (rec.bookingDates && typeof rec.bookingDates === 'string') {
+          if (rec.bookingDates.includes('|')) {
+            rec.bookingDates = rec.bookingDates.split('|').filter(Boolean);
+          } else if (rec.bookingDates.trim()) {
+            rec.bookingDates = [rec.bookingDates.trim()];
+          } else {
+            rec.bookingDates = rec.date ? [rec.date] : [];
+          }
+        }
+        if (!rec.bookingDates || !Array.isArray(rec.bookingDates) || !rec.bookingDates.length) {
+          rec.bookingDates = rec.date ? [rec.date] : [];
+        }
+
+        // ─── أرقام ───
         rec.amount = parseFloat(rec.amount) || 0;
-        rec.month = parseInt(rec.month) || (rec.date ? parseInt(rec.date.split('-')[1]) : 0);
-        rec.year = parseInt(rec.year) || (rec.date ? parseInt(rec.date.split('-')[0]) : 2026);
-        rec.day = parseInt(rec.day) || (rec.date ? parseInt(rec.date.split('-')[2]) : 0);
-        // احسب contactMonth/contactYear من contactDate
-        if (!rec.contactDate) rec.contactDate = rec.date;
+        if (rec.date) {
+          const dp = rec.date.split('-');
+          rec.year  = parseInt(rec.year)  || parseInt(dp[0]) || 2026;
+          rec.month = parseInt(rec.month) || parseInt(dp[1]) || 0;
+          rec.day   = parseInt(rec.day)   || parseInt(dp[2]) || 0;
+        }
+
+        // ─── contactMonth/contactYear ───
         if (rec.contactDate) {
-          const cd = new Date(rec.contactDate);
+          const cd = new Date(rec.contactDate + 'T00:00:00');
           rec.contactMonth = parseInt(rec.contactMonth) || (cd.getMonth()+1);
           rec.contactYear  = parseInt(rec.contactYear)  || cd.getFullYear();
         } else {
           rec.contactMonth = rec.month;
           rec.contactYear  = rec.year;
         }
-        if (!rec.status) rec.status = 'مؤكد';
+
+        if (!rec.status)  rec.status  = 'مؤكد';
         if (!rec.section) rec.section = 'قسم الرجال';
-        
-        // bookingDates: مفصولة بـ |
-        if (rec.bookingDates && typeof rec.bookingDates === 'string' && rec.bookingDates.includes('|')) {
-          rec.bookingDates = rec.bookingDates.split('|').filter(Boolean);
-        } else if (rec.date) {
-          rec.bookingDates = [rec.date];
-        }
-        
-        // احفظ في المصفوفة
+
         const existIdx = salesData.findIndex(x => x._id === rec._id);
         if (existIdx > -1) salesData[existIdx] = rec;
         else salesData.push(rec);
-        
-        // ارفع لـ Supabase
-        await salesUpsertRow(rec);
+
+        newRecs.push(rec);
         imported++;
       }
-      
+
+      // ─── رفع batch واحد لـ Supabase ───
+      if (newRecs.length > 0) {
+        showToast('⏳ جاري الرفع لـ Supabase...', 'info');
+        await salesUpsertBatch(newRecs);
+      }
       salesLoaded = true;
-      await salesSaveData();
       salesRecordsInit();
-      showToast(`✅ تم استيراد ${imported} سجل${skipped ? ' (تجاهل ' + skipped + ')' : ''}`, 'success');
+      showToast('✅ تم استيراد ' + imported + ' سجل' + (skipped ? ' (تجاهل ' + skipped + ')' : ''), 'success');
     } catch (err) {
       console.error('Import error:', err);
       showToast('❌ خطأ في قراءة الملف: ' + err.message, 'warn');
