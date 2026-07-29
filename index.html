@@ -148,18 +148,31 @@
     body.print-old-report #report-recommendations [contenteditable] { font-size: 7.5px !important; padding: 1px 3px !important; line-height: 1.4 !important; border: none !important; }
 
     /* ── Print: تقرير المبيعات (body.print-sales-report) ── */
-    body.print-sales-report #tab-sales-report { display: block !important; }
-    body.print-sales-report #tab-sales-report .content { padding: 4px !important; margin: 0 !important; }
-    body.print-sales-report #tab-sales-report #sr-kpis { grid-template-columns: repeat(5,1fr) !important; gap: 4px !important; margin-bottom: 5px !important; }
-    body.print-sales-report #tab-sales-report .s-kpi { padding: 5px 8px !important; box-shadow: none !important; border: 1px solid #dde3ec !important; }
-    body.print-sales-report #tab-sales-report .s-kpi-val { font-size: 13px !important; }
-    body.print-sales-report #tab-sales-report .s-kpi-lbl { font-size: 8px !important; margin-top: 1px !important; }
-    body.print-sales-report #tab-sales-report .s-calendar-wrap { padding: 6px !important; box-shadow: none !important; border: 1px solid #dde3ec !important; }
-    body.print-sales-report #tab-sales-report .s-cal-cell { min-height: 28px !important; }
-    body.print-sales-report #tab-sales-report .s-cal-num { font-size: 9px !important; }
-    body.print-sales-report #tab-sales-report .s-cal-booking { font-size: 7.5px !important; }
-    body.print-sales-report #tab-sales-report canvas { max-height: 80px !important; }
-    body.print-sales-report #tab-sales-report .s-chart-card { box-shadow: none !important; border: 1px solid #dde3ec !important; }
+    body.print-sales-report #tab-sales-report { display: block !important; width: 257mm !important; max-width: 257mm !important; }
+    body.print-sales-report #tab-sales-report .content { padding: 0 !important; margin: 0 !important; }
+    /* KPIs row */
+    body.print-sales-report #tab-sales-report #sr-kpis { display: grid !important; grid-template-columns: repeat(5,1fr) !important; gap: 3px !important; margin-bottom: 4px !important; width: 100% !important; }
+    body.print-sales-report #tab-sales-report .s-kpi { padding: 4px 7px !important; box-shadow: none !important; border: 1px solid #dde3ec !important; border-radius: 5px !important; }
+    body.print-sales-report #tab-sales-report .s-kpi-val { font-size: 12px !important; }
+    body.print-sales-report #tab-sales-report .s-kpi-lbl { font-size: 7px !important; margin-top: 1px !important; }
+    /* Main row: calendar + 2 bar charts */
+    body.print-sales-report #tab-sales-report > div:nth-child(3) { display: grid !important; grid-template-columns: 1.55fr 1fr !important; gap: 4px !important; margin-bottom: 4px !important; width: 100% !important; }
+    body.print-sales-report #tab-sales-report > div:nth-child(3) > div:last-child { display: grid !important; grid-template-rows: 1fr 1fr !important; gap: 4px !important; }
+    /* Bottom row: 2 donuts */
+    body.print-sales-report #tab-sales-report > div:nth-child(4) { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 4px !important; width: 100% !important; }
+    /* Calendar */
+    body.print-sales-report #tab-sales-report .s-calendar-wrap { padding: 5px !important; box-shadow: none !important; border: 1px solid #dde3ec !important; border-radius: 5px !important; }
+    body.print-sales-report #tab-sales-report .s-cal-grid { gap: 2px !important; }
+    body.print-sales-report #tab-sales-report .s-cal-cell { min-height: 24px !important; padding: 2px 3px !important; border-radius: 3px !important; }
+    body.print-sales-report #tab-sales-report .s-cal-num { font-size: 8px !important; }
+    body.print-sales-report #tab-sales-report .s-cal-day-header { font-size: 8px !important; padding: 3px 0 !important; }
+    body.print-sales-report #tab-sales-report .s-cal-booking { font-size: 7px !important; margin-top: 1px !important; }
+    body.print-sales-report #tab-sales-report .s-cal-title { font-size: 11px !important; }
+    /* Charts */
+    body.print-sales-report #tab-sales-report .s-chart-card { box-shadow: none !important; border: 1px solid #dde3ec !important; border-radius: 5px !important; padding: 6px !important; }
+    body.print-sales-report #tab-sales-report .s-chart-title { font-size: 9px !important; margin-bottom: 4px !important; }
+    body.print-sales-report #tab-sales-report canvas { max-height: 72px !important; max-width: 100% !important; }
+    body.print-sales-report #tab-sales-report .s-chart-card > div:last-child { max-height: 115px !important; }
 
     /* ── Print: مقارنة المبيعات (body.print-cmp-sales) ── */
     body.print-cmp-sales #tab-sales-compare { display: block !important; }
@@ -2166,10 +2179,10 @@ function showTab(name) {
   if(name==='records') { filteredData=getApplied(); renderTable(); }
   if(name==='report') renderReport();
   if(name==='entry') entryInit();
-  if(name==='sales-entry') { salesLoaded=false; salesEntryInit(); }
-  if(name==='sales-records') { salesLoaded=false; salesRecordsInit(); }
-  if(name==='sales-report') { salesLoaded=false; salesReportInit(); }
-  if(name==='sales-compare') { salesLoaded=false; salesCompareInit(); }
+  if(name==='sales-entry') salesEntryInit();
+  if(name==='sales-records') salesRecordsInit();
+  if(name==='sales-report') salesReportInit();
+  if(name==='sales-compare') salesCompareInit();
 }
 
 // ==================== REPORT ====================
@@ -2911,24 +2924,8 @@ async function salesLoadData() {
         .select('*')
         .order('date', { ascending: true });
 
-      if (!error && rows && rows.length > 0) {
+      if (!error && rows) {
         salesData = rows;
-        // حفظ نسخة محلية backup
-        try { localStorage.setItem(SALES_DATA_KEY, JSON.stringify(salesData)); } catch(e) {}
-        salesLoaded = true;
-        return;
-      }
-
-      // Supabase فارغ → seed البيانات
-      if (!error && rows && rows.length === 0) {
-        const seeded = SALES_SEED.map(r => ({...r, _id: crypto.randomUUID()}));
-        // رفع الـ seed دفعة واحدة
-        const chunks = [];
-        for (let i = 0; i < seeded.length; i += 50) chunks.push(seeded.slice(i, i+50));
-        for (const chunk of chunks) {
-          await sbClient.from('sales_records').insert(chunk);
-        }
-        salesData = seeded;
         try { localStorage.setItem(SALES_DATA_KEY, JSON.stringify(salesData)); } catch(e) {}
         salesLoaded = true;
         return;
@@ -2941,15 +2938,8 @@ async function salesLoadData() {
   // Fallback: localStorage
   try {
     const stored = localStorage.getItem(SALES_DATA_KEY);
-    if (stored) {
-      salesData = JSON.parse(stored);
-    } else {
-      salesData = SALES_SEED.map(r => ({...r, _id: crypto.randomUUID()}));
-      localStorage.setItem(SALES_DATA_KEY, JSON.stringify(salesData));
-    }
-  } catch(e) {
-    salesData = SALES_SEED.map(r => ({...r, _id: crypto.randomUUID()}));
-  }
+    salesData = stored ? JSON.parse(stored) : [];
+  } catch(e) { salesData = []; }
   salesLoaded = true;
 }
 
@@ -3002,7 +2992,7 @@ async function salesEntryInit() {
 }
 
 function seNewRow() {
-  return { _id: crypto.randomUUID(), saved: false, name:'', phone:'', date:'', section:'قسم الرجال', duration:'يوم', source:'Google Map', amount:'', status:'مؤكد', notes:'' };
+  return { _id: crypto.randomUUID(), saved: false, name:'', phone:'', date:'', bookingDates:[], section:'قسم الرجال', duration:'', source:'Google Map', amount:'', status:'مؤكد', notes:'' };
 }
 
 function seAddRow() {
@@ -3028,9 +3018,14 @@ async function seSaveRow(r) {
   const dateVal = r.date || dateInp.value;
   if (!dateVal || (!r.name && !r.phone)) return;
   const d = new Date(dateVal);
-  const rec = { _id: r._id, name: r.name, phone: r.phone, date: dateVal,
-    month: d.getMonth()+1, year: d.getFullYear(), day: d.getDate(),
-    section: r.section, duration: r.duration, source: r.source,
+  // bookingDates: مصفوفة التواريخ، إن لم تكن موجودة استخدم التاريخ الرئيسي فقط
+  const dates = (r.bookingDates && r.bookingDates.length) ? r.bookingDates : [dateVal];
+  const firstDate = dates[0] || dateVal;
+  const fd = new Date(firstDate);
+  const rec = { _id: r._id, name: r.name, phone: r.phone, date: firstDate,
+    bookingDates: dates,
+    month: fd.getMonth()+1, year: fd.getFullYear(), day: fd.getDate(),
+    section: r.section, duration: dates.length > 1 ? dates.length + ' أيام' : 'يوم', source: r.source,
     amount: parseFloat(r.amount)||0, status: r.status, notes: r.notes };
   const idx = salesData.findIndex(x=>x._id===r._id);
   if(idx>-1) salesData[idx]=rec; else salesData.push(rec);
@@ -3048,6 +3043,45 @@ async function seSaveAll() {
   for(const r of unsaved) await seSaveRow(r);
   showToast('✅ تم حفظ '+unsaved.length+' حجز','success');
   seRender();
+}
+
+
+function seAddDate(seid, dateVal) {
+  if (!dateVal) return;
+  const r = seRows.find(x => x._id === seid);
+  if (!r) return;
+  if (!r.bookingDates) r.bookingDates = [];
+  if (r.bookingDates.includes(dateVal)) return; // لا تكرار
+  r.bookingDates.push(dateVal);
+  r.bookingDates.sort();
+  if (!r.date) r.date = r.bookingDates[0];
+  r.saved = false;
+  // أعد رسم خلية التواريخ فقط
+  const wrap = document.getElementById('se-dates-' + seid);
+  if (wrap) {
+    const spans = wrap.querySelectorAll('span');
+    spans.forEach(s => s.remove());
+    const inp = wrap.querySelector('input');
+    r.bookingDates.forEach((d, i) => {
+      const span = document.createElement('span');
+      span.style.cssText = 'background:#3b82f6;color:#fff;border-radius:4px;padding:2px 7px;font-size:10px;display:inline-flex;align-items:center;gap:3px;';
+      span.innerHTML = d + '<span onclick="seRemoveDate(\''+seid+'\','+i+')" style="cursor:pointer;font-size:13px;line-height:1;margin-right:1px;" title="حذف">×</span>';
+      wrap.insertBefore(span, inp);
+    });
+  }
+  // حفظ تلقائي
+  clearTimeout(seAutoTimer);
+  seAutoTimer = setTimeout(() => { if (r.name || r.phone) seSaveRow(r); }, 600);
+}
+
+function seRemoveDate(seid, idx) {
+  const r = seRows.find(x => x._id === seid);
+  if (!r || !r.bookingDates) return;
+  r.bookingDates.splice(idx, 1);
+  r.saved = false;
+  seRender();
+  clearTimeout(seAutoTimer);
+  seAutoTimer = setTimeout(() => { if (r.name || r.phone) seSaveRow(r); }, 600);
 }
 
 function seUpdateCounts() {
@@ -3074,9 +3108,13 @@ function seRender() {
       <td><select class="excel-select" data-field="section" data-seid="${r._id}">
         ${['قسم الرجال','قسم الحريم','قسمين'].map(v=>`<option ${r.section===v?'selected':''}>${v}</option>`).join('')}
       </select></td>
-      <td><select class="excel-select" data-field="duration" data-seid="${r._id}">
-        ${['يوم','يومين','3 أيام'].map(v=>`<option ${r.duration===v?'selected':''}>${v}</option>`).join('')}
-      </select></td>
+      <td style="min-width:190px;vertical-align:middle;">
+        <div style="display:flex;flex-wrap:wrap;gap:3px;padding:4px;min-height:32px;border:1px solid #e2e8f0;border-radius:5px;background:#fafbfc;align-items:center;" id="se-dates-${r._id}">
+          ${(r.bookingDates&&r.bookingDates.length?r.bookingDates:[r.date||dateVal]).filter(Boolean).map((d,i)=>`<span style="background:#3b82f6;color:#fff;border-radius:4px;padding:2px 7px;font-size:10px;display:inline-flex;align-items:center;gap:3px;cursor:default;">${d}<span onclick="seRemoveDate('${r._id}',${i})" style="cursor:pointer;font-size:13px;line-height:1;margin-right:1px;" title="حذف">×</span></span>`).join('')}
+          <input type="date" id="se-date-inp-${r._id}" style="border:none;outline:none;font-size:11px;direction:ltr;flex:1;min-width:105px;background:transparent;" 
+            onchange="seAddDate('${r._id}', this.value); this.value='';" title="اختر تاريخاً إضافياً">
+        </div>
+      </td>
       <td><select class="excel-select" data-field="source" data-seid="${r._id}">
         ${['Google Map','TikTok','Instagram','Snap Chat','Facebook','غير محدد'].map(v=>`<option ${r.source===v?'selected':''}>${v}</option>`).join('')}
       </select></td>
@@ -3147,7 +3185,15 @@ function srRenderKPIs(d, label) {
 
 function srRenderCalendar(d, ft) {
   const bookingsByDate = {};
-  d.forEach(r=>{ if(!bookingsByDate[r.date]) bookingsByDate[r.date]=[]; bookingsByDate[r.date].push(r); });
+  d.forEach(r=>{
+    // استخدم bookingDates إذا متوفرة، وإلا استخدم date الرئيسي
+    const dates = (r.bookingDates && r.bookingDates.length) ? r.bookingDates : [r.date];
+    dates.filter(Boolean).forEach(dt => {
+      if(!bookingsByDate[dt]) bookingsByDate[dt]=[];
+      // لا تكرر نفس السجل في نفس التاريخ
+      if(!bookingsByDate[dt].find(x=>x._id===r._id)) bookingsByDate[dt].push(r);
+    });
+  });
 
   // Get the month to display
   let year=2026, month;
@@ -3219,11 +3265,18 @@ function srRenderCharts(d) {
 }
 
 function srPrint() {
-  // Add class to body so only sales report shows
   document.body.classList.remove('print-old-report','print-sales-report','print-cmp-sales','print-cmp-inq');
   document.body.classList.add('print-sales-report');
-  window.print();
-  document.body.classList.remove('print-sales-report');
+  // إعادة رسم الـ charts بحجم مناسب للطباعة قبل طباعة
+  Object.values(srCharts).forEach(ch => { try { ch.resize(); } catch(e){} });
+  setTimeout(() => {
+    window.print();
+    setTimeout(() => {
+      document.body.classList.remove('print-sales-report');
+      // إعادة الـ charts لحجمها الأصلي
+      Object.values(srCharts).forEach(ch => { try { ch.resize(); } catch(e){} });
+    }, 500);
+  }, 300);
 }
 
 function cmpPrint() {
