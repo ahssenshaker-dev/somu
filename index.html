@@ -968,10 +968,10 @@
     <span class="s-label" style="font-size:13px;">📋 سجل المبيعات</span>
     <select class="s-select" id="sr2-filter" onchange="salesRecordsInit()" style="padding:5px 10px;font-size:12px;">
       <option value="all">جميع الشهور</option>
-      <option value="5">مايو 2026 (تواصل)</option>
-      <option value="6">يونيو 2026 (تواصل)</option>
-      <option value="7" selected>يوليو 2026 (تواصل)</option>
-      <option value="8">أغسطس 2026 (تواصل)</option>
+      <option value="5">مايو 2026</option>
+      <option value="6">يونيو 2026</option>
+      <option value="7" selected>يوليو 2026</option>
+      <option value="8">أغسطس 2026</option>
     </select>
     <select class="s-select" id="sr2-section" onchange="salesRecordsInit()" style="padding:5px 10px;font-size:12px;">
       <option value="all">جميع الأقسام</option>
@@ -3151,17 +3151,17 @@ async function salesDeleteRow(id) {
 }
 
 function salesGetFiltered(m, y, from, to) {
-  // الفلترة بحسب تاريخ التواصل (contactDate) إذا متوفر، وإلا تاريخ الحجز
+  // الفلترة بحسب تاريخ الحجز (date/month) — نفس ما يظهر في السجلات
   if (from && to) {
     return salesData.filter(r => {
-      const cd = r.contactDate || r.date;
-      return cd >= from && cd <= to;
+      const d = r.date || r.contactDate;
+      return d >= from && d <= to;
     });
   }
   return salesData.filter(r => {
-    const cMonth = r.contactMonth || r.month;
-    const cYear = r.contactYear || r.year;
-    return cMonth === parseInt(m) && cYear === (y||2026);
+    const rMonth = r.month || r.contactMonth;
+    const rYear  = r.year  || r.contactYear  || 2026;
+    return rMonth === parseInt(m) && rYear === (y||2026);
   });
 }
 
