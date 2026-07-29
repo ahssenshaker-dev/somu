@@ -148,31 +148,34 @@
     body.print-old-report #report-recommendations [contenteditable] { font-size: 7.5px !important; padding: 1px 3px !important; line-height: 1.4 !important; border: none !important; }
 
     /* ── Print: تقرير المبيعات (body.print-sales-report) ── */
-    body.print-sales-report #tab-sales-report { display: block !important; width: 257mm !important; max-width: 257mm !important; }
+    body.print-sales-report #tab-sales-report { display: block !important; }
     body.print-sales-report #tab-sales-report .content { padding: 0 !important; margin: 0 !important; }
-    /* KPIs row */
-    body.print-sales-report #tab-sales-report #sr-kpis { display: grid !important; grid-template-columns: repeat(5,1fr) !important; gap: 3px !important; margin-bottom: 4px !important; width: 100% !important; }
-    body.print-sales-report #tab-sales-report .s-kpi { padding: 4px 7px !important; box-shadow: none !important; border: 1px solid #dde3ec !important; border-radius: 5px !important; }
-    body.print-sales-report #tab-sales-report .s-kpi-val { font-size: 12px !important; }
-    body.print-sales-report #tab-sales-report .s-kpi-lbl { font-size: 7px !important; margin-top: 1px !important; }
-    /* Main row: calendar + 2 bar charts */
-    body.print-sales-report #tab-sales-report > div:nth-child(3) { display: grid !important; grid-template-columns: 1.55fr 1fr !important; gap: 4px !important; margin-bottom: 4px !important; width: 100% !important; }
-    body.print-sales-report #tab-sales-report > div:nth-child(3) > div:last-child { display: grid !important; grid-template-rows: 1fr 1fr !important; gap: 4px !important; }
-    /* Bottom row: 2 donuts */
-    body.print-sales-report #tab-sales-report > div:nth-child(4) { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 4px !important; width: 100% !important; }
-    /* Calendar */
-    body.print-sales-report #tab-sales-report .s-calendar-wrap { padding: 5px !important; box-shadow: none !important; border: 1px solid #dde3ec !important; border-radius: 5px !important; }
-    body.print-sales-report #tab-sales-report .s-cal-grid { gap: 2px !important; }
-    body.print-sales-report #tab-sales-report .s-cal-cell { min-height: 24px !important; padding: 2px 3px !important; border-radius: 3px !important; }
-    body.print-sales-report #tab-sales-report .s-cal-num { font-size: 8px !important; }
-    body.print-sales-report #tab-sales-report .s-cal-day-header { font-size: 8px !important; padding: 3px 0 !important; }
-    body.print-sales-report #tab-sales-report .s-cal-booking { font-size: 7px !important; margin-top: 1px !important; }
-    body.print-sales-report #tab-sales-report .s-cal-title { font-size: 11px !important; }
-    /* Charts */
-    body.print-sales-report #tab-sales-report .s-chart-card { box-shadow: none !important; border: 1px solid #dde3ec !important; border-radius: 5px !important; padding: 6px !important; }
-    body.print-sales-report #tab-sales-report .s-chart-title { font-size: 9px !important; margin-bottom: 4px !important; }
-    body.print-sales-report #tab-sales-report canvas { max-height: 72px !important; max-width: 100% !important; }
-    body.print-sales-report #tab-sales-report .s-chart-card > div:last-child { max-height: 115px !important; }
+    /* KPIs */
+    body.print-sales-report #sr-kpis { display: grid !important; grid-template-columns: repeat(5,1fr) !important; gap: 3px !important; margin-bottom: 4px !important; }
+    body.print-sales-report .s-kpi { padding: 4px 8px !important; box-shadow: none !important; border: 1px solid #dde3ec !important; break-inside: avoid; }
+    body.print-sales-report .s-kpi-val { font-size: 13px !important; }
+    body.print-sales-report .s-kpi-lbl { font-size: 7px !important; margin-top: 0 !important; }
+    /* Row 1: calendar + bar charts — fixed widths */
+    body.print-sales-report #tab-sales-report > div:nth-child(3) { display: grid !important; grid-template-columns: 155mm 88mm !important; gap: 4mm !important; margin-bottom: 4mm !important; }
+    body.print-sales-report #tab-sales-report > div:nth-child(3) > div:last-child { display: grid !important; grid-template-rows: 1fr 1fr !important; gap: 4mm !important; }
+    /* Row 2: 2 donuts — equal halves */
+    body.print-sales-report #tab-sales-report > div:nth-child(4) { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 4mm !important; }
+    /* Calendar sizing */
+    body.print-sales-report .s-calendar-wrap { padding: 4px !important; box-shadow: none !important; border: 1px solid #dde3ec !important; }
+    body.print-sales-report .s-cal-header { margin-bottom: 5px !important; }
+    body.print-sales-report .s-cal-title { font-size: 10px !important; }
+    body.print-sales-report .s-cal-grid { gap: 2px !important; }
+    body.print-sales-report .s-cal-day-header { font-size: 7px !important; padding: 2px 0 !important; }
+    body.print-sales-report .s-cal-cell { min-height: 22px !important; padding: 2px 2px !important; border-radius: 2px !important; }
+    body.print-sales-report .s-cal-num { font-size: 7.5px !important; }
+    body.print-sales-report .s-cal-booking { font-size: 6.5px !important; margin-top: 1px !important; line-height: 1.2 !important; }
+    /* Chart cards */
+    body.print-sales-report .s-chart-card { box-shadow: none !important; border: 1px solid #dde3ec !important; padding: 5px !important; break-inside: avoid; }
+    body.print-sales-report .s-chart-title { font-size: 8px !important; margin-bottom: 3px !important; }
+    body.print-sales-report canvas { max-height: 65px !important; width: 100% !important; }
+    /* Donuts need more height */
+    body.print-sales-report #tab-sales-report > div:nth-child(4) canvas { max-height: 100px !important; }
+    body.print-sales-report #tab-sales-report > div:nth-child(4) > div > div:last-child { max-height: 105px !important; }
 
     /* ── Print: مقارنة المبيعات (body.print-cmp-sales) ── */
     body.print-cmp-sales #tab-sales-compare { display: block !important; }
@@ -935,7 +938,15 @@
 
 <!-- ========== SALES RECORDS TAB ========== -->
 <div class="content" id="tab-sales-records" style="display:none">
-  <div class="s-toolbar" style="padding:10px 16px;gap:10px;flex-wrap:wrap;">
+  <!-- استعلام سريع عن التاريخ -->
+  <div style="background:#fff;border-radius:10px;padding:10px 16px;margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+    <span style="font-size:13px;font-weight:700;color:#1a1a2e;">🔍 استعلام سريع</span>
+    <span style="font-size:12px;color:#718096;">هل يوم</span>
+    <input type="date" id="sr2-query-date" style="padding:5px 10px;border:2px solid #e94560;border-radius:8px;font-size:12px;direction:ltr;outline:none;" onchange="sr2QueryDate()">
+    <span style="font-size:12px;color:#718096;">محجوز؟</span>
+    <div id="sr2-query-result" style="font-size:13px;font-weight:700;min-width:180px;"></div>
+  </div>
+  <div class="s-toolbar" style="padding:10px 16px;gap:8px;flex-wrap:wrap;">
     <span class="s-label" style="font-size:13px;">📋 سجل المبيعات</span>
     <select class="s-select" id="sr2-filter" onchange="salesRecordsInit()" style="padding:5px 10px;font-size:12px;">
       <option value="all">جميع الشهور</option>
@@ -958,6 +969,11 @@
     </select>
     <span class="s-spacer"></span>
     <span id="sr2-summary" style="font-size:12px;color:#718096;font-weight:700;"></span>
+    <!-- تصدير -->
+    <button onclick="sr2Export()" style="padding:6px 14px;border-radius:7px;border:none;background:#38a169;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">📥 تصدير Excel</button>
+    <!-- استيراد -->
+    <button onclick="document.getElementById('sr2-import-file').click()" style="padding:6px 14px;border-radius:7px;border:none;background:#3182ce;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">📤 استيراد Excel</button>
+    <input type="file" id="sr2-import-file" accept=".xlsx,.xls,.csv" style="display:none" onchange="sr2Import(this)">
   </div>
   <!-- KPI strip -->
   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;" id="sr2-kpis"></div>
@@ -966,17 +982,18 @@
     <div class="excel-scroll">
       <table class="excel-table" id="sr2-table" style="min-width:900px;">
         <thead><tr>
-          <th class="col-num" style="min-width:44px">رقم</th>
-          <th style="min-width:140px;background:#1a3a5c">اسم العميل</th>
-          <th style="min-width:105px;background:#3a3a5c">التاريخ</th>
-          <th style="min-width:115px;background:#6b46c1">القسم</th>
-          <th style="min-width:85px;background:#7a5a1a">مدة الحجز</th>
-          <th style="min-width:110px;background:#1a6b4a">المصدر</th>
-          <th style="min-width:110px;background:#0f4a2a">إجمالي المبلغ</th>
-          <th style="min-width:85px;background:#374a1e">الحالة</th>
-          <th style="min-width:120px;background:#2c4a6e">رقم الجوال</th>
-          <th style="min-width:160px;background:#374a1e">ملاحظات</th>
-          <th style="min-width:80px;background:#2d3a52">إجراءات</th>
+          <th class="col-num" style="min-width:40px">رقم</th>
+          <th style="min-width:130px;background:#1a3a5c">اسم العميل</th>
+          <th style="min-width:100px;background:#3a3a5c">تاريخ البداية</th>
+          <th style="min-width:160px;background:#1a4a6e">تواريخ الحجز</th>
+          <th style="min-width:65px;background:#7a5a1a">الأيام</th>
+          <th style="min-width:105px;background:#6b46c1">القسم</th>
+          <th style="min-width:100px;background:#1a6b4a">المصدر</th>
+          <th style="min-width:105px;background:#0f4a2a">المبلغ</th>
+          <th style="min-width:75px;background:#374a1e">الحالة</th>
+          <th style="min-width:115px;background:#2c4a6e">الجوال</th>
+          <th style="min-width:140px;background:#374a1e">ملاحظات</th>
+          <th style="min-width:75px;background:#2d3a52">إجراءات</th>
         </tr></thead>
         <tbody id="sr2-body"></tbody>
       </table>
@@ -3683,6 +3700,160 @@ function pinLoadSavedPins() {
 // ==================== END PIN CHANGE ====================
 
 // ==================== SALES RECORDS TAB ====================
+
+// ==================== SALES IMPORT / EXPORT / DATE QUERY ====================
+
+function sr2Export() {
+  const data = salesData;
+  if (!data.length) { showToast('لا يوجد بيانات للتصدير', 'info'); return; }
+  
+  // Build CSV with BOM for Arabic support
+  const cols = ['_id','name','phone','date','bookingDates','section','duration','source','amount','status','notes','month','year','day'];
+  const headers = ['المعرف','الاسم','الجوال','تاريخ البداية','تواريخ الحجز','القسم','مدة الحجز','المصدر','المبلغ','الحالة','ملاحظات','الشهر','السنة','اليوم'];
+  
+  const NL = String.fromCharCode(10); const BOM = String.fromCharCode(0xFEFF);
+  let csv = BOM + headers.join(',') + NL;
+  data.forEach(r => {
+    const bDates = (r.bookingDates && r.bookingDates.length) ? r.bookingDates.join('|') : (r.date || '');
+    const row = [
+      r._id||'', r.name||'', r.phone||'', r.date||'', bDates,
+      r.section||'', r.duration||'', r.source||'',
+      r.amount||0, r.status||'', (r.notes||'').replace(/,/g,'،'),
+      r.month||'', r.year||'', r.day||''
+    ].map(v => '"'+v+'"').join(',');
+    csv += row + NL;
+  });
+  
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'سجل_المبيعات_' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click(); URL.revokeObjectURL(url);
+  showToast('✅ تم التصدير', 'success');
+}
+
+async function sr2Import(input) {
+  const file = input.files[0];
+  if (!file) return;
+  input.value = '';
+  
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const text = e.target.result;
+      const lines = text.split(String.fromCharCode(10)).filter(l => l.trim());
+      if (lines.length < 2) { showToast('الملف فارغ أو غير صحيح', 'warn'); return; }
+      
+      // Parse headers
+      const headerLine = lines[0].replace(/^\uFEFF/, ''); // remove BOM
+      const headers = headerLine.split(',').map(h => h.replace(/"/g,'').trim());
+      
+      // Map Arabic headers to field names
+      const colMap = {
+        'المعرف':'_id','الاسم':'name','الاسم كامل':'name','اسم العميل':'name',
+        'الجوال':'phone','رقم الجوال':'phone','الجوال':'phone',
+        'تاريخ البداية':'date','التاريخ':'date',
+        'تواريخ الحجز':'bookingDates',
+        'القسم':'section','مدة الحجز':'duration',
+        'المصدر':'source','مصدر التواصل':'source',
+        'المبلغ':'amount','إجمالي المبلغ':'amount','الاجمالي':'amount','اجمالي':'amount',
+        'الحالة':'status','حالة الحجز':'status',
+        'ملاحظات':'notes','الشهر':'month','السنة':'year','اليوم':'day',
+        // English fallback
+        '_id':'_id','name':'name','phone':'phone','date':'date',
+        'bookingDates':'bookingDates','section':'section','duration':'duration',
+        'source':'source','amount':'amount','status':'status','notes':'notes'
+      };
+      
+      const fieldNames = headers.map(h => colMap[h] || null);
+      let imported = 0; let skipped = 0;
+      
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i];
+        if (!line.trim()) continue;
+        
+        // Parse CSV line (handle quoted commas)
+        const vals = [];
+        let cur = ''; let inQ = false;
+        for (const ch of line) {
+          if (ch === '"') inQ = !inQ;
+          else if (ch === ',' && !inQ) { vals.push(cur); cur = ''; }
+          else cur += ch;
+        }
+        vals.push(cur);
+        
+        const rec = {};
+        fieldNames.forEach((f, fi) => {
+          if (f) rec[f] = (vals[fi]||'').replace(/"/g,'').trim();
+        });
+        
+        // تحقق من البيانات الأساسية
+        if (!rec.name && !rec.phone) { skipped++; continue; }
+        
+        // أنشئ _id جديد إذا لم يكن موجوداً
+        if (!rec._id) rec._id = crypto.randomUUID();
+        
+        // تحويل الأنواع
+        rec.amount = parseFloat(rec.amount) || 0;
+        rec.month = parseInt(rec.month) || (rec.date ? parseInt(rec.date.split('-')[1]) : 0);
+        rec.year = parseInt(rec.year) || (rec.date ? parseInt(rec.date.split('-')[0]) : 2026);
+        rec.day = parseInt(rec.day) || (rec.date ? parseInt(rec.date.split('-')[2]) : 0);
+        if (!rec.status) rec.status = 'مؤكد';
+        if (!rec.section) rec.section = 'قسم الرجال';
+        
+        // bookingDates: مفصولة بـ |
+        if (rec.bookingDates && typeof rec.bookingDates === 'string' && rec.bookingDates.includes('|')) {
+          rec.bookingDates = rec.bookingDates.split('|').filter(Boolean);
+        } else if (rec.date) {
+          rec.bookingDates = [rec.date];
+        }
+        
+        // احفظ في المصفوفة
+        const existIdx = salesData.findIndex(x => x._id === rec._id);
+        if (existIdx > -1) salesData[existIdx] = rec;
+        else salesData.push(rec);
+        
+        // ارفع لـ Supabase
+        await salesUpsertRow(rec);
+        imported++;
+      }
+      
+      salesLoaded = true;
+      await salesSaveData();
+      salesRecordsInit();
+      showToast(`✅ تم استيراد ${imported} سجل${skipped ? ' (تجاهل ' + skipped + ')' : ''}`, 'success');
+    } catch (err) {
+      console.error('Import error:', err);
+      showToast('❌ خطأ في قراءة الملف: ' + err.message, 'warn');
+    }
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function sr2QueryDate() {
+  const dateVal = document.getElementById('sr2-query-date').value;
+  const resultEl = document.getElementById('sr2-query-result');
+  if (!dateVal) { resultEl.innerHTML = ''; return; }
+  
+  // ابحث في bookingDates أو date
+  const booked = salesData.filter(r => {
+    const dates = (r.bookingDates && r.bookingDates.length) ? r.bookingDates : [r.date];
+    return dates.includes(dateVal);
+  });
+  
+  if (booked.length === 0) {
+    resultEl.innerHTML = '<span style="color:#38a169;font-size:14px;">✅ متاح — لا يوجد حجز</span>';
+  } else {
+    const names = booked.map(r => r.name ? r.name.split(' ')[0] : '').filter(Boolean).join('، ');
+    const secs = [...new Set(booked.map(r => r.section))].join(' + ');
+    resultEl.innerHTML = `<span style="color:#e53e3e;font-size:13px;">🔴 محجوز (${booked.length})</span>
+      <span style="font-size:11px;color:#4a5568;margin-right:8px;">${secs}</span>
+      <span style="font-size:11px;color:#718096;">${names}</span>`;
+  }
+}
+
+// ==================== END IMPORT / EXPORT / QUERY ====================
+
 async function salesRecordsInit() {
   await salesLoadData();
   const filt = document.getElementById('sr2-filter').value;
@@ -3716,20 +3887,25 @@ async function salesRecordsInit() {
     const statusColor = r.status === 'مؤكد' ? '#38a169' : r.status === 'ملغي' ? '#e53e3e' : '#dd6b20';
     const secColor = r.section === 'قسم الرجال' ? '#3b82f6' : r.section === 'قسم الحريم' ? '#ec4899' : '#8b5cf6';
     const tr = document.createElement('tr');
+    // حساب تواريخ الحجز والأيام
+    const bDates = (r.bookingDates && r.bookingDates.length) ? r.bookingDates : (r.date ? [r.date] : []);
+    const daysCount = bDates.length || 1;
+    const datesDisplay = bDates.map(d => `<span style="background:#1a4a6e22;color:#1a4a6e;font-size:9.5px;padding:1px 5px;border-radius:4px;display:inline-block;margin:1px;">${d}</span>`).join('');
     tr.innerHTML = `
       <td class="cell-num">${idx + 1}</td>
-      <td style="padding:6px 8px;font-size:12px;font-weight:600;color:#1a1a2e;">${escH(r.name||'')}</td>
-      <td style="padding:6px 8px;font-size:11px;direction:ltr;text-align:center;">${r.date||''}</td>
-      <td style="padding:6px 8px;text-align:center;"><span style="background:${secColor}22;color:${secColor};font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;">${escH(r.section||'')}</span></td>
-      <td style="padding:6px 8px;font-size:12px;text-align:center;">${escH(r.duration||'')}</td>
-      <td style="padding:6px 8px;font-size:12px;text-align:center;">${escH(r.source||'')}</td>
-      <td style="padding:6px 8px;font-size:13px;font-weight:800;color:#047857;text-align:center;">${r.amount ? r.amount.toLocaleString('ar-SA')+' ﷼' : '—'}</td>
-      <td style="padding:6px 8px;text-align:center;"><span style="background:${statusColor}22;color:${statusColor};font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;">${escH(r.status||'')}</span></td>
-      <td style="padding:6px 8px;font-size:11px;direction:ltr;text-align:center;">${escH(r.phone||'')}</td>
-      <td style="padding:6px 8px;font-size:11px;color:#718096;">${escH(r.notes||'')}</td>
-      <td style="padding:4px 6px;text-align:center;vertical-align:middle;">
-        <button onclick="sr2EditRow('${r._id}')" style="background:#3182ce;color:#fff;border:none;border-radius:5px;padding:3px 8px;font-size:11px;cursor:pointer;margin-bottom:3px;display:block;width:100%;">✏️ تعديل</button>
-        <button onclick="sr2DeleteRow('${r._id}')" style="background:#e53e3e;color:#fff;border:none;border-radius:5px;padding:3px 8px;font-size:11px;cursor:pointer;display:block;width:100%;">🗑️ حذف</button>
+      <td style="padding:5px 8px;font-size:12px;font-weight:600;color:#1a1a2e;">${escH(r.name||'')}</td>
+      <td style="padding:5px 8px;font-size:11px;direction:ltr;text-align:center;color:#374151;">${r.date||''}</td>
+      <td style="padding:5px 6px;">${datesDisplay||'—'}</td>
+      <td style="padding:5px 8px;text-align:center;font-size:13px;font-weight:800;color:#7a5a1a;">${daysCount}</td>
+      <td style="padding:5px 8px;text-align:center;"><span style="background:${secColor}22;color:${secColor};font-size:11px;font-weight:700;padding:3px 7px;border-radius:6px;">${escH(r.section||'')}</span></td>
+      <td style="padding:5px 8px;font-size:11px;text-align:center;">${escH(r.source||'')}</td>
+      <td style="padding:5px 8px;font-size:13px;font-weight:800;color:#047857;text-align:center;">${r.amount ? r.amount.toLocaleString('ar-SA')+' ﷼' : '—'}</td>
+      <td style="padding:5px 8px;text-align:center;"><span style="background:${statusColor}22;color:${statusColor};font-size:11px;font-weight:700;padding:3px 7px;border-radius:6px;">${escH(r.status||'')}</span></td>
+      <td style="padding:5px 8px;font-size:11px;direction:ltr;text-align:center;">${escH(r.phone||'')}</td>
+      <td style="padding:5px 8px;font-size:11px;color:#718096;">${escH(r.notes||'')}</td>
+      <td style="padding:4px 5px;text-align:center;vertical-align:middle;">
+        <button onclick="sr2EditRow('${r._id}')" style="background:#3182ce;color:#fff;border:none;border-radius:5px;padding:3px 8px;font-size:10px;cursor:pointer;margin-bottom:2px;display:block;width:100%;">✏️ تعديل</button>
+        <button onclick="sr2DeleteRow('${r._id}')" style="background:#e53e3e;color:#fff;border:none;border-radius:5px;padding:3px 8px;font-size:10px;cursor:pointer;display:block;width:100%;">🗑️ حذف</button>
       </td>`;
     body.appendChild(tr);
   });
