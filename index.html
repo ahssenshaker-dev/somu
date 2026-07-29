@@ -775,7 +775,7 @@
           <th class="col-num" style="min-width:44px">الرقم</th>
           <th style="min-width:140px;background:#1a3a5c">اسم العميل</th>
           <th style="min-width:125px;background:#2c4a6e">رقم الجوال</th>
-          <th style="min-width:105px;background:#3a3a5c">التاريخ</th>
+          <th style="min-width:105px;background:#1a5a3c">تاريخ طلب الحجز</th>
           <th style="min-width:115px;background:#6b46c1">القسم</th>
           <th style="min-width:85px;background:#7a5a1a">مدة الحجز</th>
           <th style="min-width:110px;background:#1a6b4a">المصدر</th>
@@ -968,10 +968,10 @@
     <span class="s-label" style="font-size:13px;">📋 سجل المبيعات</span>
     <select class="s-select" id="sr2-filter" onchange="salesRecordsInit()" style="padding:5px 10px;font-size:12px;">
       <option value="all">جميع الشهور</option>
-      <option value="5">مايو 2026</option>
-      <option value="6">يونيو 2026</option>
-      <option value="7" selected>يوليو 2026</option>
-      <option value="8">أغسطس 2026</option>
+      <option value="5">مايو 2026 (تواصل)</option>
+      <option value="6">يونيو 2026 (تواصل)</option>
+      <option value="7" selected>يوليو 2026 (تواصل)</option>
+      <option value="8">أغسطس 2026 (تواصل)</option>
     </select>
     <select class="s-select" id="sr2-section" onchange="salesRecordsInit()" style="padding:5px 10px;font-size:12px;">
       <option value="all">جميع الأقسام</option>
@@ -1002,15 +1002,15 @@
         <thead><tr>
           <th class="col-num" style="min-width:40px">رقم</th>
           <th style="min-width:130px;background:#1a3a5c">اسم العميل</th>
-          <th style="min-width:100px;background:#3a3a5c">تاريخ الطلب</th>
-          <th style="min-width:160px;background:#1a4a6e">تواريخ الحجز</th>
-          <th style="min-width:65px;background:#7a5a1a">الأيام</th>
+          <th style="min-width:105px;background:#1a5a3c">تاريخ طلب الحجز</th>
+          <th style="min-width:170px;background:#1a4a6e">تواريخ الحجز</th>
+          <th style="min-width:55px;background:#7a5a1a">الأيام</th>
           <th style="min-width:105px;background:#6b46c1">القسم</th>
-          <th style="min-width:100px;background:#1a6b4a">المصدر</th>
-          <th style="min-width:105px;background:#0f4a2a">المبلغ</th>
-          <th style="min-width:75px;background:#374a1e">الحالة</th>
-          <th style="min-width:115px;background:#2c4a6e">الجوال</th>
-          <th style="min-width:140px;background:#374a1e">ملاحظات</th>
+          <th style="min-width:95px;background:#1a6b4a">المصدر</th>
+          <th style="min-width:95px;background:#0f4a2a">المبلغ</th>
+          <th style="min-width:70px;background:#374a1e">الحالة</th>
+          <th style="min-width:110px;background:#2c4a6e">الجوال</th>
+          <th style="min-width:130px;background:#374a1e">ملاحظات</th>
           <th style="min-width:75px;background:#2d3a52">إجراءات</th>
         </tr></thead>
         <tbody id="sr2-body"></tbody>
@@ -3090,10 +3090,18 @@ async function salesDeleteRow(id) {
 }
 
 function salesGetFiltered(m, y, from, to) {
+  // الفلترة بحسب تاريخ التواصل (contactDate) إذا متوفر، وإلا تاريخ الحجز
   if (from && to) {
-    return salesData.filter(r => r.date >= from && r.date <= to);
+    return salesData.filter(r => {
+      const cd = r.contactDate || r.date;
+      return cd >= from && cd <= to;
+    });
   }
-  return salesData.filter(r => r.month === parseInt(m) && r.year === (y||2026));
+  return salesData.filter(r => {
+    const cMonth = r.contactMonth || r.month;
+    const cYear = r.contactYear || r.year;
+    return cMonth === parseInt(m) && cYear === (y||2026);
+  });
 }
 
 // ===== SALES ENTRY =====
@@ -3106,7 +3114,7 @@ async function salesEntryInit() {
 }
 
 function seNewRow() {
-  return { _id: crypto.randomUUID(), saved: false, name:'', phone:'', date:'', bookingDates:[], section:'قسم الرجال', duration:'', source:'Google Map', amount:'', status:'مؤكد', notes:'' };
+  return { _id: crypto.randomUUID(), saved: false, name:'', phone:'', date:'', contactDate:'', bookingDates:[], section:'قسم الرجال', duration:'', source:'Google Map', amount:'', status:'مؤكد', notes:'' };
 }
 
 function seAddRow() {
@@ -3136,7 +3144,12 @@ async function seSaveRow(r) {
   const dates = (r.bookingDates && r.bookingDates.length) ? r.bookingDates : [dateVal];
   const firstDate = dates[0] || dateVal;
   const fd = new Date(firstDate);
-  const rec = { _id: r._id, name: r.name, phone: r.phone, date: firstDate,
+  const contactDate = r.contactDate || dateVal;
+  const cd = new Date(contactDate);
+  const rec = { _id: r._id, name: r.name, phone: r.phone,
+    date: firstDate,
+    contactDate: contactDate,
+    contactMonth: cd.getMonth()+1, contactYear: cd.getFullYear(),
     bookingDates: dates,
     month: fd.getMonth()+1, year: fd.getFullYear(), day: fd.getDate(),
     section: r.section, duration: dates.length > 1 ? dates.length + ' أيام' : 'يوم', source: r.source,
@@ -3218,7 +3231,7 @@ function seRender() {
       <td class="cell-num">${idx+1}</td>
       <td><input class="excel-input" placeholder="اسم العميل" value="${escH(r.name)}" data-field="name" data-seid="${r._id}" ${r.saved?'style="color:#1a6b4a;font-weight:600;"':''}></td>
       <td><input class="excel-input" placeholder="05X XXX XXXX" value="${escH(r.phone)}" data-field="phone" data-seid="${r._id}"></td>
-      <td><input class="excel-input" type="date" value="${escH(r.date||dateVal)}" data-field="date" data-seid="${r._id}" style="direction:ltr;font-size:11px;"></td>
+      <td><input class="excel-input" type="date" value="${escH(r.contactDate||r.date||dateVal)}" data-field="contactDate" data-seid="${r._id}" style="direction:ltr;font-size:11px;border:1px solid #38a169;border-radius:4px;padding:4px 6px;" title="تاريخ طلب الحجز"></td>
       <td><select class="excel-select" data-field="section" data-seid="${r._id}">
         ${['قسم الرجال','قسم الحريم','قسمين'].map(v=>`<option ${r.section===v?'selected':''}>${v}</option>`).join('')}
       </select></td>
@@ -3851,17 +3864,23 @@ function sr2Export() {
   if (!data.length) { showToast('لا يوجد بيانات للتصدير', 'info'); return; }
   
   // Build CSV with BOM for Arabic support
-  const cols = ['_id','name','phone','date','bookingDates','section','duration','source','amount','status','notes','month','year','day'];
-  const headers = ['المعرف','الاسم','الجوال','تاريخ البداية','تواريخ الحجز','القسم','مدة الحجز','المصدر','المبلغ','الحالة','ملاحظات','الشهر','السنة','اليوم'];
+  const cols = ['_id','name','phone','contactDate','bookingDates','section','duration','source','amount','status','notes','contactMonth','contactYear','month','year','day'];
+  const headers = ['المعرف','الاسم','الجوال','تاريخ طلب الحجز','تواريخ الحجز','القسم','مدة الحجز','المصدر','المبلغ','الحالة','ملاحظات','شهر الطلب','سنة الطلب','شهر الحجز','سنة الحجز','يوم الحجز'];
   
   const NL = String.fromCharCode(10); const BOM = String.fromCharCode(0xFEFF);
   let csv = BOM + headers.join(',') + NL;
   data.forEach(r => {
     const bDates = (r.bookingDates && r.bookingDates.length) ? r.bookingDates.join('|') : (r.date || '');
+    const contactDate = r.contactDate || r.date || '';
+    const cd = contactDate ? new Date(contactDate) : null;
     const row = [
-      r._id||'', r.name||'', r.phone||'', r.date||'', bDates,
+      r._id||'', r.name||'', r.phone||'',
+      contactDate,
+      bDates,
       r.section||'', r.duration||'', r.source||'',
       r.amount||0, r.status||'', (r.notes||'').replace(/,/g,'،'),
+      r.contactMonth || (cd ? cd.getMonth()+1 : r.month)||'',
+      r.contactYear  || (cd ? cd.getFullYear() : r.year)||'',
       r.month||'', r.year||'', r.day||''
     ].map(v => '"'+v+'"').join(',');
     csv += row + NL;
@@ -3894,18 +3913,24 @@ async function sr2Import(input) {
       // Map Arabic headers to field names
       const colMap = {
         'المعرف':'_id','الاسم':'name','الاسم كامل':'name','اسم العميل':'name',
-        'الجوال':'phone','رقم الجوال':'phone','الجوال':'phone',
-        'تاريخ البداية':'date','التاريخ':'date',
+        'الجوال':'phone','رقم الجوال':'phone',
+        'تاريخ التواصل':'contactDate','تاريخ الطلب':'contactDate','تاريخ طلب الحجز':'contactDate',
+        'تاريخ البداية':'date','التاريخ':'date','تاريخ الحجز':'date',
         'تواريخ الحجز':'bookingDates',
         'القسم':'section','مدة الحجز':'duration',
         'المصدر':'source','مصدر التواصل':'source',
         'المبلغ':'amount','إجمالي المبلغ':'amount','الاجمالي':'amount','اجمالي':'amount',
         'الحالة':'status','حالة الحجز':'status',
-        'ملاحظات':'notes','الشهر':'month','السنة':'year','اليوم':'day',
-        // English fallback
-        '_id':'_id','name':'name','phone':'phone','date':'date',
+        'ملاحظات':'notes',
+        'شهر التواصل':'contactMonth','سنة التواصل':'contactYear',
+        'شهر الحجز':'month','سنة الحجز':'year','يوم الحجز':'day',
+        'الشهر':'month','السنة':'year','اليوم':'day',
+        '_id':'_id','name':'name','phone':'phone',
+        'contactDate':'contactDate','date':'date',
         'bookingDates':'bookingDates','section':'section','duration':'duration',
-        'source':'source','amount':'amount','status':'status','notes':'notes'
+        'source':'source','amount':'amount','status':'status','notes':'notes',
+        'contactMonth':'contactMonth','contactYear':'contactYear',
+        'month':'month','year':'year','day':'day'
       };
       
       const fieldNames = headers.map(h => colMap[h] || null);
@@ -3941,6 +3966,16 @@ async function sr2Import(input) {
         rec.month = parseInt(rec.month) || (rec.date ? parseInt(rec.date.split('-')[1]) : 0);
         rec.year = parseInt(rec.year) || (rec.date ? parseInt(rec.date.split('-')[0]) : 2026);
         rec.day = parseInt(rec.day) || (rec.date ? parseInt(rec.date.split('-')[2]) : 0);
+        // احسب contactMonth/contactYear من contactDate
+        if (!rec.contactDate) rec.contactDate = rec.date;
+        if (rec.contactDate) {
+          const cd = new Date(rec.contactDate);
+          rec.contactMonth = parseInt(rec.contactMonth) || (cd.getMonth()+1);
+          rec.contactYear  = parseInt(rec.contactYear)  || cd.getFullYear();
+        } else {
+          rec.contactMonth = rec.month;
+          rec.contactYear  = rec.year;
+        }
         if (!rec.status) rec.status = 'مؤكد';
         if (!rec.section) rec.section = 'قسم الرجال';
         
@@ -4034,10 +4069,11 @@ async function salesRecordsInit() {
     const bDates = (r.bookingDates && r.bookingDates.length) ? r.bookingDates : (r.date ? [r.date] : []);
     const daysCount = bDates.length || 1;
     const datesDisplay = bDates.map(d => `<span style="background:#1a4a6e22;color:#1a4a6e;font-size:9.5px;padding:1px 5px;border-radius:4px;display:inline-block;margin:1px;">${d}</span>`).join('');
+    const contactDateDisplay = r.contactDate || r.date || '';
     tr.innerHTML = `
       <td class="cell-num">${idx + 1}</td>
       <td style="padding:5px 8px;font-size:12px;font-weight:600;color:#1a1a2e;">${escH(r.name||'')}</td>
-      <td style="padding:5px 8px;font-size:11px;direction:ltr;text-align:center;color:#374151;">${r.date||''}</td>
+      <td style="padding:5px 8px;font-size:11px;direction:ltr;text-align:center;color:#047857;font-weight:600;">${contactDateDisplay}</td>
       <td style="padding:5px 6px;">${datesDisplay||'—'}</td>
       <td style="padding:5px 8px;text-align:center;font-size:13px;font-weight:800;color:#7a5a1a;">${daysCount}</td>
       <td style="padding:5px 8px;text-align:center;"><span style="background:${secColor}22;color:${secColor};font-size:11px;font-weight:700;padding:3px 7px;border-radius:6px;">${escH(r.section||'')}</span></td>
@@ -4103,7 +4139,7 @@ function sr2EditRow(id) {
   targetRow.innerHTML = `
     <td class="cell-num"></td>
     <td><input class="excel-input" id="sr2i-name-${id}" value="${(r.name||'').replace(/"/g,'&quot;')}" placeholder="اسم العميل" style="border:1px solid #e94560;border-radius:4px;padding:5px 7px;width:100%;"></td>
-    <td><input type="date" id="sr2i-date-${id}" value="${r.date||''}" style="border:1px solid #e94560;border-radius:4px;padding:5px 7px;width:100%;direction:ltr;font-size:11px;outline:none;"></td>
+    <td><input type="date" id="sr2i-cdate-${id}" value="${r.contactDate||r.date||''}" style="border:1px solid #38a169;border-radius:4px;padding:5px 7px;width:100%;direction:ltr;font-size:11px;outline:none;" title="تاريخ طلب الحجز"></td>
     <td style="min-width:200px;">
       <div id="sr2i-tags-${id}" style="display:flex;flex-wrap:wrap;gap:3px;padding:4px;border:1px solid #e94560;border-radius:4px;background:#fff;align-items:center;min-height:34px;">
         ${buildTagsHTML(editBDates)}
@@ -4180,15 +4216,20 @@ async function sr2SaveInlineEdit(id) {
   const r = salesData.find(x => x._id === id);
   if (!r) return;
 
-  const dateVal = document.getElementById('sr2i-date-' + id)?.value || r.date;
-  const d = new Date(dateVal);
+  const contactDateVal2 = document.getElementById('sr2i-cdate-' + id)?.value || r.contactDate || r.date;
+  const d = new Date(contactDateVal2);
   // اقرأ التواريخ من _editBDates على الـ row
   const row = document.getElementById('sr2-inline-' + id);
-  const bDates = (row && row._editBDates && row._editBDates.length) ? row._editBDates : [dateVal];
+  const bDates = (row && row._editBDates && row._editBDates.length) ? row._editBDates : (r.bookingDates && r.bookingDates.length ? r.bookingDates : [r.date || contactDateVal2]);
+  const dateVal = r.date || contactDateVal2;
 
   r.name = document.getElementById('sr2i-name-' + id)?.value || r.name;
   r.phone = document.getElementById('sr2i-phone-' + id)?.value || r.phone;
   r.date = dateVal;
+  const cdObj2 = new Date(contactDateVal2);
+  r.contactDate = contactDateVal2;
+  r.contactMonth = cdObj2.getMonth()+1;
+  r.contactYear = cdObj2.getFullYear();
   r.bookingDates = bDates;
   r.month = d.getMonth()+1; r.year = d.getFullYear(); r.day = d.getDate();
   r.amount = parseFloat(document.getElementById('sr2i-amount-' + id)?.value) || 0;
