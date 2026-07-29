@@ -992,6 +992,7 @@
     <!-- استيراد -->
     <button onclick="document.getElementById('sr2-import-file').click()" style="padding:6px 14px;border-radius:7px;border:none;background:#3182ce;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">📤 استيراد Excel</button>
     <input type="file" id="sr2-import-file" accept=".xlsx,.xls,.csv" style="display:none" onchange="sr2Import(this)">
+    <button onclick="sr2ClearAll()" style="padding:6px 14px;border-radius:7px;border:none;background:#742a2a;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">🗑️ مسح جميع البيانات</button>
   </div>
   <!-- KPI strip -->
   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;" id="sr2-kpis"></div>
@@ -4320,6 +4321,51 @@ async function sr2SaveInlineEdit(id) {
 }
 
 // sr2SaveEdit replaced by sr2SaveInlineEdit above
+
+async function sr2ClearAll() {
+  if (!confirm('⚠️ هل أنت متأكد من حذف جميع بيانات المبيعات؟\nسيتم حذفها من Supabase وmlocalStorage نهائياً.')) return;
+  if (!confirm('تأكيد نهائي — سيتم مسح كل السجلات. هل تريد المتابعة؟')) return;
+
+  showToast('⏳ جاري الحذف...', 'info');
+
+  // حذف من Supabase batch
+  if (USE_CLOUD && isOnline && sbClient) {
+    try {
+      // نجيب كل الـ IDs أولاً
+      const { data: rows, error: fetchErr } = await sbClient
+        .from('sales_records')
+        .select('_id');
+
+      if (!fetchErr && rows && rows.length > 0) {
+        const ids = rows.map(r => r._id);
+        // نحذف على chunks من 50
+        for (let i = 0; i < ids.length; i += 50) {
+          const chunk = ids.slice(i, i + 50);
+          const { error } = await sbClient
+            .from('sales_records')
+            .delete()
+            .in('_id', chunk);
+          if (error) console.warn('Delete chunk error:', error.message);
+        }
+        showToast(`✅ تم حذف ${ids.length} سجل من Supabase`, 'success');
+      } else if (fetchErr) {
+        console.warn('Fetch IDs error:', fetchErr.message);
+      }
+    } catch(e) {
+      console.warn('Clear all Supabase error:', e);
+    }
+  }
+
+  // مسح localStorage
+  try { localStorage.removeItem('smo_sales_records'); } catch(e) {}
+
+  // مسح الذاكرة
+  salesData = [];
+  salesLoaded = false;
+
+  salesRecordsInit();
+  showToast('✅ تم مسح جميع بيانات المبيعات', 'success');
+}
 
 // ==================== END SALES RECORDS ====================
 
