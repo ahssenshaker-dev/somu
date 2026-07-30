@@ -3462,7 +3462,13 @@ async function seSaveRow(r) {
   const dateVal = r.date || dateInp.value;
   if (!dateVal || (!r.name && !r.phone)) return;
   const d = new Date(dateVal);
-  const dates = (r.bookingDates && r.bookingDates.length) ? r.bookingDates : [dateVal];
+  const dates = (r.bookingDates && r.bookingDates.length) ? r.bookingDates : [];
+  if (dates.length === 0) {
+    // لا تواريخ حجز محددة — استخدم تاريخ الطلب كافتراضي بدون تنبيه
+    const fallback = r.contactDate || dateVal;
+    if (fallback) dates.push(fallback);
+    else return; // لا يوجد أي تاريخ
+  }
 
   const firstDate = dates[0] || dateVal;
   const fd = new Date(firstDate);
@@ -3576,7 +3582,7 @@ function seRender() {
       </select></td>
       <td style="min-width:190px;vertical-align:middle;">
         <div style="display:flex;flex-wrap:wrap;gap:3px;padding:4px;min-height:32px;border:1px solid #e2e8f0;border-radius:5px;background:#fafbfc;align-items:center;" id="se-dates-${r._id}">
-          ${(r.bookingDates&&r.bookingDates.length?r.bookingDates:[r.date||dateVal]).filter(Boolean).map((d,i)=>`<span style="background:#3b82f6;color:#fff;border-radius:4px;padding:2px 7px;font-size:10px;display:inline-flex;align-items:center;gap:3px;cursor:default;">${d}<span onclick="seRemoveDate('${r._id}',${i})" style="cursor:pointer;font-size:13px;line-height:1;margin-right:1px;" title="حذف">×</span></span>`).join('')}
+          ${(r.bookingDates&&r.bookingDates.length?r.bookingDates:[]).map((d,i)=>`<span style="background:#3b82f6;color:#fff;border-radius:4px;padding:2px 7px;font-size:10px;display:inline-flex;align-items:center;gap:3px;cursor:default;">${d}<span onclick="seRemoveDate('${r._id}',${i})" style="cursor:pointer;font-size:13px;line-height:1;margin-right:1px;" title="حذف">×</span></span>`).join('')}
           <input type="date" id="se-date-inp-${r._id}" style="border:none;outline:none;font-size:11px;direction:ltr;flex:1;min-width:105px;background:transparent;" title="اختر تاريخ الحجز"
             onkeydown="if(event.key==='Enter'){seAddDate('${r._id}',this.value);this.value='';}">
           <button onclick="seAddDate('${r._id}', document.getElementById('se-date-inp-${r._id}').value); document.getElementById('se-date-inp-${r._id}').value='';" style="background:#3b82f6;color:#fff;border:none;border-radius:4px;padding:2px 8px;font-size:13px;font-weight:700;cursor:pointer;line-height:1.4;" title="إضافة التاريخ">+</button>
