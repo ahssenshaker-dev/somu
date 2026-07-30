@@ -365,6 +365,103 @@
   .user-badge-name { font-size:13px;font-weight:700;color:#fff; }
   .user-badge-role { font-size:10px;color:rgba(255,255,255,0.7); }
 
+
+  /* ═══════════════════════════════════════
+     MOBILE RESPONSIVE
+  ═══════════════════════════════════════ */
+  @media (max-width: 768px) {
+    /* Header */
+    .header { padding: 10px 14px; flex-wrap: wrap; gap: 8px; }
+    .header-title { font-size: 15px; }
+    .header-actions { flex-wrap: wrap; gap: 6px; }
+    .header-actions .btn { padding: 6px 10px; font-size: 11px; }
+
+    /* Tabs — scrollable horizontal */
+    .nav-tabs { padding: 0 8px; gap: 2px; overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .nav-tabs::-webkit-scrollbar { display: none; }
+    .tab { padding: 8px 10px; font-size: 11px; white-space: nowrap; flex-shrink: 0; }
+
+    /* Content */
+    .content { padding: 10px 8px; }
+
+    /* Quick query bar */
+    #quick-query-bar { padding: 8px 12px; gap: 8px; flex-wrap: wrap; }
+    #quick-query-bar span, #quick-query-bar input { font-size: 11px; }
+
+    /* Metrics */
+    .metrics-row { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
+    .metric-card { padding: 10px 12px !important; }
+    .metric-value { font-size: 20px !important; }
+    .metric-label { font-size: 10px !important; }
+
+    /* Charts */
+    .charts-row { grid-template-columns: 1fr !important; }
+    .chart-card { padding: 10px !important; }
+
+    /* KPI sales */
+    #sr-kpis { grid-template-columns: repeat(2, 1fr) !important; }
+    .s-kpi-val { font-size: 16px !important; }
+    .s-kpi-lbl { font-size: 9px !important; }
+
+    /* Toolbar */
+    .s-toolbar { padding: 8px 10px; gap: 6px; }
+    .s-label { font-size: 12px; }
+    .s-select, .s-btn, .entry-date-input { font-size: 11px; padding: 5px 8px; }
+
+    /* Tables — horizontal scroll */
+    .excel-wrapper { border-radius: 8px; }
+    .excel-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .excel-table { font-size: 11px; }
+    .excel-table thead th { padding: 8px 6px; font-size: 10px; }
+    .excel-table tbody td { padding: 5px 6px; }
+
+    /* Calendar */
+    .s-cal-cell { min-height: 36px !important; padding: 2px !important; }
+    .s-cal-num { font-size: 9px !important; }
+    .s-cal-booking { display: none; } /* hide names on mobile, too small */
+    .s-cal-day-header { font-size: 9px !important; }
+
+    /* Sales report layout — stack vertically on mobile */
+    #tab-sales-report > div:nth-child(3) { grid-template-columns: 1fr !important; }
+    #tab-sales-report > div:nth-child(4) { grid-template-columns: 1fr !important; }
+
+    /* Compare */
+    .s-compare-grid { grid-template-columns: 1fr !important; }
+
+    /* PIN overlay */
+    #pin-overlay > div { width: 300px !important; padding: 28px 20px !important; }
+    .pin-btn { padding: 12px !important; font-size: 18px !important; }
+
+    /* Modal */
+    .modal-content { width: 95vw !important; padding: 16px !important; max-height: 90vh; overflow-y: auto; }
+    .form-grid { grid-template-columns: 1fr !important; }
+
+    /* Sales records table */
+    #sr2-table { min-width: 700px; }
+
+    /* Entry toolbar */
+    .entry-toolbar { padding: 10px; gap: 6px; }
+    .entry-btn-add, .entry-btn-save-all, .entry-btn-clear { padding: 6px 10px; font-size: 11px; }
+
+    /* Inline edit overlay */
+    #sr2-edit-overlay > div { width: 95vw !important; padding: 16px !important; }
+
+    /* Compare panels table */
+    #tab-sales-compare table { font-size: 11px; }
+    #tab-sales-compare td, #tab-sales-compare th { padding: 5px 6px !important; }
+
+    /* Footer */
+    .footer { font-size: 9px; padding: 8px; }
+  }
+
+  @media (max-width: 480px) {
+    .metrics-row { grid-template-columns: 1fr 1fr !important; }
+    #sr-kpis { grid-template-columns: 1fr 1fr !important; }
+    .header-title { font-size: 13px; }
+    .tab { font-size: 10px; padding: 7px 8px; }
+    #quick-query-bar { display: none; } /* hide on very small screens, accessible via records tab */
+  }
+
 </style>
 </head>
 <body>
@@ -992,6 +1089,7 @@
     <!-- استيراد -->
     <button onclick="document.getElementById('sr2-import-file').click()" style="padding:6px 14px;border-radius:7px;border:none;background:#3182ce;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">📤 استيراد Excel</button>
     <input type="file" id="sr2-import-file" accept=".xlsx,.xls,.csv" style="display:none" onchange="sr2Import(this)">
+    <button onclick="sr2SyncToSupabase()" style="padding:6px 14px;border-radius:7px;border:none;background:#6b46c1;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">☁️ رفع لـ Supabase</button>
     <button onclick="sr2ClearAll()" style="padding:6px 14px;border-radius:7px;border:none;background:#742a2a;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">🗑️ مسح جميع البيانات</button>
   </div>
   <!-- KPI strip -->
@@ -1547,29 +1645,39 @@ function subscribeRealtime() {
     })
     .subscribe();
 
-  // Realtime for sales_records
+  // Realtime for sales_records — تحديث فوري لجميع الأجهزة
   sbClient.channel('sales-changes')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'sales_records' }, async payload => {
-      if (payload.eventType === 'INSERT') {
-        if (!salesData.find(x => x._id === payload.new._id)) {
-          salesData.push(payload.new);
-          try { localStorage.setItem(SALES_DATA_KEY, JSON.stringify(salesData)); } catch(e) {}
+      const parseBD = r => {
+        if (r.bookingDates && typeof r.bookingDates === 'string') {
+          try { r.bookingDates = JSON.parse(r.bookingDates); }
+          catch(e) { r.bookingDates = r.bookingDates.split('|').filter(Boolean); }
         }
+        if (!Array.isArray(r.bookingDates)) r.bookingDates = r.date ? [r.date] : [];
+        return r;
+      };
+
+      if (payload.eventType === 'INSERT') {
+        const rec = parseBD({...payload.new});
+        if (!salesData.find(x => x._id === rec._id)) salesData.push(rec);
       } else if (payload.eventType === 'UPDATE') {
-        const idx = salesData.findIndex(x => x._id === payload.new._id);
-        if (idx > -1) salesData[idx] = payload.new;
-        else salesData.push(payload.new);
-        try { localStorage.setItem(SALES_DATA_KEY, JSON.stringify(salesData)); } catch(e) {}
+        const rec = parseBD({...payload.new});
+        const idx = salesData.findIndex(x => x._id === rec._id);
+        if (idx > -1) salesData[idx] = rec; else salesData.push(rec);
       } else if (payload.eventType === 'DELETE') {
         salesData = salesData.filter(x => x._id !== payload.old._id);
-        try { localStorage.setItem(SALES_DATA_KEY, JSON.stringify(salesData)); } catch(e) {}
       }
-      // تحديث البيانات المحلية فقط — بدون force reload
-      const activeSalesTab = document.querySelector('.tab.active[data-roles]');
-      if (activeSalesTab) {
-        const href = activeSalesTab.getAttribute('onclick') || '';
-        if (href.includes('sales-records')) salesRecordsInit();
-        else if (href.includes('sales-report')) salesReportInit();
+
+      // حفظ محلي
+      try { localStorage.setItem(SALES_DATA_KEY, JSON.stringify(salesData)); } catch(e) {}
+
+      // إعادة رسم التبويب النشط
+      const activeTab = document.querySelector('.tab.active[data-roles]');
+      if (activeTab) {
+        const fn = activeTab.getAttribute('onclick') || '';
+        if (fn.includes('sales-records')) salesRecordsInit();
+        else if (fn.includes('sales-report')) salesReportInit();
+        else if (fn.includes('sales-entry')) seRender();
       }
     })
     .subscribe();
@@ -3139,8 +3247,12 @@ async function salesUpsertRow(rec) {
       const { error } = await sbClient
         .from('sales_records')
         .upsert(clean, { onConflict: '_id' });
-      if (error) console.warn('Sales upsert failed:', error.message);
-    } catch(e) { console.warn('Sales upsert error:', e); }
+      if (error) {
+        const msg = error.message + ' | ' + (error.details||'') + ' | code:' + (error.code||'');
+        console.error('Sales upsert failed:', msg, JSON.stringify(clean).slice(0,300));
+        showToast('❌ خطأ Supabase: ' + error.message.slice(0,60), 'warn');
+      }
+    } catch(e) { console.error('Sales upsert error:', e.message); }
   }
 }
 
@@ -3148,17 +3260,36 @@ async function salesUpsertBatch(recs) {
   // ── حفظ محلي فوري أولاً ──
   await salesSaveData();
   // ── ثم Supabase batch ──
-  if (USE_CLOUD && isOnline) {
-    const cleaned = recs.map(salesCleanRec);
-    try {
-      for (let i = 0; i < cleaned.length; i += 50) {
-        const chunk = cleaned.slice(i, i + 50);
-        const { error } = await sbClient
-          .from('sales_records')
-          .upsert(chunk, { onConflict: '_id' });
-        if (error) console.warn('Batch upsert chunk error:', error.message);
+  if (!USE_CLOUD || !isOnline) {
+    showToast('⚠️ حُفظ محلياً — غير متصل بـ Supabase', 'warn');
+    return;
+  }
+  const cleaned = recs.map(salesCleanRec);
+  let successCount = 0; let errMsg = '';
+  try {
+    for (let i = 0; i < cleaned.length; i += 50) {
+      const chunk = cleaned.slice(i, i + 50);
+      const { error } = await sbClient
+        .from('sales_records')
+        .upsert(chunk, { onConflict: '_id' });
+      if (error) {
+        errMsg = error.message + ' | ' + (error.details||'') + ' | code:' + (error.code||'');
+        console.error('Batch upsert error:', errMsg, JSON.stringify(chunk[0]).slice(0,200));
+        break;
       }
-    } catch(e) { console.warn('Batch upsert error:', e); }
+      successCount += chunk.length;
+    }
+  } catch(e) {
+    errMsg = e.message;
+    console.error('Batch upsert exception:', e);
+  }
+
+  if (errMsg) {
+    showToast('❌ فشل الرفع: ' + errMsg.slice(0,80), 'warn');
+    // أظهر الخطأ الكامل
+    setTimeout(() => alert('خطأ Supabase:\n' + errMsg + '\n\nتأكد من تشغيل SQL في Supabase'), 100);
+  } else {
+    showToast('✅ ' + successCount + ' سجل محفوظ في Supabase', 'success');
   }
 }
 
@@ -4347,6 +4478,52 @@ async function sr2SaveInlineEdit(id) {
 }
 
 // sr2SaveEdit replaced by sr2SaveInlineEdit above
+
+async function sr2SyncToSupabase() {
+  if (!USE_CLOUD || !isOnline) {
+    showToast('❌ غير متصل بـ Supabase', 'warn'); return;
+  }
+  if (!salesData.length) {
+    showToast('لا يوجد بيانات للرفع', 'info'); return;
+  }
+
+  showToast('⏳ جاري رفع ' + salesData.length + ' سجل...', 'info');
+
+  // اختبر سجل واحد أولاً
+  const testRec = salesCleanRec(salesData[0]);
+  const { error: testErr } = await sbClient
+    .from('sales_records')
+    .upsert(testRec, { onConflict: '_id' });
+
+  if (testErr) {
+    console.error('Sync test failed:', testErr);
+    showToast('❌ خطأ: ' + testErr.message, 'warn');
+    alert('تفاصيل الخطأ:\n' + testErr.message + '\n\nCode: ' + testErr.code + '\nDetails: ' + testErr.details);
+    return;
+  }
+
+  // رفع الكل
+  let success = 0; let failed = 0;
+  const cleaned = salesData.map(salesCleanRec);
+  for (let i = 0; i < cleaned.length; i += 50) {
+    const chunk = cleaned.slice(i, i + 50);
+    const { error } = await sbClient
+      .from('sales_records')
+      .upsert(chunk, { onConflict: '_id' });
+    if (error) {
+      console.error('Chunk error:', error.message, error.details);
+      failed += chunk.length;
+    } else {
+      success += chunk.length;
+    }
+  }
+
+  if (failed === 0) {
+    showToast('✅ تم رفع ' + success + ' سجل لـ Supabase بنجاح', 'success');
+  } else {
+    showToast('⚠️ نجح ' + success + ' وفشل ' + failed, 'warn');
+  }
+}
 
 async function sr2ClearAll() {
   if (!confirm('⚠️ هل أنت متأكد من حذف جميع بيانات المبيعات؟\nسيتم حذفها من Supabase وmlocalStorage نهائياً.')) return;
