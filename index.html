@@ -3416,13 +3416,60 @@ function seSetField(id, field, val) {
   seAutoTimer = setTimeout(()=>{ if(r.name||r.phone) seSaveRow(r); }, 900);
 }
 
+
+// ==================== BOOKING CONFLICT CHECK ====================
+function checkBookingConflict(dates, section, excludeId) {
+  // ابحث عن تعارض في أي من التواريخ المطلوبة
+  const conflicts = [];
+
+  dates.forEach(dateStr => {
+    if (!dateStr) return;
+    const booked = salesData.filter(r => {
+      if (r._id === excludeId) return false; // تجاهل السجل الحالي عند التعديل
+      if (r.status === 'ملغي') return false;
+      const rDates = (r.bookingDates && r.bookingDates.length) ? r.bookingDates : [r.date];
+      return rDates.includes(dateStr);
+    });
+
+    booked.forEach(r => {
+      // تحقق من تعارض القسم
+      const isSameSection = r.section === section;
+      const isBothSections = r.section === 'قسمين' || section === 'قسمين';
+
+      if (isSameSection || isBothSections) {
+        conflicts.push({ date: dateStr, section: r.section, name: r.name, requestedSection: section });
+      }
+    });
+  });
+
+  return conflicts;
+}
+
+function showConflictWarning(conflicts) {
+  if (conflicts.length === 0) return true;
+  const NL = String.fromCharCode(10);
+  const lines = conflicts.map(c => {
+    const secLabel = c.section === 'قسمين' ? 'كلا القسمين' : c.section;
+    const reqLabel = c.requestedSection === 'قسمين' ? 'كلا القسمين' : c.requestedSection;
+    return '• ' + c.date + NL + '  المحجوز: ' + secLabel + ' | المطلوب: ' + reqLabel + NL + '  العميل: ' + (c.name || '—');
+  }).join(NL + NL);
+  return confirm('⚠️ تنبيه: تعارض في الحجز!' + NL + NL + lines + NL + NL + '─────────────────' + NL + 'هل تريد الإضافة على أي حال؟');
+}
+// ==================== END CONFLICT CHECK ====================
+
 async function seSaveRow(r) {
   const dateInp = document.getElementById('se-date');
   const dateVal = r.date || dateInp.value;
   if (!dateVal || (!r.name && !r.phone)) return;
   const d = new Date(dateVal);
-  // bookingDates: مصفوفة التواريخ، إن لم تكن موجودة استخدم التاريخ الرئيسي فقط
   const dates = (r.bookingDates && r.bookingDates.length) ? r.bookingDates : [dateVal];
+
+  // ── تحقق من التعارض ──
+  const conflicts = checkBookingConflict(dates, r.section || 'قسم الرجال', r._id);
+  if (conflicts.length > 0) {
+    if (!showConflictWarning(conflicts)) return; // المستخدم رفض → لا تحفظ
+  }
+
   const firstDate = dates[0] || dateVal;
   const fd = new Date(firstDate);
   const contactDate = r.contactDate || dateVal;
@@ -4519,7 +4566,14 @@ async function sr2SaveInlineEdit(id) {
   const bDates = (row && row._editBDates && row._editBDates.length) ? row._editBDates : (r.bookingDates && r.bookingDates.length ? r.bookingDates : [r.date || contactDateVal2]);
   const dateVal = r.date || contactDateVal2;
 
-  r.name = document.getElementById('sr2i-name-' + id)?.value || r.name;
+  // ── تحقق من التعارض ──
+  const newSection2 = document.getElementById('sr2i-section-' + id)?.value || r.section;
+  const conflicts2 = checkBookingConflict(bDates, newSection2, id);
+  if (conflicts2.length > 0) {
+    if (!showConflictWarning(conflicts2)) return;
+  }
+
+    r.name = document.getElementById('sr2i-name-' + id)?.value || r.name;
   r.phone = document.getElementById('sr2i-phone-' + id)?.value || r.phone;
   r.date = dateVal;
   const cdObj2 = new Date(contactDateVal2);
