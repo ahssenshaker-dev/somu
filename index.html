@@ -543,6 +543,7 @@
   </div>
   <div class="header-actions">
     <button class="btn btn-secondary" onclick="exportExcel()" style="background:rgba(56,161,105,0.85);border-color:rgba(56,161,105,0.5);color:#fff;">📊 تصدير Excel</button>
+    <button class="btn btn-secondary" onclick="clearAllLocalData()" style="background:rgba(197,48,48,0.85);border-color:rgba(197,48,48,0.5);color:#fff;">🗑️ مسح الكاش</button>
     <button class="btn btn-secondary" onclick="document.getElementById('import-input').click()" style="background:rgba(49,130,206,0.85);border-color:rgba(49,130,206,0.5);color:#fff;">📥 استيراد CSV</button>
     <input type="file" id="import-input" accept=".csv" style="display:none" onchange="importCSV(this)">
     <button class="btn btn-primary btn-add" onclick="openModal()">+ إضافة سجل جديد</button>
@@ -1183,7 +1184,17 @@
       </div>
       <div class="form-group">
         <label>طلب العميل</label>
-        <input type="text" id="f-request" class="form-select" placeholder="اكتب طلب العميل...">
+        <select id="f-request" class="form-select">
+          <option value="">-- اختر --</option>
+          <option>السعر</option>
+          <option>المساحة</option>
+          <option>مسبح</option>
+          <option>العاب مائية</option>
+          <option>صالة طعام</option>
+          <option>المناسبة</option>
+          <option>تعارض في الحجز</option>
+          <option>أخرى</option>
+        </select>
       </div>
       <div class="form-group">
         <label>الموظف</label>
@@ -1319,6 +1330,37 @@ if (USE_CLOUD) {
 }
 
 let idb = null;
+
+async function clearAllLocalData() {
+  if (!confirm('مسح جميع البيانات المحلية (IndexedDB + localStorage)؟\nستُعاد من Supabase عند التحديث.')) return;
+
+  // مسح IndexedDB
+  try {
+    if (idb) {
+      const tx = idb.transaction('records', 'readwrite');
+      tx.objectStore('records').clear();
+      await new Promise((res,rej) => { tx.oncomplete=res; tx.onerror=rej; });
+      console.log('✓ IndexedDB cleared');
+    }
+  } catch(e) { console.warn('IDB clear error:', e); }
+
+  // مسح localStorage كله
+  try {
+    localStorage.clear();
+    console.log('✓ localStorage cleared');
+  } catch(e) { console.warn('localStorage clear error:', e); }
+
+  // مسح المتغيرات في الذاكرة
+  data = [];
+  filteredData = [];
+  salesData = [];
+  salesLoaded = false;
+
+  showToast('✅ تم مسح الكاش — جاري إعادة التحميل...', 'success');
+
+  // إعادة تحميل الصفحة بعد ثانية
+  setTimeout(() => location.reload(), 1500);
+}
 
 function openIDB() {
   return new Promise((resolve, reject) => {
@@ -2264,7 +2306,14 @@ function openModal(id=null) {
       document.getElementById('f-source').value=r.source||'Google Map';
       document.getElementById('f-contact').value=(r.contact||'').includes('واتس')?'واتساب':'اتصال';
       document.getElementById('f-type').value=(r.type||'').includes('جز')?'حجز':(r.type||'').includes('شكو')?'شكوى':'استفسار';
-      document.getElementById('f-request').value=r.request||'';
+      const reqSel2 = document.getElementById('f-request');
+      const reqOpts2 = ['السعر','المساحة','مسبح','العاب مائية','صالة طعام','المناسبة','تعارض في الحجز','أخرى'];
+      // أضف الخيار إذا كانت القيمة غير موجودة في اللست
+      if (r.request && !reqOpts2.includes(r.request)) {
+        const existing = Array.from(reqSel2.options).find(o => o.value === r.request);
+        if (!existing) { const opt = document.createElement('option'); opt.value = r.request; opt.textContent = r.request; reqSel2.appendChild(opt); }
+      }
+      reqSel2.value = r.request||'';
       document.getElementById('f-gender').value=r.gender||'';
       document.getElementById('f-occasion').value=r.occasion||'';
       document.getElementById('f-days').value=r.days||'';
@@ -2354,7 +2403,9 @@ function editRecord(id) {
     <td>${INP('date', r.fullDate, 'التاريخ', 'direction:ltr;').replace('type="text"','type="date"').replace('class="excel-input"','class="excel-input" type="date"')}<input type="date" class="excel-input" id="crmi-date" value="${r.fullDate||''}" style="border:1px solid #e94560;border-radius:4px;padding:4px 6px;width:100%;font-size:11px;direction:ltr;"></td>
     <td>${SEL('source', sources, r.source)}</td>
     <td>${SEL('contact', contacts, r.contact)}</td>
-    <td>${INP('request', r.request, 'الطلب')}</td>
+    <td><select class="excel-select" id="crmi-request" style="border:1px solid #e94560;border-radius:4px;padding:4px 6px;width:100%;font-size:11px;">
+      ${['السعر','المساحة','مسبح','العاب مائية','صالة طعام','المناسبة','تعارض في الحجز','أخرى'].map(v=>`<option value="${v}" ${(r.request||'')=== v?'selected':''}>${v}</option>`).join('')}
+    </select></td>
     <td>${SEL('type', types, r.type)}</td>
     <td><textarea class="excel-textarea" id="crmi-details" style="border:1px solid #e94560;border-radius:4px;padding:4px 6px;width:100%;font-size:11px;min-height:36px;">${r.details||''}</textarea></td>
     <td>${SEL('employee', employees, r.employee)}</td>
@@ -3038,7 +3089,10 @@ function entryRender() {
       <td><select class="excel-select" data-field="contact" data-eid="${r._eid}">
         ${['اتصال','واتساب'].map(v=>`<option ${r.contact===v?'selected':''}>${v}</option>`).join('')}
       </select></td>
-      <td><textarea class="excel-textarea" placeholder="السعر / المساحة / ..." data-field="request" data-eid="${r._eid}" rows="2">${escH(r.request)}</textarea></td>
+      <td><select class="excel-select" data-field="request" data-eid="${r._eid}" style="min-width:110px;">
+        ${['السعر','المساحة','مسبح','العاب مائية','صالة طعام','المناسبة','تعارض في الحجز','أخرى'].map(v=>`<option value="${v}" ${r.request===v?'selected':''}>${v}</option>`).join('')}
+        ${r.request && !['السعر','المساحة','مسبح','العاب مائية','صالة طعام','المناسبة','تعارض في الحجز','أخرى'].includes(r.request)?`<option value="${escH(r.request)}" selected>${escH(r.request)}</option>`:''}
+      </select></td>
       <td><input class="excel-input" placeholder="عدد الأيام" value="${escH(r.days)}" data-field="days" data-eid="${r._eid}" type="number" min="1" max="30" style="text-align:center;width:100%;"></td>
       <td><textarea class="excel-textarea" placeholder="تفاصيل التواصل ..." data-field="details" data-eid="${r._eid}" rows="2">${escH(r.details)}</textarea></td>
       <td style="text-align:center;"><button class="row-del-btn" onclick="entryDeleteRow('${r._eid}')" title="حذف الصف">✕</button></td>
@@ -3746,7 +3800,7 @@ function cmpRenderPanels(aD,bD,aL,bL){
           ${makeRow('💰 إجمالي المبيعات',aTotal,bTotal,fmt0)}
           ${makeRow('📅 عدد الحجوزات',aD.length,bD.length)}
           ${makeRow('🗓️ أيام الحجز',aDays,bDays)}
-          ${makeRow('📊 متوسط الحجز',aAvg,bAvg,fmt0)}
+
         </tbody>
       </table>
     </div>`;
