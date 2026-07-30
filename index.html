@@ -3413,7 +3413,7 @@ function seSetField(id, field, val) {
   const tr=document.querySelector(`#se-body tr[data-seid="${id}"]`);
   if(tr) tr.classList.remove('row-saved');
   clearTimeout(seAutoTimer);
-  seAutoTimer = setTimeout(()=>{ if(r.name||r.phone) seSaveRow(r); }, 900);
+  seAutoTimer = setTimeout(()=>{ if(r.name && r.phone && r.bookingDates && r.bookingDates.length>0) seSaveRow(r); }, 900);
 }
 
 
@@ -3543,7 +3543,7 @@ function seAddDate(seid, dateVal) {
   }
   // حفظ تلقائي
   clearTimeout(seAutoTimer);
-  seAutoTimer = setTimeout(() => { if (r.name || r.phone) seSaveRow(r); }, 600);
+  seAutoTimer = setTimeout(() => { if (r.name && r.phone && r.bookingDates && r.bookingDates.length>0) seSaveRow(r); }, 600);
 }
 
 function seRemoveDate(seid, idx) {
@@ -3553,7 +3553,7 @@ function seRemoveDate(seid, idx) {
   r.saved = false;
   seRender();
   clearTimeout(seAutoTimer);
-  seAutoTimer = setTimeout(() => { if (r.name || r.phone) seSaveRow(r); }, 600);
+  seAutoTimer = setTimeout(() => { if (r.name && r.phone && r.bookingDates && r.bookingDates.length>0) seSaveRow(r); }, 600);
 }
 
 function seUpdateCounts() {
@@ -3599,8 +3599,8 @@ function seRender() {
       <td style="text-align:center;vertical-align:middle;"><button class="row-del-btn" onclick="seDeleteRow('${r._id}')">✕</button></td>`;
     tr.querySelectorAll('.excel-input,.excel-select,.excel-textarea').forEach(el=>{
       el.addEventListener('input',()=>seSetField(el.dataset.seid,el.dataset.field,el.value));
-      el.addEventListener('change',()=>{seSetField(el.dataset.seid,el.dataset.field,el.value);const rv=seRows.find(x=>x._id===el.dataset.seid);if(rv&&(rv.name||rv.phone)){clearTimeout(seAutoTimer);seAutoTimer=setTimeout(()=>seSaveRow(rv),400);}});
-      el.addEventListener('blur',()=>{const rv=seRows.find(x=>x._id===el.dataset.seid);if(rv&&(rv.name||rv.phone)&&!rv.saved){clearTimeout(seAutoTimer);seAutoTimer=setTimeout(()=>seSaveRow(rv),600);}});
+      el.addEventListener('change',()=>{seSetField(el.dataset.seid,el.dataset.field,el.value);const rv=seRows.find(x=>x._id===el.dataset.seid);if(rv&&rv.name&&rv.phone&&rv.bookingDates&&rv.bookingDates.length>0){clearTimeout(seAutoTimer);seAutoTimer=setTimeout(()=>seSaveRow(rv),400);}});
+      el.addEventListener('blur',()=>{const rv=seRows.find(x=>x._id===el.dataset.seid);if(rv&&rv.name&&rv.phone&&rv.bookingDates&&rv.bookingDates.length>0&&!rv.saved){clearTimeout(seAutoTimer);seAutoTimer=setTimeout(()=>seSaveRow(rv),600);}});
     });
     body.appendChild(tr);
   });
