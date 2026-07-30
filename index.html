@@ -3464,12 +3464,6 @@ async function seSaveRow(r) {
   const d = new Date(dateVal);
   const dates = (r.bookingDates && r.bookingDates.length) ? r.bookingDates : [dateVal];
 
-  // ── تحقق من التعارض ──
-  const conflicts = checkBookingConflict(dates, r.section || 'قسم الرجال', r._id);
-  if (conflicts.length > 0) {
-    if (!showConflictWarning(conflicts)) return; // المستخدم رفض → لا تحفظ
-  }
-
   const firstDate = dates[0] || dateVal;
   const fd = new Date(firstDate);
   const contactDate = r.contactDate || dateVal;
@@ -3507,6 +3501,20 @@ function seAddDate(seid, dateVal) {
   if (!r) return;
   if (!r.bookingDates) r.bookingDates = [];
   if (r.bookingDates.includes(dateVal)) return; // لا تكرار
+
+  // ── تحقق من التعارض قبل الإضافة ──
+  const section = r.section || 'قسم الرجال';
+  const conflicts = checkBookingConflict([dateVal], section, r._id);
+  if (conflicts.length > 0) {
+    if (!showConflictWarning(conflicts)) {
+      // المستخدم رفض — امسح التاريخ من الحقل
+      const wrap = document.getElementById('se-dates-' + seid);
+      const inp = wrap ? wrap.querySelector('input[type="date"]') : null;
+      if (inp) inp.value = '';
+      return; // لا تضيف التاريخ
+    }
+  }
+
   r.bookingDates.push(dateVal);
   r.bookingDates.sort();
   if (!r.date) r.date = r.bookingDates[0];
@@ -3523,6 +3531,9 @@ function seAddDate(seid, dateVal) {
       span.innerHTML = d + '<span onclick="seRemoveDate(\''+seid+'\','+i+')" style="cursor:pointer;font-size:13px;line-height:1;margin-right:1px;" title="حذف">×</span>';
       wrap.insertBefore(span, inp);
     });
+    // امسح الحقل بعد الإضافة
+    const dateInp = wrap.querySelector('input[type="date"]');
+    if (dateInp) dateInp.value = '';
   }
   // حفظ تلقائي
   clearTimeout(seAutoTimer);
