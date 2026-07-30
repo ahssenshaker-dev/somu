@@ -2252,21 +2252,24 @@ function renderTable() {
     <tr>
       <td>${start+i+1}</td>
       <td>${r.name||'<span style="color:#a0aec0">—</span>'}</td>
-      <td style="direction:ltr;text-align:right">${r.phone}</td>
-      <td>${r.fullDate ? new Date(r.fullDate+'T00:00:00').toLocaleDateString('ar-SA',{year:'numeric',month:'numeric',day:'numeric'}) : ''}</td>
-      <td><span class="source-icon">${r.source}</span></td>
-      <td>${r.contact}</td>
-      <td><span class="badge ${getBadgeClass(r.request)}">${r.request}</span></td>
-      <td><span class="badge ${r.type==='ججز'?'badge-حجز':'badge-استفسار'}">${r.type}</span></td>
-      <td style="max-width:260px;font-size:12px;color:#718096">${r.details||''}</td>
-      <td>${r.employee}</td>
+      <td style="direction:ltr;text-align:right">${r.phone||''}</td>
+      <td>${r.fullDate ? new Date(r.fullDate+'T00:00:00').toLocaleDateString('ar-SA',{year:'numeric',month:'numeric',day:'numeric'}) : (r.day||'')}</td>
+      <td><span class="source-icon">${r.source||''}</span></td>
+      <td>${r.contact||''}</td>
+      <td><span class="badge ${getBadgeClass(r.request)}">${r.request||''}</span></td>
+      <td><span class="badge ${(r.type||'').includes('جز')?'badge-حجز':(r.type||'').includes('شكو')?'badge-شكوى':'badge-استفسار'}">${r.type||''}</span></td>
+      <td style="text-align:center;color:#4a5568">${r.gender||'<span style="color:#cbd5e0">—</span>'}</td>
+      <td style="text-align:center;color:#4a5568">${r.occasion||'<span style="color:#cbd5e0">—</span>'}</td>
+      <td style="text-align:center;font-weight:700;color:#7a5a1a">${r.days||'<span style="color:#cbd5e0">—</span>'}</td>
+      <td style="max-width:240px;font-size:12px;color:#718096">${r.details||''}</td>
+      <td style="font-size:12px">${r.employee||''}</td>
       <td>
         <div class="actions-cell">
           <button class="icon-btn" onclick="editRecord('${r.id}')">✏️</button>
           <button class="icon-btn del" onclick="deleteRecord('${r.id}')">🗑️</button>
         </div>
       </td>
-    </tr>`).join('') || '<tr><td colspan="11" class="empty-state">لا توجد نتائج</td></tr>';
+    </tr>`).join('') || '<tr><td colspan="14" class="empty-state">لا توجد نتائج</td></tr>';
   document.getElementById('count-display').textContent = filteredData.length;
   renderPagination();
 }
@@ -2396,27 +2399,30 @@ function editRecord(id) {
   const SEL = (fld, opts, val) =>
     `<select class="excel-select" id="crmi-${fld}" style="border:1px solid #e94560;border-radius:4px;padding:4px 6px;width:100%;font-size:11px;">${opts.map(v=>'<option'+(val===v?' selected':'')+'>'+v+'</option>').join('')}</select>`;
 
+  const genders = ['','ذكر','أنثى'];
+  const occasions = ['','عرس','خطوبة','عيد ميلاد','تخرج','سفرة','عائلي','أخرى'];
+  const requestOpts = ['السعر','المساحة','مسبح','العاب مائية','صالة طعام','المناسبة','تعارض في الحجز','أخرى'];
+
   targetRow.innerHTML = `
     <td class="cell-num">${targetRow.rowIndex}</td>
     <td>${INP('name', r.name, 'الاسم')}</td>
     <td>${INP('phone', r.phone, 'الجوال', 'direction:ltr;')}</td>
-    <td>${INP('date', r.fullDate, 'التاريخ', 'direction:ltr;').replace('type="text"','type="date"').replace('class="excel-input"','class="excel-input" type="date"')}<input type="date" class="excel-input" id="crmi-date" value="${r.fullDate||''}" style="border:1px solid #e94560;border-radius:4px;padding:4px 6px;width:100%;font-size:11px;direction:ltr;"></td>
+    <td><input type="date" class="excel-input" id="crmi-date" value="${r.fullDate||''}" style="border:1px solid #e94560;border-radius:4px;padding:4px 6px;width:100%;font-size:11px;direction:ltr;"></td>
     <td>${SEL('source', sources, r.source)}</td>
     <td>${SEL('contact', contacts, r.contact)}</td>
     <td><select class="excel-select" id="crmi-request" style="border:1px solid #e94560;border-radius:4px;padding:4px 6px;width:100%;font-size:11px;">
-      ${['السعر','المساحة','مسبح','العاب مائية','صالة طعام','المناسبة','تعارض في الحجز','أخرى'].map(v=>`<option value="${v}" ${(r.request||'')=== v?'selected':''}>${v}</option>`).join('')}
+      ${requestOpts.map(v=>`<option value="${v}" ${(r.request||'')=== v?'selected':''}>${v}</option>`).join('')}
     </select></td>
     <td>${SEL('type', types, r.type)}</td>
+    <td>${SEL('gender', genders, r.gender||'')}</td>
+    <td>${SEL('occasion', occasions, r.occasion||'')}</td>
+    <td>${INP('days', r.days, 'الأيام', 'width:60px;text-align:center;')}</td>
     <td><textarea class="excel-textarea" id="crmi-details" style="border:1px solid #e94560;border-radius:4px;padding:4px 6px;width:100%;font-size:11px;min-height:36px;">${r.details||''}</textarea></td>
     <td>${SEL('employee', employees, r.employee)}</td>
     <td style="vertical-align:middle;text-align:center;">
       <button onclick="crmSaveInline('${id}')" style="background:#38a169;color:#fff;border:none;border-radius:4px;padding:4px 8px;font-size:10px;cursor:pointer;display:block;width:100%;margin-bottom:2px;">💾 حفظ</button>
       <button onclick="crmCancelInline()" style="background:#718096;color:#fff;border:none;border-radius:4px;padding:4px 8px;font-size:10px;cursor:pointer;display:block;width:100%;">✕</button>
     </td>`;
-
-  // remove the duplicate date input (from the INP helper above)
-  const dupDate = targetRow.querySelectorAll('#crmi-date');
-  if (dupDate.length > 1) dupDate[0].remove();
 }
 
 function crmCancelInline() {
@@ -2438,6 +2444,9 @@ async function crmSaveInline(id) {
   r.contact = document.getElementById('crmi-contact')?.value || r.contact;
   r.request = document.getElementById('crmi-request')?.value || r.request;
   r.type = document.getElementById('crmi-type')?.value || r.type;
+  r.gender = document.getElementById('crmi-gender')?.value || '';
+  r.occasion = document.getElementById('crmi-occasion')?.value || '';
+  r.days = document.getElementById('crmi-days')?.value || '';
   r.details = document.getElementById('crmi-details')?.value || '';
   r.employee = document.getElementById('crmi-employee')?.value || r.employee;
   await saveRecordDB(r);
