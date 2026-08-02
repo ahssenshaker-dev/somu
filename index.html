@@ -175,7 +175,6 @@
     body.print-sales-report canvas { max-height: 65px !important; width: 100% !important; }
     /* Donuts must render as true circles, not stretched ellipses */
     body.print-sales-report #tab-sales-report > div:nth-child(4) { align-items: center !important; }
-    body.print-sales-report #tab-sales-report > div:nth-child(4) canvas { max-height: 110px !important; width: 110px !important; height: 110px !important; margin: 0 auto !important; display: block !important; }
     body.print-sales-report #tab-sales-report > div:nth-child(4) > div > div:last-child { max-height: 115px !important; display: flex !important; justify-content: center !important; }
 
     /* ── Print: مقارنة المبيعات (body.print-cmp-sales) ── */
@@ -184,7 +183,6 @@
     body.print-cmp-sales #cmp-section-inquiries { display: none !important; }
     body.print-cmp-sales #tab-sales-compare .s-compare-panel { padding: 8px !important; box-shadow: none !important; border: 1px solid #dde3ec !important; }
     body.print-cmp-sales #tab-sales-compare canvas { max-height: 85px !important; }
-    body.print-cmp-sales #tab-sales-compare #cmp-source-chart { max-height: 100px !important; width: 100px !important; height: 100px !important; margin: 0 auto !important; display: block !important; }
     body.print-cmp-sales #tab-sales-compare .pct-badge { font-size: 10px !important; padding: 2px 5px !important; }
     body.print-cmp-sales #tab-sales-compare .s-compare-chart-wrap { box-shadow: none !important; border: 1px solid #dde3ec !important; }
 
@@ -194,7 +192,6 @@
     body.print-cmp-inq #cmp-section-sales { display: none !important; }
     body.print-cmp-inq #tab-sales-compare .s-compare-panel { padding: 8px !important; box-shadow: none !important; border: 1px solid #dde3ec !important; }
     body.print-cmp-inq #tab-sales-compare canvas { max-height: 85px !important; }
-    body.print-cmp-inq #tab-sales-compare #cmp-inq-contact { max-height: 100px !important; width: 100px !important; height: 100px !important; margin: 0 auto !important; display: block !important; }
     body.print-cmp-inq #tab-sales-compare .pct-badge { font-size: 10px !important; padding: 2px 5px !important; }
     body.print-cmp-inq #tab-sales-compare .s-compare-chart-wrap { box-shadow: none !important; border: 1px solid #dde3ec !important; }
 
@@ -3770,7 +3767,7 @@ function snapshotChartForPrint(id, sizePx) {
   img.src = dataUrl;
   img.style.cssText = `width:${sizePx}px !important;height:${sizePx}px !important;display:block !important;margin:0 auto !important;object-fit:contain !important;`;
   canvas.dataset.printHidden = '1';
-  canvas.style.display = 'none';
+  canvas.style.setProperty('display', 'none', 'important');
   canvas.insertAdjacentElement('afterend', img);
 }
 
@@ -3779,7 +3776,7 @@ function restoreChartAfterPrint(id) {
   if(img) img.remove();
   const canvas = document.getElementById(id);
   if(canvas && canvas.dataset.printHidden) {
-    canvas.style.display = '';
+    canvas.style.removeProperty('display');
     delete canvas.dataset.printHidden;
   }
 }
