@@ -3750,18 +3750,46 @@ function setDynPageSize(size) {
   el.textContent = `@page { size: ${isA3 ? 'A3' : 'A4'} landscape; margin: ${isA3 ? '10mm' : '8mm'}; }`;
 }
 
+// Freeze a live (correctly circular) canvas chart as a static square PNG for printing.
+// This avoids relying on Chart.js re-rendering the canvas bitmap at print time, which is
+// unreliable and causes donut charts to print as squashed ellipses instead of circles.
+function snapshotChartForPrint(id, sizePx) {
+  const canvas = document.getElementById(id);
+  if(!canvas) return;
+  let dataUrl;
+  try { dataUrl = canvas.toDataURL('image/png', 1.0); } catch(e) { return; }
+  const img = document.createElement('img');
+  img.id = id + '-print-snapshot';
+  img.src = dataUrl;
+  img.style.cssText = `width:${sizePx}px !important;height:${sizePx}px !important;display:block !important;margin:0 auto !important;object-fit:contain !important;`;
+  canvas.dataset.printHidden = '1';
+  canvas.style.display = 'none';
+  canvas.insertAdjacentElement('afterend', img);
+}
+
+function restoreChartAfterPrint(id) {
+  const img = document.getElementById(id + '-print-snapshot');
+  if(img) img.remove();
+  const canvas = document.getElementById(id);
+  if(canvas && canvas.dataset.printHidden) {
+    canvas.style.display = '';
+    delete canvas.dataset.printHidden;
+  }
+}
+
+const SR_DONUT_IDS = ['sr-section-pie','sr-source-pie'];
+const CMP_DONUT_IDS = { sales: ['cmp-source-chart'], inquiries: ['cmp-inq-contact'] };
+
 function srPrint(size) {
   setDynPageSize(size);
   document.body.classList.remove('print-old-report','print-sales-report','print-cmp-sales','print-cmp-inq');
   document.body.classList.add('print-sales-report');
-  // إعادة رسم الـ charts بحجم مناسب للطباعة قبل طباعة
-  Object.values(srCharts).forEach(ch => { try { ch.resize(); } catch(e){} });
+  SR_DONUT_IDS.forEach(id => snapshotChartForPrint(id, 110));
   setTimeout(() => {
     window.print();
     setTimeout(() => {
       document.body.classList.remove('print-sales-report');
-      // إعادة الـ charts لحجمها الأصلي
-      Object.values(srCharts).forEach(ch => { try { ch.resize(); } catch(e){} });
+      SR_DONUT_IDS.forEach(id => restoreChartAfterPrint(id));
       setDynPageSize('a4');
     }, 500);
   }, 300);
@@ -3771,11 +3799,16 @@ function cmpPrint(size) {
   setDynPageSize(size);
   document.body.classList.remove('print-old-report','print-sales-report','print-cmp-sales','print-cmp-inq');
   document.body.classList.add(cmpCurrentSection==='sales' ? 'print-cmp-sales' : 'print-cmp-inq');
+  const donutIds = CMP_DONUT_IDS[cmpCurrentSection] || [];
+  donutIds.forEach(id => snapshotChartForPrint(id, 100));
   setTimeout(() => {
     window.print();
-    document.body.classList.remove('print-cmp-sales','print-cmp-inq');
-    setDynPageSize('a4');
-  }, 200);
+    setTimeout(() => {
+      document.body.classList.remove('print-cmp-sales','print-cmp-inq');
+      donutIds.forEach(id => restoreChartAfterPrint(id));
+      setDynPageSize('a4');
+    }, 500);
+  }, 300);
 }
 
 // ===== SALES COMPARE =====
