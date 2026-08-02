@@ -3426,7 +3426,7 @@ function seSetField(id, field, val) {
   const tr=document.querySelector(`#se-body tr[data-seid="${id}"]`);
   if(tr) tr.classList.remove('row-saved');
   clearTimeout(seAutoTimer);
-  seAutoTimer = setTimeout(()=>{ if(r.name||r.phone) seSaveRow(r); }, 900);
+  seAutoTimer = setTimeout(()=>{ if(r.name && r.phone && r.bookingDates && r.bookingDates.length>0) seSaveRow(r); }, 900);
 }
 
 
@@ -3475,7 +3475,13 @@ async function seSaveRow(r) {
   const dateVal = r.date || dateInp.value;
   if (!dateVal || (!r.name && !r.phone)) return;
   const d = new Date(dateVal);
-  const dates = (r.bookingDates && r.bookingDates.length) ? r.bookingDates : [dateVal];
+  const dates = (r.bookingDates && r.bookingDates.length) ? r.bookingDates : [];
+  if (dates.length === 0) {
+    // لا تواريخ حجز محددة — استخدم تاريخ الطلب كافتراضي بدون تنبيه
+    const fallback = r.contactDate || dateVal;
+    if (fallback) dates.push(fallback);
+    else return; // لا يوجد أي تاريخ
+  }
 
   const firstDate = dates[0] || dateVal;
   const fd = new Date(firstDate);
@@ -3550,7 +3556,7 @@ function seAddDate(seid, dateVal) {
   }
   // حفظ تلقائي
   clearTimeout(seAutoTimer);
-  seAutoTimer = setTimeout(() => { if (r.name || r.phone) seSaveRow(r); }, 600);
+  seAutoTimer = setTimeout(() => { if (r.name && r.phone && r.bookingDates && r.bookingDates.length>0) seSaveRow(r); }, 600);
 }
 
 function seRemoveDate(seid, idx) {
@@ -3560,7 +3566,7 @@ function seRemoveDate(seid, idx) {
   r.saved = false;
   seRender();
   clearTimeout(seAutoTimer);
-  seAutoTimer = setTimeout(() => { if (r.name || r.phone) seSaveRow(r); }, 600);
+  seAutoTimer = setTimeout(() => { if (r.name && r.phone && r.bookingDates && r.bookingDates.length>0) seSaveRow(r); }, 600);
 }
 
 function seUpdateCounts() {
@@ -3589,9 +3595,10 @@ function seRender() {
       </select></td>
       <td style="min-width:190px;vertical-align:middle;">
         <div style="display:flex;flex-wrap:wrap;gap:3px;padding:4px;min-height:32px;border:1px solid #e2e8f0;border-radius:5px;background:#fafbfc;align-items:center;" id="se-dates-${r._id}">
-          ${(r.bookingDates&&r.bookingDates.length?r.bookingDates:[r.date||dateVal]).filter(Boolean).map((d,i)=>`<span style="background:#3b82f6;color:#fff;border-radius:4px;padding:2px 7px;font-size:10px;display:inline-flex;align-items:center;gap:3px;cursor:default;">${d}<span onclick="seRemoveDate('${r._id}',${i})" style="cursor:pointer;font-size:13px;line-height:1;margin-right:1px;" title="حذف">×</span></span>`).join('')}
-          <input type="date" id="se-date-inp-${r._id}" style="border:none;outline:none;font-size:11px;direction:ltr;flex:1;min-width:105px;background:transparent;" 
-            onchange="seAddDate('${r._id}', this.value); this.value='';" title="اختر تاريخاً إضافياً">
+          ${(r.bookingDates&&r.bookingDates.length?r.bookingDates:[]).map((d,i)=>`<span style="background:#3b82f6;color:#fff;border-radius:4px;padding:2px 7px;font-size:10px;display:inline-flex;align-items:center;gap:3px;cursor:default;">${d}<span onclick="seRemoveDate('${r._id}',${i})" style="cursor:pointer;font-size:13px;line-height:1;margin-right:1px;" title="حذف">×</span></span>`).join('')}
+          <input type="date" id="se-date-inp-${r._id}" style="border:none;outline:none;font-size:11px;direction:ltr;flex:1;min-width:105px;background:transparent;" title="اختر تاريخ الحجز"
+            onkeydown="if(event.key==='Enter'){seAddDate('${r._id}',this.value);this.value='';}">
+          <button onclick="seAddDate('${r._id}', document.getElementById('se-date-inp-${r._id}').value); document.getElementById('se-date-inp-${r._id}').value='';" style="background:#3b82f6;color:#fff;border:none;border-radius:4px;padding:2px 8px;font-size:13px;font-weight:700;cursor:pointer;line-height:1.4;" title="إضافة التاريخ">+</button>
         </div>
       </td>
       <td><select class="excel-select" data-field="source" data-seid="${r._id}">
@@ -3605,8 +3612,8 @@ function seRender() {
       <td style="text-align:center;vertical-align:middle;"><button class="row-del-btn" onclick="seDeleteRow('${r._id}')">✕</button></td>`;
     tr.querySelectorAll('.excel-input,.excel-select,.excel-textarea').forEach(el=>{
       el.addEventListener('input',()=>seSetField(el.dataset.seid,el.dataset.field,el.value));
-      el.addEventListener('change',()=>{seSetField(el.dataset.seid,el.dataset.field,el.value);const rv=seRows.find(x=>x._id===el.dataset.seid);if(rv&&(rv.name||rv.phone)){clearTimeout(seAutoTimer);seAutoTimer=setTimeout(()=>seSaveRow(rv),400);}});
-      el.addEventListener('blur',()=>{const rv=seRows.find(x=>x._id===el.dataset.seid);if(rv&&(rv.name||rv.phone)&&!rv.saved){clearTimeout(seAutoTimer);seAutoTimer=setTimeout(()=>seSaveRow(rv),600);}});
+      el.addEventListener('change',()=>{seSetField(el.dataset.seid,el.dataset.field,el.value);const rv=seRows.find(x=>x._id===el.dataset.seid);if(rv&&rv.name&&rv.phone&&rv.bookingDates&&rv.bookingDates.length>0){clearTimeout(seAutoTimer);seAutoTimer=setTimeout(()=>seSaveRow(rv),400);}});
+      el.addEventListener('blur',()=>{const rv=seRows.find(x=>x._id===el.dataset.seid);if(rv&&rv.name&&rv.phone&&rv.bookingDates&&rv.bookingDates.length>0&&!rv.saved){clearTimeout(seAutoTimer);seAutoTimer=setTimeout(()=>seSaveRow(rv),600);}});
     });
     body.appendChild(tr);
   });
@@ -4559,8 +4566,9 @@ function sr2EditRow(id) {
         ${buildTagsHTML(editBDates)}
         <input type="date" id="sr2i-date-add-${id}"
           style="border:none;outline:none;font-size:11px;direction:ltr;flex:1;min-width:105px;background:transparent;"
-          title="اختر تاريخاً لإضافته"
-          onchange="sr2iAddDate('${id}',this.value);this.value='';">
+          title="اختر تاريخ الحجز"
+          onkeydown="if(event.key==='Enter'){sr2iAddDate('${id}',this.value);this.value='';}">
+        <button onclick="sr2iAddDate('${id}',document.getElementById('sr2i-date-add-${id}').value);document.getElementById('sr2i-date-add-${id}').value='';" style="background:#3b82f6;color:#fff;border:none;border-radius:4px;padding:2px 8px;font-size:13px;font-weight:700;cursor:pointer;line-height:1.4;" title="إضافة التاريخ">+</button>
       </div>
     </td>
     <td style="text-align:center;font-size:13px;font-weight:800;color:#7a5a1a;" id="sr2i-days-${id}">${editBDates.length||1}</td>
@@ -4586,6 +4594,19 @@ function sr2iAddDate(id, dateVal) {
   if (!row) return;
   if (!row._editBDates) row._editBDates = [];
   if (row._editBDates.includes(dateVal)) return;
+
+  // ── تحقق من التعارض ──
+  const section = document.getElementById('sr2i-section-' + id)?.value || 'قسم الرجال';
+  const conflicts = checkBookingConflict([dateVal], section, id);
+  if (conflicts.length > 0) {
+    if (!showConflictWarning(conflicts)) {
+      // امسح الحقل عند الإلغاء
+      const inp = document.getElementById('sr2i-date-add-' + id);
+      if (inp) inp.value = '';
+      return;
+    }
+  }
+
   row._editBDates.push(dateVal);
   row._editBDates.sort();
   sr2iRefreshTags(id);
