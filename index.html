@@ -173,9 +173,10 @@
     body.print-sales-report .s-chart-card { box-shadow: none !important; border: 1px solid #dde3ec !important; padding: 5px !important; break-inside: avoid; }
     body.print-sales-report .s-chart-title { font-size: 8px !important; margin-bottom: 3px !important; }
     body.print-sales-report canvas { max-height: 65px !important; width: 100% !important; }
-    /* Donuts need more height */
-    body.print-sales-report #tab-sales-report > div:nth-child(4) canvas { max-height: 100px !important; }
-    body.print-sales-report #tab-sales-report > div:nth-child(4) > div > div:last-child { max-height: 105px !important; }
+    /* Donuts must render as true circles, not stretched ellipses */
+    body.print-sales-report #tab-sales-report > div:nth-child(4) { align-items: center !important; }
+    body.print-sales-report #tab-sales-report > div:nth-child(4) canvas { max-height: 110px !important; width: 110px !important; height: 110px !important; margin: 0 auto !important; display: block !important; }
+    body.print-sales-report #tab-sales-report > div:nth-child(4) > div > div:last-child { max-height: 115px !important; display: flex !important; justify-content: center !important; }
 
     /* ── Print: مقارنة المبيعات (body.print-cmp-sales) ── */
     body.print-cmp-sales #tab-sales-compare { display: block !important; }
@@ -183,6 +184,7 @@
     body.print-cmp-sales #cmp-section-inquiries { display: none !important; }
     body.print-cmp-sales #tab-sales-compare .s-compare-panel { padding: 8px !important; box-shadow: none !important; border: 1px solid #dde3ec !important; }
     body.print-cmp-sales #tab-sales-compare canvas { max-height: 85px !important; }
+    body.print-cmp-sales #tab-sales-compare #cmp-source-chart { max-height: 100px !important; width: 100px !important; height: 100px !important; margin: 0 auto !important; display: block !important; }
     body.print-cmp-sales #tab-sales-compare .pct-badge { font-size: 10px !important; padding: 2px 5px !important; }
     body.print-cmp-sales #tab-sales-compare .s-compare-chart-wrap { box-shadow: none !important; border: 1px solid #dde3ec !important; }
 
@@ -192,6 +194,7 @@
     body.print-cmp-inq #cmp-section-sales { display: none !important; }
     body.print-cmp-inq #tab-sales-compare .s-compare-panel { padding: 8px !important; box-shadow: none !important; border: 1px solid #dde3ec !important; }
     body.print-cmp-inq #tab-sales-compare canvas { max-height: 85px !important; }
+    body.print-cmp-inq #tab-sales-compare #cmp-inq-contact { max-height: 100px !important; width: 100px !important; height: 100px !important; margin: 0 auto !important; display: block !important; }
     body.print-cmp-inq #tab-sales-compare .pct-badge { font-size: 10px !important; padding: 2px 5px !important; }
     body.print-cmp-inq #tab-sales-compare .s-compare-chart-wrap { box-shadow: none !important; border: 1px solid #dde3ec !important; }
 
@@ -2181,7 +2184,8 @@ function buildReportCharts(d) {
 // ==================== METRICS ====================
 function buildMetrics(d, containerId) {
   const total = d.length;
-  const booked = d.filter(r=>r.type==='حجز').length;
+  const norm = s => (s||'').replace(/[\u200f\u0640\s]/g,'');
+  const booked = d.filter(r=>norm(r.type)==='حجز').length;
   const pools = d.filter(r=>r.request==='مسبح').length;
   const water = d.filter(r=>r.request==='العاب مائية').length;
   const gmap = d.filter(r=>r.source==='Google Map').length;
@@ -2228,7 +2232,7 @@ function getApplied() {
   if(src) d = d.filter(r=>r.source===src);
   if(req) d = d.filter(r=>(r.request||'').includes(req));
   if(contact) d = d.filter(r=>(r.contact||'').replace(/‏|\s/g,'').includes(contact.replace(/‏|\s/g,'')));
-  if(type) d = d.filter(r=>(r.type||'').replace(/‏|\s/g,'').includes(type.replace(/‏|\s/g,'')));
+  if(type) d = d.filter(r=>(r.type||'').replace(/‏|ـ|\s/g,'').includes(type.replace(/‏|ـ|\s/g,'')));
   if(dfrom||dto) d = d.filter(r=>{
     const rd = r.fullDate || (r.day ? `2026-07-${String(r.day).padStart(2,'0')}` : '');
     return (!dfrom||rd>=dfrom)&&(!dto||rd<=dto);
@@ -2502,7 +2506,7 @@ function getReportData() {
   if(src) d=d.filter(r=>r.source===src);
   if(req) d=d.filter(r=>(r.request||'').includes(req));
   if(contact) { const cn=contact.replace(/[\u200f\s]/g,''); d=d.filter(r=>(r.contact||'').replace(/[\u200f\s]/g,'').includes(cn)); }
-  if(type) { const tn=type.replace(/[\u200f\s]/g,''); d=d.filter(r=>(r.type||'').replace(/[\u200f\s]/g,'').includes(tn)); }
+  if(type) { const tn=type.replace(/[\u200f\u0640\s]/g,''); d=d.filter(r=>(r.type||'').replace(/[\u200f\u0640\s]/g,'').includes(tn)); }
   const gender = (document.getElementById('report-gender')||{}).value||'';
   const occasion = (document.getElementById('report-occasion')||{}).value||'';
   const daysF = (document.getElementById('report-days')||{}).value||'';
@@ -2532,7 +2536,7 @@ function generateRecommendations(d) {
 
   // Count types
   const typeCount = {};
-  d.forEach(r => { const t=(r.type||'').replace(/[‏\s]/g,''); typeCount[t]=(typeCount[t]||0)+1; });
+  d.forEach(r => { const t=(r.type||'').replace(/[‏ـ\s]/g,''); typeCount[t]=(typeCount[t]||0)+1; });
 
   // Count contact
   const contactCount = {};
@@ -3941,7 +3945,8 @@ function cmpRenderInquiryCharts(aL,bL){
 
   // Bar: total vs bookings
   const barCtx=document.getElementById('cmp-inq-bar');
-  if(barCtx) cmpCharts.inqBar=new Chart(barCtx,{type:'bar',data:{labels:['إجمالي التواصل','الحجوزات','الاستفسارات','الشكاوى'],datasets:[{label:aL,data:[aD.length,aD.filter(r=>r.type==='حجز').length,aD.filter(r=>r.type==='استفسار').length,aD.filter(r=>r.type==='شكوى').length],backgroundColor:'rgba(59,130,246,0.75)',borderRadius:5},{label:bL,data:[bD.length,bD.filter(r=>r.type==='حجز').length,bD.filter(r=>r.type==='استفسار').length,bD.filter(r=>r.type==='شكوى').length],backgroundColor:'rgba(236,72,153,0.75)',borderRadius:5}]},options:{plugins:{legend:{position:'bottom',labels:{font:{family:'inherit',size:10}}}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
+  const _norm = s => (s||'').replace(/[\u200f\u0640\s]/g,'');
+  if(barCtx) cmpCharts.inqBar=new Chart(barCtx,{type:'bar',data:{labels:['إجمالي التواصل','الحجوزات','الاستفسارات','الشكاوى'],datasets:[{label:aL,data:[aD.length,aD.filter(r=>_norm(r.type)==='حجز').length,aD.filter(r=>_norm(r.type)==='استفسار').length,aD.filter(r=>_norm(r.type)==='شكوى').length],backgroundColor:'rgba(59,130,246,0.75)',borderRadius:5},{label:bL,data:[bD.length,bD.filter(r=>_norm(r.type)==='حجز').length,bD.filter(r=>_norm(r.type)==='استفسار').length,bD.filter(r=>_norm(r.type)==='شكوى').length],backgroundColor:'rgba(236,72,153,0.75)',borderRadius:5}]},options:{plugins:{legend:{position:'bottom',labels:{font:{family:'inherit',size:10}}}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
 
   // Sources
   const allSrcs=[...new Set([...aD.map(r=>r.source),...bD.map(r=>r.source)].filter(Boolean))];
