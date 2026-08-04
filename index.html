@@ -3238,6 +3238,16 @@ async function salesLoadData() {
     if (!r.bookingDates || !Array.isArray(r.bookingDates) || !r.bookingDates.length) {
       r.bookingDates = r.date ? [r.date] : [];
     }
+    // إعادة حساب date/day/month/year دائماً من تاريخ الحجز الفعلي (أول تاريخ بعد الترتيب)
+    // بدل ما نثق بالقيم المخزّنة، لأنها ممكن تكون محسوبة غلط من تاريخ الطلب سابقاً —
+    // هذا يصلّح تلقائياً أي سجلات قديمة محفوظة بخطأ بدون الحاجة لإعادة فتحها وحفظها يدوياً
+    const validDates = [...r.bookingDates].filter(x => x && /^\d{4}-\d{2}-\d{2}/.test(x)).sort();
+    if (validDates.length) {
+      const primary = validDates[0];
+      const parts = primary.split('-');
+      const yy = parseInt(parts[0],10), mm = parseInt(parts[1],10), dd = parseInt(parts[2],10);
+      if (yy && mm && dd) { r.date = primary; r.year = yy; r.month = mm; r.day = dd; }
+    }
     return r;
   };
 
@@ -3740,7 +3750,13 @@ function srDestroyChart(id){ if(srCharts[id]){srCharts[id].destroy();delete srCh
 function srRenderCharts(d) {
   srDestroyChart('bar'); srDestroyChart('secPie'); srDestroyChart('srcPie'); srDestroyChart('daily');
   const dayMap={};
-  d.forEach(r=>{ dayMap[r.day]=(dayMap[r.day]||0)+1; });
+  d.forEach(r=>{
+    const dts = (r.bookingDates && r.bookingDates.length) ? r.bookingDates : [r.date];
+    dts.filter(Boolean).forEach(dt => {
+      const dayNum = parseInt(dt.split('-')[2],10);
+      if(!isNaN(dayNum)) dayMap[dayNum]=(dayMap[dayNum]||0)+1;
+    });
+  });
   const sortedDays=Object.keys(dayMap).map(Number).sort((a,b)=>a-b);
   const barCtx=document.getElementById('sr-bar-chart');
   if(barCtx) srCharts['bar']=new Chart(barCtx,{type:'bar',data:{labels:sortedDays.map(d=>''+d),datasets:[{label:'حجوزات',data:sortedDays.map(d=>dayMap[d]),backgroundColor:'#3b82f6',borderRadius:4}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1,font:{size:9}}},x:{ticks:{font:{size:9}}}}}});
@@ -4662,7 +4678,6 @@ async function sr2SaveInlineEdit(id) {
   if (!r) return;
 
   const contactDateVal2 = document.getElementById('sr2i-cdate-' + id)?.value || r.contactDate || r.date;
-  const d = new Date(contactDateVal2);
   // اقرأ التواريخ اللي أضافها المستخدم بهذه الجلسة فقط (تبدأ فاضية دائماً)
   const row = document.getElementById('sr2-inline-' + id);
   let sessionDates = (row && row._editBDates) ? [...row._editBDates] : [];
@@ -4681,7 +4696,8 @@ async function sr2SaveInlineEdit(id) {
     bDates = (r.bookingDates && r.bookingDates.length) ? [...r.bookingDates] : [r.date || contactDateVal2].filter(Boolean);
   }
   bDates.sort();
-  const dateVal = r.date || contactDateVal2;
+  const dateVal = bDates[0] || r.date || contactDateVal2;
+  const fdObj = new Date(dateVal);
 
   // ── تحقق من التعارض ──
   const newSection2 = document.getElementById('sr2i-section-' + id)?.value || r.section;
@@ -4698,7 +4714,7 @@ async function sr2SaveInlineEdit(id) {
   r.contactMonth = cdObj2.getMonth()+1;
   r.contactYear = cdObj2.getFullYear();
   r.bookingDates = bDates;
-  r.month = d.getMonth()+1; r.year = d.getFullYear(); r.day = d.getDate();
+  r.month = fdObj.getMonth()+1; r.year = fdObj.getFullYear(); r.day = fdObj.getDate();
   r.amount = parseFloat(document.getElementById('sr2i-amount-' + id)?.value) || 0;
   r.section = document.getElementById('sr2i-section-' + id)?.value || r.section;
   r.source = document.getElementById('sr2i-source-' + id)?.value || r.source;
