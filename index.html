@@ -3302,8 +3302,16 @@ function salesCleanRec(rec) {
   // نبقي فقط الحقول الموجودة في الجدول + نحول arrays لـ JSON text
   const clean = {};
   SALES_FIELDS.forEach(f => {
-    if (rec[f] !== undefined && rec[f] !== null && rec[f] !== '') {
-      clean[f] = Array.isArray(rec[f]) ? JSON.stringify(rec[f]) : rec[f];
+    let v = rec[f];
+    if (f === 'bookingDates') {
+      // لا ترسل أبداً مصفوفة فاضية أو تحتوي قيم غير صالحة — هذا كان يمسح التاريخ المحفوظ بالخطأ
+      if (Array.isArray(v)) v = v.filter(x => x !== null && x !== undefined && x !== '');
+      if (!Array.isArray(v) || !v.length) return; // تجاهل الحقل كلياً بدل ما نرسله فاضي
+      clean[f] = JSON.stringify(v);
+      return;
+    }
+    if (v !== undefined && v !== null && v !== '') {
+      clean[f] = Array.isArray(v) ? JSON.stringify(v) : v;
     }
   });
   if (!clean._id) clean._id = rec._id || crypto.randomUUID();
@@ -3472,13 +3480,18 @@ async function seSaveRow(r) {
   const dateVal = r.date || dateInp.value;
   if (!dateVal || (!r.name && !r.phone)) return;
   const d = new Date(dateVal);
-  const dates = (r.bookingDates && r.bookingDates.length) ? r.bookingDates : [];
+  let dates = (r.bookingDates && r.bookingDates.length) ? [...r.bookingDates] : [];
+  // إذا فيه تاريخ مكتوب بحقل الإضافة ولم يُضغط "+" بعد — اعتبره التاريخ المقصود وأضفه تلقائياً
+  const pendingInp = document.getElementById('se-date-inp-' + r._id);
+  const pendingVal = pendingInp ? pendingInp.value : '';
+  if (pendingVal && !dates.includes(pendingVal)) dates.push(pendingVal);
   if (dates.length === 0) {
     // لا تواريخ حجز محددة — استخدم تاريخ الطلب كافتراضي بدون تنبيه
     const fallback = r.contactDate || dateVal;
     if (fallback) dates.push(fallback);
     else return; // لا يوجد أي تاريخ
   }
+  dates.sort();
 
   const firstDate = dates[0] || dateVal;
   const fd = new Date(firstDate);
@@ -4540,7 +4553,7 @@ function sr2EditRow(id) {
   const srcs = ['Google Map','TikTok','Instagram','Snap Chat','Facebook','غير محدد'];
   const stats = ['مؤكد','مؤقت','ملغي'];
   // بيانات التواريخ الحالية
-  let editBDates = (r.bookingDates && r.bookingDates.length) ? [...r.bookingDates] : (r.date ? [r.date] : []);
+  let editBDates = []; // يبدأ فاضي دائماً — لو ما ضاف المستخدم شي جديد، نحافظ على القديم عند الحفظ (يُقرأ من r.bookingDates وقتها)
 
   targetRow.setAttribute('id', 'sr2-inline-' + id);
   targetRow.style.background = '#fffde7';
@@ -4650,9 +4663,24 @@ async function sr2SaveInlineEdit(id) {
 
   const contactDateVal2 = document.getElementById('sr2i-cdate-' + id)?.value || r.contactDate || r.date;
   const d = new Date(contactDateVal2);
-  // اقرأ التواريخ من _editBDates على الـ row
+  // اقرأ التواريخ اللي أضافها المستخدم بهذه الجلسة فقط (تبدأ فاضية دائماً)
   const row = document.getElementById('sr2-inline-' + id);
-  const bDates = (row && row._editBDates && row._editBDates.length) ? row._editBDates : (r.bookingDates && r.bookingDates.length ? r.bookingDates : [r.date || contactDateVal2]);
+  let sessionDates = (row && row._editBDates) ? [...row._editBDates] : [];
+  // أي تاريخ مكتوب بحقل الإضافة ولم يُضغط "+" بعد — يُعتبر جزء من هذه الجلسة كمان
+  const pendingDateInp = document.getElementById('sr2i-date-add-' + id);
+  const pendingDate = pendingDateInp ? pendingDateInp.value : '';
+  if (pendingDate && !sessionDates.includes(pendingDate)) sessionDates.push(pendingDate);
+  sessionDates = sessionDates.filter(x => x !== null && x !== undefined && x !== '');
+
+  let bDates;
+  if (sessionDates.length) {
+    // المستخدم ضاف/غيّر تاريخ بهذه الجلسة — هذا يستبدل القديم بالكامل
+    bDates = sessionDates;
+  } else {
+    // ما صار أي تعديل على التواريخ — نحافظ على القديم كما هو
+    bDates = (r.bookingDates && r.bookingDates.length) ? [...r.bookingDates] : [r.date || contactDateVal2].filter(Boolean);
+  }
+  bDates.sort();
   const dateVal = r.date || contactDateVal2;
 
   // ── تحقق من التعارض ──
