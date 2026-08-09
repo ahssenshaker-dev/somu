@@ -2462,8 +2462,10 @@ function showTab(name) {
   if(name==='entry') entryInit();
   if(name==='sales-entry') { salesLoaded=false; salesEntryInit(); }
   if(name==='sales-records') { salesLoaded=false; salesRecordsInit(); }
-  if(name==='sales-report') { salesLoaded=false; salesReportInit(); }
+  if(name==='sales-report') { salesLoaded=false; salesReportInit().then(()=>applyMonthOptions()); }
   if(name==='sales-compare') { salesLoaded=false; salesCompareInit(); }
+  // طبّق الشهور على القوائم فوراً
+  setTimeout(applyMonthOptions, 50);
 }
 
 // ==================== REPORT ====================
@@ -3577,9 +3579,8 @@ function seRender() {
       <td style="min-width:190px;vertical-align:middle;">
         <div style="display:flex;flex-wrap:wrap;gap:3px;padding:4px;min-height:32px;border:1px solid #e2e8f0;border-radius:5px;background:#fafbfc;align-items:center;" id="se-dates-${r._id}">
           ${(r.bookingDates&&r.bookingDates.length?r.bookingDates:[]).map((d,i)=>`<span style="background:#3b82f6;color:#fff;border-radius:4px;padding:2px 7px;font-size:10px;display:inline-flex;align-items:center;gap:3px;cursor:default;">${d}<span onclick="seRemoveDate('${r._id}',${i})" style="cursor:pointer;font-size:13px;line-height:1;margin-right:1px;" title="حذف">×</span></span>`).join('')}
-          <input type="date" id="se-date-inp-${r._id}" style="border:none;outline:none;font-size:11px;direction:ltr;flex:1;min-width:105px;background:transparent;" title="اختر تاريخ الحجز"
-            onkeydown="if(event.key==='Enter'){seAddDate('${r._id}',this.value);this.value='';}">
-          <button onclick="seAddDate('${r._id}', document.getElementById('se-date-inp-${r._id}').value); document.getElementById('se-date-inp-${r._id}').value='';" style="background:#3b82f6;color:#fff;border:none;border-radius:4px;padding:2px 8px;font-size:13px;font-weight:700;cursor:pointer;line-height:1.4;" title="إضافة التاريخ">+</button>
+          <input type="date" id="se-date-inp-${r._id}" style="border:none;outline:none;font-size:11px;direction:ltr;flex:1;min-width:105px;background:transparent;" title="اختر تاريخ الحجز — يُضاف تلقائياً عند الاختيار"
+            onchange="seAddDate('${r._id}',this.value);this.value='';">
         </div>
       </td>
       <td><select class="excel-select" data-field="source" data-seid="${r._id}">
@@ -4202,57 +4203,62 @@ function globalQueryDate() {
 
 
 // ==================== DYNAMIC MONTH OPTIONS ====================
-function buildMonthOptions() {
-  if (!salesData.length) return;
+// الشهور المحسوبة من البيانات (تُحدَّث دائماً)
+let _cachedMonths = [];
 
+function buildMonthOptions() {
+  // اجمع الشهور من salesData
   const monthSet = new Set();
   salesData.forEach(r => {
-    // أولاً من month/year المخزنين
     let m = parseInt(r.month);
     let y = parseInt(r.year);
-    // fallback: من حقل date
     if ((!m || !y) && r.date) {
-      const parts = r.date.split('-');
-      y = parseInt(parts[0]);
-      m = parseInt(parts[1]);
+      const p = r.date.split('-');
+      y = parseInt(p[0]); m = parseInt(p[1]);
     }
     if (m && y) monthSet.add(y + '-' + String(m).padStart(2,'0'));
   });
+  _cachedMonths = [...monthSet].sort();
+  // طبّق على العناصر الموجودة في DOM
+  applyMonthOptions();
+}
 
-  const sortedMonths = [...monthSet].sort();
-  if (!sortedMonths.length) return;
+function applyMonthOptions() {
+  if (!_cachedMonths.length) return;
 
-  const srVal  = document.getElementById('sr-month')?.value;
-  const caVal  = document.getElementById('cmp-a-month')?.value;
-  const cbVal  = document.getElementById('cmp-b-month')?.value;
-  const sr2Val = document.getElementById('sr2-filter')?.value;
-
-  const latestKey = sortedMonths[sortedMonths.length - 1];
+  const latestKey = _cachedMonths[_cachedMonths.length - 1];
   const [latestYear, latestMonthStr] = latestKey.split('-');
   const latestMonth = parseInt(latestMonthStr);
   const latestYearN = parseInt(latestYear);
 
-  const buildOpts = (sel, withAll, prevVal, defaultLatest) => {
+  const buildOpts = (selId, withAll, defaultLatest) => {
+    const sel = document.getElementById(selId);
     if (!sel) return;
-    const cur = prevVal || (defaultLatest ? String(latestMonth) : '');
+    const prevVal = sel.value;
     sel.innerHTML = withAll ? '<option value="all">جميع الشهور</option>' : '';
-    sortedMonths.forEach(key => {
+    _cachedMonths.forEach(key => {
       const [y, m] = key.split('-');
       const mn = parseInt(m); const yn = parseInt(y);
       const label = MONTH_NAMES[mn] + ' ' + y;
       const opt = document.createElement('option');
       opt.value = mn;
       opt.dataset.year = yn;
-      opt.textContent = withAll ? label : label;
-      if (cur ? String(mn) === String(cur) : (mn === latestMonth && yn === latestYearN)) opt.selected = true;
+      opt.textContent = label;
+      // حافظ على القيمة السابقة أو اختر الأخير
+      const isSelected = prevVal
+        ? (String(mn) === String(prevVal))
+        : (defaultLatest && mn === latestMonth && yn === latestYearN);
+      if (isSelected) opt.selected = true;
       sel.appendChild(opt);
     });
+    // إذا لم يكن prevVal صالح، حدد الأخير
+    if (defaultLatest && !sel.value) sel.value = latestMonth;
   };
 
-  buildOpts(document.getElementById('sr-month'),   false, srVal,  true);
-  buildOpts(document.getElementById('cmp-a-month'), false, caVal,  true);
-  buildOpts(document.getElementById('cmp-b-month'), false, cbVal,  false);
-  buildOpts(document.getElementById('sr2-filter'),  true,  sr2Val, false);
+  buildOpts('sr-month',   false, true);
+  buildOpts('cmp-a-month',false, true);
+  buildOpts('cmp-b-month',false, false);
+  buildOpts('sr2-filter', true,  false);
 }
 // ==================== END DYNAMIC MONTH OPTIONS ====================
 
