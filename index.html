@@ -901,8 +901,7 @@
       <option value="month">شهري</option><option value="range">فترة مخصصة</option>
     </select>
     <select class="s-select" id="sr-month" onchange="salesReportInit()" style="padding:5px 10px;font-size:12px;">
-      <option value="5">مايو 2026</option><option value="6">يونيو 2026</option>
-      <option value="7" selected>يوليو 2026</option><option value="8">أغسطس 2026</option>
+      <option value="2026-7">يوليو 2026</option><option value="2026-8" selected>أغسطس 2026</option>
     </select>
     <span id="sr-range-wrap" style="display:none;gap:8px;align-items:center;">
       <input type="date" class="entry-date-input" id="sr-from" style="border-width:1px;padding:5px 10px;font-size:12px;" onchange="salesReportInit()">
@@ -969,8 +968,7 @@
       <option value="month">شهر</option><option value="range">فترة</option>
     </select>
     <select class="s-select" id="cmp-a-month" onchange="salesCompareInit()" style="padding:5px 8px;font-size:12px;">
-      <option value="5">مايو</option><option value="6">يونيو</option>
-      <option value="7" selected>يوليو</option><option value="8">أغسطس</option>
+      <option value="2026-7">يوليو 2026</option><option value="2026-8" selected>أغسطس 2026</option>
     </select>
     <span id="cmp-a-range" style="display:none;gap:6px;align-items:center;">
       <input type="date" class="entry-date-input" id="cmp-a-from" style="border-width:1px;padding:4px 8px;font-size:11px;" onchange="salesCompareInit()">
@@ -983,8 +981,7 @@
       <option value="month">شهر</option><option value="range">فترة</option>
     </select>
     <select class="s-select" id="cmp-b-month" onchange="salesCompareInit()" style="padding:5px 8px;font-size:12px;">
-      <option value="5">مايو</option><option value="6" selected>يونيو</option>
-      <option value="7">يوليو</option><option value="8">أغسطس</option>
+      <option value="2026-6">يونيو 2026</option><option value="2026-7" selected>يوليو 2026</option>
     </select>
     <span id="cmp-b-range" style="display:none;gap:6px;align-items:center;">
       <input type="date" class="entry-date-input" id="cmp-b-from" style="border-width:1px;padding:4px 8px;font-size:11px;" onchange="salesCompareInit()">
@@ -3219,6 +3216,48 @@ let seRows = [];
 let seAutoTimer = null;
 const MONTH_NAMES = {1:'يناير',2:'فبراير',3:'مارس',4:'أبريل',5:'مايو',6:'يونيو',7:'يوليو',8:'أغسطس',9:'سبتمبر',10:'أكتوبر',11:'نوفمبر',12:'ديسمبر'};
 
+function getSalesMonthOptions() {
+  const set = new Set();
+  salesData.forEach(r => { if (r.year && r.month) set.add(r.year + '-' + r.month); });
+  // نضيف الشهر الحالي الحقيقي دائماً حتى لو ما فيه بيانات بعد، عشان يقدر المستخدم يبدأ يسجل فيه
+  const now = new Date();
+  set.add(now.getFullYear() + '-' + (now.getMonth() + 1));
+  const arr = [...set].map(v => { const [y, m] = v.split('-').map(Number); return { y, m, value: v }; });
+  arr.sort((a, b) => a.y - b.y || a.m - b.m);
+  return arr;
+}
+
+function populateSalesMonthSelects() {
+  const opts = getSalesMonthOptions();
+  if (!opts.length) return;
+  const buildHTML = withYear => opts.map(o => `<option value="${o.value}">${MONTH_NAMES[o.m]}${withYear ? ' ' + o.y : ''}</option>`).join('');
+  const latest = opts[opts.length - 1].value;
+  const prevMonth = opts.length > 1 ? opts[opts.length - 2].value : latest;
+
+  const sr = document.getElementById('sr-month');
+  if (sr) {
+    const prevSel = sr.value;
+    sr.innerHTML = buildHTML(true);
+    sr.value = (prevSel && opts.some(o => o.value === prevSel)) ? prevSel : latest;
+  }
+  const ca = document.getElementById('cmp-a-month');
+  if (ca) {
+    const prevSel = ca.value;
+    const hadValue = !!prevSel;
+    ca.innerHTML = buildHTML(true);
+    ca.value = (prevSel && opts.some(o => o.value === prevSel)) ? prevSel : latest;
+    if (!hadValue) ca.value = latest;
+  }
+  const cb = document.getElementById('cmp-b-month');
+  if (cb) {
+    const prevSel = cb.value;
+    const hadValue = !!prevSel;
+    cb.innerHTML = buildHTML(true);
+    cb.value = (prevSel && opts.some(o => o.value === prevSel)) ? prevSel : prevMonth;
+    if (!hadValue) cb.value = prevMonth;
+  }
+}
+
 // ── حالة المبيعات ──
 let salesLoaded = false;  // منعاً للتحميل المزدوج
 
@@ -3237,6 +3276,16 @@ async function salesLoadData() {
     }
     if (!r.bookingDates || !Array.isArray(r.bookingDates) || !r.bookingDates.length) {
       r.bookingDates = r.date ? [r.date] : [];
+    }
+    // إعادة حساب date/day/month/year دائماً من تاريخ الحجز الفعلي (أول تاريخ بعد الترتيب)
+    // بدل ما نثق بالقيم المخزّنة، لأنها ممكن تكون محسوبة غلط من تاريخ الطلب سابقاً —
+    // هذا يصلّح تلقائياً أي سجلات قديمة محفوظة بخطأ بدون الحاجة لإعادة فتحها وحفظها يدوياً
+    const validDates = [...r.bookingDates].filter(x => x && /^\d{4}-\d{2}-\d{2}/.test(x)).sort();
+    if (validDates.length) {
+      const primary = validDates[0];
+      const parts = primary.split('-');
+      const yy = parseInt(parts[0],10), mm = parseInt(parts[1],10), dd = parseInt(parts[2],10);
+      if (yy && mm && dd) { r.date = primary; r.year = yy; r.month = mm; r.day = dd; }
     }
     return r;
   };
@@ -3634,6 +3683,7 @@ function seRender() {
 let srCharts = {};
 async function salesReportInit() {
   await salesLoadData();
+  populateSalesMonthSelects();
   const ft = document.getElementById('sr-filter-type').value;
   const rw = document.getElementById('sr-range-wrap');
   const msel = document.getElementById('sr-month');
@@ -3643,9 +3693,9 @@ async function salesReportInit() {
   let filtered;
   let titleLabel;
   if(ft==='month'){
-    const m=parseInt(document.getElementById('sr-month').value);
-    filtered=salesGetFiltered(m,2026);
-    titleLabel=MONTH_NAMES[m]+' 2026';
+    const [yy,mm]=document.getElementById('sr-month').value.split('-').map(Number);
+    filtered=salesGetFiltered(mm,yy);
+    titleLabel=MONTH_NAMES[mm]+' '+yy;
   } else {
     const from=document.getElementById('sr-from').value;
     const to=document.getElementById('sr-to').value;
@@ -3693,11 +3743,11 @@ function srRenderCalendar(d, ft) {
 
   // Get the month to display
   let year=2026, month;
-  if(ft==='month') { month=parseInt(document.getElementById('sr-month').value); }
+  if(ft==='month') { const parts=document.getElementById('sr-month').value.split('-').map(Number); year=parts[0]; month=parts[1]; }
   else {
     const from=document.getElementById('sr-from').value;
     month=from?parseInt(from.split('-')[1]):new Date().getMonth()+1;
-    year=from?parseInt(from.split('-')[0]):2026;
+    year=from?parseInt(from.split('-')[0]):new Date().getFullYear();
   }
 
   const firstDay=new Date(year,month-1,1).getDay(); // 0=Sun
@@ -3853,6 +3903,7 @@ function cmpSwitchSection(sec) {
 
 async function salesCompareInit() {
   await salesLoadData();
+  populateSalesMonthSelects();
   ['a','b'].forEach(k=>{
     const t=document.getElementById(`cmp-${k}-type`).value;
     const ms=document.getElementById(`cmp-${k}-month`);
@@ -3877,7 +3928,7 @@ async function salesCompareInit() {
 
 function cmpGetData(k){
   const t=document.getElementById(`cmp-${k}-type`).value;
-  if(t==='month'){const m=parseInt(document.getElementById(`cmp-${k}-month`).value);return salesGetFiltered(m,2026);}
+  if(t==='month'){const [yy,mm]=document.getElementById(`cmp-${k}-month`).value.split('-').map(Number);return salesGetFiltered(mm,yy);}
   const from=document.getElementById(`cmp-${k}-from`)?.value;
   const to=document.getElementById(`cmp-${k}-to`)?.value;
   return from&&to?salesGetFiltered(null,null,from,to):[];
@@ -3885,7 +3936,7 @@ function cmpGetData(k){
 
 function cmpGetLabel(k){
   const t=document.getElementById(`cmp-${k}-type`).value;
-  if(t==='month'){const m=parseInt(document.getElementById(`cmp-${k}-month`).value);return MONTH_NAMES[m];}
+  if(t==='month'){const [yy,mm]=document.getElementById(`cmp-${k}-month`).value.split('-').map(Number);return MONTH_NAMES[mm]+' '+yy;}
   const from=document.getElementById(`cmp-${k}-from`)?.value;
   const to=document.getElementById(`cmp-${k}-to`)?.value;
   return from&&to?`${from}→${to}`:'فترة';
@@ -3896,11 +3947,11 @@ function cmpGetCustomersForPeriod(k) {
   const t=document.getElementById(`cmp-${k}-type`).value;
   if(!data||!data.length) return [];
   if(t==='month'){
-    const m=parseInt(document.getElementById(`cmp-${k}-month`).value);
+    const [yy,mm]=document.getElementById(`cmp-${k}-month`).value.split('-').map(Number);
     return data.filter(r=>{
       if(!r.fullDate) return false;
       const d=new Date(r.fullDate);
-      return d.getMonth()+1===m && d.getFullYear()===2026;
+      return d.getMonth()+1===mm && d.getFullYear()===yy;
     });
   }
   const from=document.getElementById(`cmp-${k}-from`)?.value;
