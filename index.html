@@ -2460,10 +2460,10 @@ function showTab(name) {
   if(name==='records') { filteredData=getApplied(); renderTable(); }
   if(name==='report') renderReport();
   if(name==='entry') entryInit();
-  if(name==='sales-entry') salesEntryInit();
-  if(name==='sales-records') salesRecordsInit();
-  if(name==='sales-report') salesReportInit();
-  if(name==='sales-compare') salesCompareInit();
+  if(name==='sales-entry') { salesLoaded=false; salesEntryInit(); }
+  if(name==='sales-records') { salesLoaded=false; salesRecordsInit(); }
+  if(name==='sales-report') { salesLoaded=false; salesReportInit(); }
+  if(name==='sales-compare') { salesLoaded=false; salesCompareInit(); }
 }
 
 // ==================== REPORT ====================
@@ -3355,18 +3355,26 @@ async function salesDeleteRow(id) {
   await salesSaveData();
 }
 
+function salesGetSelectedYear(selectId) {
+  const sel = document.getElementById(selectId);
+  if (!sel) return 2026;
+  const opt = sel.options[sel.selectedIndex];
+  return opt ? parseInt(opt.dataset.year || 2026) : 2026;
+}
+
 function salesGetFiltered(m, y, from, to) {
-  // الفلترة بحسب تاريخ الحجز (date/month) — نفس ما يظهر في السجلات
   if (from && to) {
     return salesData.filter(r => {
       const d = r.date || r.contactDate;
       return d >= from && d <= to;
     });
   }
+  const targetMonth = parseInt(m);
+  const targetYear  = y || 2026;
   return salesData.filter(r => {
-    const rMonth = r.month || r.contactMonth;
-    const rYear  = r.year  || r.contactYear  || 2026;
-    return rMonth === parseInt(m) && rYear === (y||2026);
+    const rMonth = parseInt(r.month) || (r.date ? parseInt(r.date.split('-')[1]) : 0);
+    const rYear  = parseInt(r.year)  || (r.date ? parseInt(r.date.split('-')[0]) : 2026);
+    return rMonth === targetMonth && rYear === targetYear;
   });
 }
 
@@ -3608,8 +3616,9 @@ async function salesReportInit() {
   let titleLabel;
   if(ft==='month'){
     const m=parseInt(document.getElementById('sr-month').value);
-    filtered=salesGetFiltered(m,2026);
-    titleLabel=MONTH_NAMES[m]+' 2026';
+    const y=salesGetSelectedYear('sr-month');
+    filtered=salesGetFiltered(m,y);
+    titleLabel=MONTH_NAMES[m]+' '+y;
   } else {
     const from=document.getElementById('sr-from').value;
     const to=document.getElementById('sr-to').value;
@@ -3790,7 +3799,7 @@ async function salesCompareInit() {
 
 function cmpGetData(k){
   const t=document.getElementById(`cmp-${k}-type`).value;
-  if(t==='month'){const m=parseInt(document.getElementById(`cmp-${k}-month`).value);return salesGetFiltered(m,2026);}
+  if(t==='month'){const m=parseInt(document.getElementById(`cmp-${k}-month`).value);const y=salesGetSelectedYear(`cmp-${k}-month`);return salesGetFiltered(m,y);}
   const from=document.getElementById(`cmp-${k}-from`)?.value;
   const to=document.getElementById(`cmp-${k}-to`)?.value;
   return from&&to?salesGetFiltered(null,null,from,to):[];
@@ -3798,7 +3807,7 @@ function cmpGetData(k){
 
 function cmpGetLabel(k){
   const t=document.getElementById(`cmp-${k}-type`).value;
-  if(t==='month'){const m=parseInt(document.getElementById(`cmp-${k}-month`).value);return MONTH_NAMES[m];}
+  if(t==='month'){const m=parseInt(document.getElementById(`cmp-${k}-month`).value);const y=salesGetSelectedYear(`cmp-${k}-month`);return MONTH_NAMES[m]+' '+y;}
   const from=document.getElementById(`cmp-${k}-from`)?.value;
   const to=document.getElementById(`cmp-${k}-to`)?.value;
   return from&&to?`${from}→${to}`:'فترة';
@@ -4196,27 +4205,33 @@ function globalQueryDate() {
 function buildMonthOptions() {
   if (!salesData.length) return;
 
-  // اجمع كل الشهور/السنوات الموجودة في البيانات
   const monthSet = new Set();
   salesData.forEach(r => {
-    if (r.month && r.year) monthSet.add(r.year + '-' + String(r.month).padStart(2,'0'));
+    // أولاً من month/year المخزنين
+    let m = parseInt(r.month);
+    let y = parseInt(r.year);
+    // fallback: من حقل date
+    if ((!m || !y) && r.date) {
+      const parts = r.date.split('-');
+      y = parseInt(parts[0]);
+      m = parseInt(parts[1]);
+    }
+    if (m && y) monthSet.add(y + '-' + String(m).padStart(2,'0'));
   });
+
   const sortedMonths = [...monthSet].sort();
   if (!sortedMonths.length) return;
 
-  // احفظ القيم الحالية قبل إعادة البناء
   const srVal  = document.getElementById('sr-month')?.value;
   const caVal  = document.getElementById('cmp-a-month')?.value;
   const cbVal  = document.getElementById('cmp-b-month')?.value;
   const sr2Val = document.getElementById('sr2-filter')?.value;
 
-  // اختر الشهر الافتراضي: آخر شهر موجود
   const latestKey = sortedMonths[sortedMonths.length - 1];
   const [latestYear, latestMonthStr] = latestKey.split('-');
   const latestMonth = parseInt(latestMonthStr);
   const latestYearN = parseInt(latestYear);
 
-  // دالة مساعدة لبناء options
   const buildOpts = (sel, withAll, prevVal, defaultLatest) => {
     if (!sel) return;
     const cur = prevVal || (defaultLatest ? String(latestMonth) : '');
@@ -4227,8 +4242,8 @@ function buildMonthOptions() {
       const label = MONTH_NAMES[mn] + ' ' + y;
       const opt = document.createElement('option');
       opt.value = mn;
-      opt.textContent = withAll ? label : MONTH_NAMES[mn];
-      // حدد الشهر الافتراضي
+      opt.dataset.year = yn;
+      opt.textContent = withAll ? label : label;
       if (cur ? String(mn) === String(cur) : (mn === latestMonth && yn === latestYearN)) opt.selected = true;
       sel.appendChild(opt);
     });
@@ -4440,7 +4455,14 @@ async function salesRecordsInit() {
   const statusFilt = document.getElementById('sr2-status').value;
 
   let filtered = [...salesData];
-  if (filt !== 'all') filtered = filtered.filter(r => r.month === parseInt(filt));
+  if (filt !== 'all') {
+    const filtYear = salesGetSelectedYear('sr2-filter');
+    filtered = filtered.filter(r => {
+      const rm = parseInt(r.month) || (r.date ? parseInt(r.date.split('-')[1]) : 0);
+      const ry = parseInt(r.year)  || (r.date ? parseInt(r.date.split('-')[0]) : 2026);
+      return rm === parseInt(filt) && ry === filtYear;
+    });
+  }
   if (secFilt !== 'all') filtered = filtered.filter(r => r.section === secFilt);
   if (statusFilt !== 'all') filtered = filtered.filter(r => r.status === statusFilt);
 
