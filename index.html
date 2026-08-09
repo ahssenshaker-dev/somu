@@ -1066,10 +1066,8 @@
     <span class="s-label" style="font-size:13px;">📋 سجل المبيعات</span>
     <select class="s-select" id="sr2-filter" onchange="salesRecordsInit()" style="padding:5px 10px;font-size:12px;">
       <option value="all">جميع الشهور</option>
-      <option value="5">مايو 2026</option>
-      <option value="6">يونيو 2026</option>
-      <option value="7" selected>يوليو 2026</option>
-      <option value="8">أغسطس 2026</option>
+      <option value="2026-7">يوليو 2026</option>
+      <option value="2026-8" selected>أغسطس 2026</option>
     </select>
     <select class="s-select" id="sr2-section" onchange="salesRecordsInit()" style="padding:5px 10px;font-size:12px;">
       <option value="all">جميع الأقسام</option>
@@ -3256,6 +3254,12 @@ function populateSalesMonthSelects() {
     cb.value = (prevSel && opts.some(o => o.value === prevSel)) ? prevSel : prevMonth;
     if (!hadValue) cb.value = prevMonth;
   }
+  const sr2 = document.getElementById('sr2-filter');
+  if (sr2) {
+    const prevSel = sr2.value;
+    sr2.innerHTML = '<option value="all">جميع الشهور</option>' + buildHTML(true);
+    sr2.value = (prevSel && (prevSel === 'all' || opts.some(o => o.value === prevSel))) ? prevSel : 'all';
+  }
 }
 
 // ── حالة المبيعات ──
@@ -4522,12 +4526,13 @@ function sr2QueryDate() {
 
 async function salesRecordsInit() {
   await salesLoadData();
+  populateSalesMonthSelects();
   const filt = document.getElementById('sr2-filter').value;
   const secFilt = document.getElementById('sr2-section').value;
   const statusFilt = document.getElementById('sr2-status').value;
 
   let filtered = [...salesData];
-  if (filt !== 'all') filtered = filtered.filter(r => r.month === parseInt(filt));
+  if (filt !== 'all') { const [yy,mm] = filt.split('-').map(Number); filtered = filtered.filter(r => r.month === mm && r.year === yy); }
   if (secFilt !== 'all') filtered = filtered.filter(r => r.section === secFilt);
   if (statusFilt !== 'all') filtered = filtered.filter(r => r.status === statusFilt);
 
