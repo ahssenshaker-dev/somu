@@ -156,7 +156,7 @@
     body.print-sales-report .s-kpi-val { font-size: 13px !important; }
     body.print-sales-report .s-kpi-lbl { font-size: 7px !important; margin-top: 0 !important; }
     /* Row 1: calendar + bar charts — fixed widths */
-    body.print-sales-report #tab-sales-report > div:nth-child(3) { display: grid !important; grid-template-columns: 1.75fr 1fr !important; gap: 4mm !important; margin-bottom: 4mm !important; }
+    body.print-sales-report #tab-sales-report > div:nth-child(3) { display: grid !important; grid-template-columns: 155mm 88mm !important; gap: 4mm !important; margin-bottom: 4mm !important; }
     body.print-sales-report #tab-sales-report > div:nth-child(3) > div:last-child { display: grid !important; grid-template-rows: 1fr 1fr !important; gap: 4mm !important; }
     /* Row 2: 2 donuts — equal halves */
     body.print-sales-report #tab-sales-report > div:nth-child(4) { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 4mm !important; }
@@ -173,9 +173,9 @@
     body.print-sales-report .s-chart-card { box-shadow: none !important; border: 1px solid #dde3ec !important; padding: 5px !important; break-inside: avoid; }
     body.print-sales-report .s-chart-title { font-size: 8px !important; margin-bottom: 3px !important; }
     body.print-sales-report canvas { max-height: 65px !important; width: 100% !important; }
-    /* Donuts must render as true circles, not stretched ellipses */
-    body.print-sales-report #tab-sales-report > div:nth-child(4) { align-items: center !important; }
-    body.print-sales-report #tab-sales-report > div:nth-child(4) > div > div:last-child { max-height: 115px !important; display: flex !important; justify-content: center !important; }
+    /* Donuts need more height */
+    body.print-sales-report #tab-sales-report > div:nth-child(4) canvas { max-height: 100px !important; }
+    body.print-sales-report #tab-sales-report > div:nth-child(4) > div > div:last-child { max-height: 105px !important; }
 
     /* ── Print: مقارنة المبيعات (body.print-cmp-sales) ── */
     body.print-cmp-sales #tab-sales-compare { display: block !important; }
@@ -463,7 +463,6 @@
   }
 
 </style>
-<style id="dyn-page-size">@page { size: A4 landscape; margin: 8mm; }</style>
 </head>
 <body>
 
@@ -900,10 +899,7 @@
     <select class="s-select" id="sr-filter-type" onchange="salesReportInit()" style="padding:5px 10px;font-size:12px;">
       <option value="month">شهري</option><option value="range">فترة مخصصة</option>
     </select>
-    <select class="s-select" id="sr-month" onchange="salesReportInit()" style="padding:5px 10px;font-size:12px;">
-      <option value="5">مايو 2026</option><option value="6">يونيو 2026</option>
-      <option value="7" selected>يوليو 2026</option><option value="8">أغسطس 2026</option>
-    </select>
+    <select class="s-select" id="sr-month" onchange="salesReportInit()" style="padding:5px 10px;font-size:12px;"></select>
     <span id="sr-range-wrap" style="display:none;gap:8px;align-items:center;">
       <input type="date" class="entry-date-input" id="sr-from" style="border-width:1px;padding:5px 10px;font-size:12px;" onchange="salesReportInit()">
       <span style="font-size:12px;color:#718096;">إلى</span>
@@ -911,8 +907,7 @@
     </span>
     <span class="s-spacer"></span>
     <span id="sr-summary-label" style="font-size:12px;color:#718096;font-weight:600;"></span>
-    <button class="s-btn s-btn-primary" onclick="srPrint('a3')" style="padding:6px 16px;font-size:12px;">🖨️ طباعة A3</button>
-    <button class="s-btn" onclick="srPrint('a4')" style="padding:6px 16px;font-size:12px;background:#fff;color:#1a1a2e;border:1px solid #e2e8f0;">🖨️ طباعة A4</button>
+    <button class="s-btn s-btn-primary" onclick="srPrint()" style="padding:6px 16px;font-size:12px;">🖨️ طباعة</button>
   </div>
 
   <!-- KPI Row -->
@@ -968,10 +963,7 @@
     <select class="s-select" id="cmp-a-type" onchange="salesCompareInit()" style="padding:5px 8px;font-size:12px;">
       <option value="month">شهر</option><option value="range">فترة</option>
     </select>
-    <select class="s-select" id="cmp-a-month" onchange="salesCompareInit()" style="padding:5px 8px;font-size:12px;">
-      <option value="5">مايو</option><option value="6">يونيو</option>
-      <option value="7" selected>يوليو</option><option value="8">أغسطس</option>
-    </select>
+    <select class="s-select" id="cmp-a-month" onchange="salesCompareInit()" style="padding:5px 8px;font-size:12px;"></select>
     <span id="cmp-a-range" style="display:none;gap:6px;align-items:center;">
       <input type="date" class="entry-date-input" id="cmp-a-from" style="border-width:1px;padding:4px 8px;font-size:11px;" onchange="salesCompareInit()">
       <span style="font-size:11px;">→</span>
@@ -982,18 +974,14 @@
     <select class="s-select" id="cmp-b-type" onchange="salesCompareInit()" style="padding:5px 8px;font-size:12px;">
       <option value="month">شهر</option><option value="range">فترة</option>
     </select>
-    <select class="s-select" id="cmp-b-month" onchange="salesCompareInit()" style="padding:5px 8px;font-size:12px;">
-      <option value="5">مايو</option><option value="6" selected>يونيو</option>
-      <option value="7">يوليو</option><option value="8">أغسطس</option>
-    </select>
+    <select class="s-select" id="cmp-b-month" onchange="salesCompareInit()" style="padding:5px 8px;font-size:12px;"></select>
     <span id="cmp-b-range" style="display:none;gap:6px;align-items:center;">
       <input type="date" class="entry-date-input" id="cmp-b-from" style="border-width:1px;padding:4px 8px;font-size:11px;" onchange="salesCompareInit()">
       <span style="font-size:11px;">→</span>
       <input type="date" class="entry-date-input" id="cmp-b-to" style="border-width:1px;padding:4px 8px;font-size:11px;" onchange="salesCompareInit()">
     </span>
     <span class="s-spacer"></span>
-    <button class="s-btn s-btn-primary" onclick="cmpPrint('a3')" style="padding:6px 14px;font-size:12px;">🖨️ طباعة A3</button>
-    <button class="s-btn" onclick="cmpPrint('a4')" style="padding:6px 14px;font-size:12px;background:#fff;color:#1a1a2e;border:1px solid #e2e8f0;">🖨️ طباعة A4</button>
+    <button class="s-btn s-btn-primary" onclick="cmpPrint()" style="padding:6px 14px;font-size:12px;">🖨️ طباعة</button>
   </div>
 
   <!-- Sub-tabs -->
@@ -1067,13 +1055,7 @@
   </div>
   <div class="s-toolbar" style="padding:10px 16px;gap:8px;flex-wrap:wrap;">
     <span class="s-label" style="font-size:13px;">📋 سجل المبيعات</span>
-    <select class="s-select" id="sr2-filter" onchange="salesRecordsInit()" style="padding:5px 10px;font-size:12px;">
-      <option value="all">جميع الشهور</option>
-      <option value="5">مايو 2026</option>
-      <option value="6">يونيو 2026</option>
-      <option value="7" selected>يوليو 2026</option>
-      <option value="8">أغسطس 2026</option>
-    </select>
+    <select class="s-select" id="sr2-filter" onchange="salesRecordsInit()" style="padding:5px 10px;font-size:12px;"><option value="all">جميع الشهور</option></select>
     <select class="s-select" id="sr2-section" onchange="salesRecordsInit()" style="padding:5px 10px;font-size:12px;">
       <option value="all">جميع الأقسام</option>
       <option value="قسم الرجال">قسم الرجال</option>
@@ -1756,7 +1738,7 @@ const RAW_DATA = [
   {day:1,employee:'احمد ادريس',name:'',phone:'054 510 0056',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'اتصـال',request:'المساحة',details:'استفسار بخصوص , الاسعار, كم يشيل القسمين , وقت الدخول والخروج'},
   {day:1,employee:'احمد ادريس',name:'',phone:'053 453 0089',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'صالة طعام',details:'استفسار بخصوص , الاسعار, متوفر للحجز , صاله طعام'},
   {day:1,employee:'احمد ادريس',name:'',phone:'054 351 0076',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار'},
-  {day:1,employee:'احمد ادريس',name:'سعود العتيبي',phone:'050 029 0457',city:'الرياض',type:'حجز',source:'Google Map',contact:'اتصـال',request:'العاب مائية',details:'استفسار بخصوص , الاسعار, كم يشيل القسم'},
+  {day:1,employee:'احمد ادريس',name:'سعود العتيبي',phone:'050 029 0457',city:'الرياض',type:'ججز',source:'Google Map',contact:'اتصـال',request:'العاب مائية',details:'استفسار بخصوص , الاسعار, كم يشيل القسم'},
   {day:1,employee:'احمد ادريس',name:'',phone:'055 416 6822',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'اتصـال',request:'مسبح',details:'استفسار بخصوص , الاسعار,  مسابح'},
   {day:1,employee:'احمد ادريس',name:'',phone:'055 130 9882',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'المساحة',details:'استفسار بخصوص , الاسعار, العاب مائية , كم المساحه'},
   {day:1,employee:'احمد ادريس',name:'',phone:'055 130 9882',city:'الرياض',type:'استفسـار',source:'Instagram',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار'},
@@ -1832,7 +1814,7 @@ const RAW_DATA = [
   {day:3,employee:'احمد ادريس',name:'',phone:'055 158 4084',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'المساحة',details:'استفسار بخصوص , الاسعار, كم يشيل القسم'},
   {day:3,employee:'احمد ادريس',name:'',phone:'050 073 7778',city:'الرياض',type:'استفسـار',source:'Instagram',contact:'اتصـال',request:'العاب مائية',details:'استفسار بخصوص, متوفر للحجز , طاولات طعام'},
   {day:3,employee:'احمد ادريس',name:'',phone:'055 448 8151',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'العاب مائية',details:'استفسار بخصوص ,  مسابح , العاب مائية'},
-  {day:3,employee:'احمد ادريس',name:'عبدالله بن عبدالمحسن',phone:'055 617 4744',city:'الرياض',type:'حجز',source:'Google Map',contact:'اتصـال',request:'صالة طعام',details:'استفسار بخصوص , الاسعار, وسط الاسبوع , كم يشيل القسم'},
+  {day:3,employee:'احمد ادريس',name:'عبدالله بن عبدالمحسن',phone:'055 617 4744',city:'الرياض',type:'ججز',source:'Google Map',contact:'اتصـال',request:'صالة طعام',details:'استفسار بخصوص , الاسعار, وسط الاسبوع , كم يشيل القسم'},
   {day:3,employee:'احمد ادريس',name:'',phone:'050 022 9029',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'مسبح',details:'استفسار بخصوص ,  مسابح , الاسعار بعد التجديد'},
   {day:3,employee:'احمد ادريس',name:'',phone:'053 339 3621',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'اتصـال',request:'مسبح',details:'استفسار بخصوص ,  مسابح , العاب مائية , الاسعار بعد التجديد'},
   {day:3,employee:'احمد ادريس',name:'',phone:'059 523 4074',city:'الرياض',type:'استفسـار',source:'Google',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار بعد التجديد , كم يشيل القسم'},
@@ -1882,7 +1864,7 @@ const RAW_DATA = [
   {day:4,employee:'احمد ادريس',name:'',phone:'056 949 1697',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , الاسعار, كم يشيل القسم , وقت الدخول والخروج'},
   {day:4,employee:'احمد ادريس',name:'',phone:'050 555 6755',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'العاب مائية',details:'استفسار بخصوص , العاب مائية ,  مسابح , الاسعار بعد التجديد'},
   {day:4,employee:'احمد ادريس',name:'',phone:'050 501 6401',city:'الرياض',type:'استفسـار',source:'Google',contact:'اتصـال',request:'صالة طعام',details:'استفسار بخصوص , متوفر للحجز , صاله طعام'},
-  {day:4,employee:'احمد ادريس',name:'طارق بن دحيم العتيبي',phone:'055 777 1137',city:'الرياض',type:'حجز',source:'Google Map',contact:'اتصـال',request:'العاب مائية',details:'استفسار بخصوص , العاب مائية , الاسعار بعد التجديد'},
+  {day:4,employee:'احمد ادريس',name:'طارق بن دحيم العتيبي',phone:'055 777 1137',city:'الرياض',type:'ججز',source:'Google Map',contact:'اتصـال',request:'العاب مائية',details:'استفسار بخصوص , العاب مائية , الاسعار بعد التجديد'},
   {day:4,employee:'احمد ادريس',name:'',phone:'055 688 6581',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'العاب مائية',details:'استفسار بخصوص , العاب مائية , الاسعار بعد التجديد'},
   {day:4,employee:'احمد ادريس',name:'',phone:'056 501 6401',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'المساحة',details:'استفسار بخصوص , الاسعار, كم المساحه'},
   {day:4,employee:'احمد ادريس',name:'',phone:'053 044 4282',city:'الرياض',type:'استفسـار',source:'YouTube',contact:'اتصـال',request:'العاب مائية',details:'استفسار بخصوص , العاب مائية'},
@@ -1927,7 +1909,7 @@ const RAW_DATA = [
   {day:5,employee:'احمد ادريس',name:'',phone:'057 957 4973',city:'الرياض',type:'استفسـار',source:'Google',contact:'اتصـال',request:'صالة طعام',details:'استفسار بخصوص , صاله طعام , كم فيه غرف, وقت الدخول والخروج'},
   {day:5,employee:'احمد ادريس',name:'',phone:'056 400 0331',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'اتصـال',request:'مسبح',details:'استفسار بخصوص ,  مسابح'},
   {day:5,employee:'احمد ادريس',name:'',phone:'055 598 8804',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'السعر',details:'استفسار بخصوص , كم يشيل القسمين , الاسعار, وسط الاسبوع'},
-  {day:5,employee:'احمد ادريس',name:'محمد الدريس',phone:'050 440 5965',city:'الرياض',type:'حجز',source:'TikTok',contact:'اتصـال',request:'طاولات طعام',details:'استفسار بخصوص , الاسعار, كم يشيل القسم'},
+  {day:5,employee:'احمد ادريس',name:'محمد الدريس',phone:'050 440 5965',city:'الرياض',type:'ججز',source:'TikTok',contact:'اتصـال',request:'طاولات طعام',details:'استفسار بخصوص , الاسعار, كم يشيل القسم'},
   {day:5,employee:'احمد ادريس',name:'',phone:'055 598 8804',city:'الرياض',type:'استفسـار',source:'FaceBook',contact:'اتصـال',request:'العاب مائية',details:'استفسار بخصوص , الاسعار,  مسابح , العاب مائية'},
   {day:5,employee:'احمد ادريس',name:'',phone:'053 102 6688',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'تعارض في الحجز',details:'استفسار بخصوص , الاسعار, متوفر للحجز'},
   {day:5,employee:'احمد ادريس',name:'',phone:'055 755 6352',city:'الرياض',type:'استفسـار',source:'TikTok',contact:'اتصـال',request:'تعارض في الحجز',details:'استفسار بخصوص , العاب مائية , الاسعار بعد التجديد , متوفر للحجز'},
@@ -1981,7 +1963,7 @@ const RAW_DATA = [
   {day:6,employee:'احمد ادريس',name:'',phone:'055 015 9911',city:'الرياض',type:'استفسـار',source:'Snap chat',contact:'اتصـال',request:'المساحة',details:'استفسار بخصوص , كم فيه غرف, كم يشيل القسم'},
   {day:6,employee:'احمد ادريس',name:'',phone:'050 064 4582',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'تعارض في الحجز',details:'استفسار بخصوص , متوفر للحجز'},
   {day:6,employee:'احمد ادريس',name:'',phone:'050 444 7576',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'اتصـال',request:'مسبح',details:'استفسار بخصوص , متوفر للحجز ,  مسابح'},
-  {day:6,employee:'احمد ادريس',name:'رائد الشثري',phone:'055 328 2860',city:'الرياض',type:'حجز',source:'TikTok',contact:'واتسـاب',request:'العاب مائية',details:'استفسار بخصوص , الاسعار,  مسابح , العاب مائية'},
+  {day:6,employee:'احمد ادريس',name:'رائد الشثري',phone:'055 328 2860',city:'الرياض',type:'ججز',source:'TikTok',contact:'واتسـاب',request:'العاب مائية',details:'استفسار بخصوص , الاسعار,  مسابح , العاب مائية'},
   {day:6,employee:'احمد ادريس',name:'',phone:'050 627 3434',city:'الرياض',type:'استفسـار',source:'Google Map',contact:'واتسـاب',request:'السعر',details:'استفسار بخصوص , الاسعار, وقت الدخول والخروج'},
   {day:6,employee:'احمد ادريس',name:'',phone:'059 829 9900',city:'الرياض',type:'استفسـار',source:'Google',contact:'واتسـاب',request:'صالة طعام',details:'استفسار بخصوص , صاله طعام'},
   {day:6,employee:'احمد ادريس',name:'',phone:'055 197 7499',city:'الرياض',type:'استفسـار',source:'Instagram',contact:'واتسـاب',request:'تعارض في الحجز',details:'استفسار بخصوص , الاسعار, متوفر للحجز'},
@@ -2122,14 +2104,8 @@ function buildCharts(d) {
 
   // Days - bar
   const daysCounts = {};
-  d.forEach(r=>{ const dv = parseInt(r.days,10); if(dv>0) { const k = dv+' يوم'; daysCounts[k]=(daysCounts[k]||0)+1; } });
-  if(Object.keys(daysCounts).length) {
-    barChart('chart-days', daysCounts, '#805ad5');
-  } else {
-    if(charts['chart-days']){ charts['chart-days'].destroy(); delete charts['chart-days']; }
-    const el=document.getElementById('chart-days');
-    if(el){ const ctx=el.getContext('2d'); ctx.clearRect(0,0,el.width,el.height); ctx.fillStyle='#a0aec0'; ctx.font='13px Arial'; ctx.textAlign='center'; ctx.fillText('لا توجد بيانات', el.width/2, el.height/2); }
-  }
+  d.forEach(r=>{ if(r.days) { const k = r.days+' يوم'; daysCounts[k]=(daysCounts[k]||0)+1; } });
+  if(Object.keys(daysCounts).length) barChart('chart-days', daysCounts, '#805ad5');
 }
 
 function buildReportCharts(d) {
@@ -2169,7 +2145,7 @@ function buildReportCharts(d) {
   repBar('rep-chart-occasion',COUNT(d,'occasion'), COLORS);
 
   const daysCounts = {};
-  d.forEach(r=>{ const dv = parseInt(r.days,10); if(dv>0){ const k=dv+' يوم'; daysCounts[k]=(daysCounts[k]||0)+1; } });
+  d.forEach(r=>{ if(r.days){ const k=r.days+' يوم'; daysCounts[k]=(daysCounts[k]||0)+1; } });
   if(Object.keys(daysCounts).length) {
     repBar('rep-chart-days', daysCounts, '#805ad5');
   } else {
@@ -2181,8 +2157,7 @@ function buildReportCharts(d) {
 // ==================== METRICS ====================
 function buildMetrics(d, containerId) {
   const total = d.length;
-  const norm = s => (s||'').replace(/[\u200f\u0640\s]/g,'');
-  const booked = d.filter(r=>norm(r.type)==='حجز').length;
+  const booked = d.filter(r=>r.type==='ججز').length;
   const pools = d.filter(r=>r.request==='مسبح').length;
   const water = d.filter(r=>r.request==='العاب مائية').length;
   const gmap = d.filter(r=>r.source==='Google Map').length;
@@ -2190,7 +2165,7 @@ function buildMetrics(d, containerId) {
   if(!container) return;
   const cards = [
     {label:'إجمالي العملاء', value:total, sub:'الشهر الحالي', color:'blue'},
-    {label:'حجوزات مؤكدة', value:booked, sub:'نوع: حجز', color:'green'},
+    {label:'حجوزات مؤكدة', value:booked, sub:'نوع: ججز', color:'green'},
     {label:'استفسار مسبح', value:pools, sub:'طلب رئيسي', color:'orange'},
     {label:'العاب مائية', value:water, sub:'طلب رئيسي', color:'purple'},
     {label:'من Google Map', value:gmap, sub:'أكبر مصدر', color:'red'},
@@ -2229,7 +2204,7 @@ function getApplied() {
   if(src) d = d.filter(r=>r.source===src);
   if(req) d = d.filter(r=>(r.request||'').includes(req));
   if(contact) d = d.filter(r=>(r.contact||'').replace(/‏|\s/g,'').includes(contact.replace(/‏|\s/g,'')));
-  if(type) d = d.filter(r=>(r.type||'').replace(/‏|ـ|\s/g,'').includes(type.replace(/‏|ـ|\s/g,'')));
+  if(type) d = d.filter(r=>(r.type||'').replace(/‏|\s/g,'').includes(type.replace(/‏|\s/g,'')));
   if(dfrom||dto) d = d.filter(r=>{
     const rd = r.fullDate || (r.day ? `2026-07-${String(r.day).padStart(2,'0')}` : '');
     return (!dfrom||rd>=dfrom)&&(!dto||rd<=dto);
@@ -2503,10 +2478,10 @@ function getReportData() {
   if(src) d=d.filter(r=>r.source===src);
   if(req) d=d.filter(r=>(r.request||'').includes(req));
   if(contact) { const cn=contact.replace(/[\u200f\s]/g,''); d=d.filter(r=>(r.contact||'').replace(/[\u200f\s]/g,'').includes(cn)); }
-  if(type) { const tn=type.replace(/[\u200f\u0640\s]/g,''); d=d.filter(r=>(r.type||'').replace(/[\u200f\u0640\s]/g,'').includes(tn)); }
-  const gender = (document.getElementById('report-gender')||{}).value||'';
-  const occasion = (document.getElementById('report-occasion')||{}).value||'';
-  const daysF = (document.getElementById('report-days')||{}).value||'';
+  if(type) { const tn=type.replace(/[\u200f\s]/g,''); d=d.filter(r=>(r.type||'').replace(/[\u200f\s]/g,'').includes(tn)); }
+  const gender = (document.getElementById('filter-gender')||{}).value||'';
+  const occasion = (document.getElementById('filter-occasion')||{}).value||'';
+  const daysF = (document.getElementById('filter-days')||{}).value||'';
   if(gender) d=d.filter(r=>r.gender===gender);
   if(occasion) d=d.filter(r=>r.occasion===occasion);
   if(daysF) { if(daysF==='+5') d=d.filter(r=>parseInt(r.days||0)>5); else d=d.filter(r=>String(r.days)===daysF); }
@@ -2533,7 +2508,7 @@ function generateRecommendations(d) {
 
   // Count types
   const typeCount = {};
-  d.forEach(r => { const t=(r.type||'').replace(/[‏ـ\s]/g,''); typeCount[t]=(typeCount[t]||0)+1; });
+  d.forEach(r => { const t=(r.type||'').replace(/[‏\s]/g,''); typeCount[t]=(typeCount[t]||0)+1; });
 
   // Count contact
   const contactCount = {};
@@ -3238,16 +3213,6 @@ async function salesLoadData() {
     if (!r.bookingDates || !Array.isArray(r.bookingDates) || !r.bookingDates.length) {
       r.bookingDates = r.date ? [r.date] : [];
     }
-    // إعادة حساب date/day/month/year دائماً من تاريخ الحجز الفعلي (أول تاريخ بعد الترتيب)
-    // بدل ما نثق بالقيم المخزّنة، لأنها ممكن تكون محسوبة غلط من تاريخ الطلب سابقاً —
-    // هذا يصلّح تلقائياً أي سجلات قديمة محفوظة بخطأ بدون الحاجة لإعادة فتحها وحفظها يدوياً
-    const validDates = [...r.bookingDates].filter(x => x && /^\d{4}-\d{2}-\d{2}/.test(x)).sort();
-    if (validDates.length) {
-      const primary = validDates[0];
-      const parts = primary.split('-');
-      const yy = parseInt(parts[0],10), mm = parseInt(parts[1],10), dd = parseInt(parts[2],10);
-      if (yy && mm && dd) { r.date = primary; r.year = yy; r.month = mm; r.day = dd; }
-    }
     return r;
   };
 
@@ -3312,16 +3277,8 @@ function salesCleanRec(rec) {
   // نبقي فقط الحقول الموجودة في الجدول + نحول arrays لـ JSON text
   const clean = {};
   SALES_FIELDS.forEach(f => {
-    let v = rec[f];
-    if (f === 'bookingDates') {
-      // لا ترسل أبداً مصفوفة فاضية أو تحتوي قيم غير صالحة — هذا كان يمسح التاريخ المحفوظ بالخطأ
-      if (Array.isArray(v)) v = v.filter(x => x !== null && x !== undefined && x !== '');
-      if (!Array.isArray(v) || !v.length) return; // تجاهل الحقل كلياً بدل ما نرسله فاضي
-      clean[f] = JSON.stringify(v);
-      return;
-    }
-    if (v !== undefined && v !== null && v !== '') {
-      clean[f] = Array.isArray(v) ? JSON.stringify(v) : v;
+    if (rec[f] !== undefined && rec[f] !== null && rec[f] !== '') {
+      clean[f] = Array.isArray(rec[f]) ? JSON.stringify(rec[f]) : rec[f];
     }
   });
   if (!clean._id) clean._id = rec._id || crypto.randomUUID();
@@ -3490,18 +3447,13 @@ async function seSaveRow(r) {
   const dateVal = r.date || dateInp.value;
   if (!dateVal || (!r.name && !r.phone)) return;
   const d = new Date(dateVal);
-  let dates = (r.bookingDates && r.bookingDates.length) ? [...r.bookingDates] : [];
-  // إذا فيه تاريخ مكتوب بحقل الإضافة ولم يُضغط "+" بعد — اعتبره التاريخ المقصود وأضفه تلقائياً
-  const pendingInp = document.getElementById('se-date-inp-' + r._id);
-  const pendingVal = pendingInp ? pendingInp.value : '';
-  if (pendingVal && !dates.includes(pendingVal)) dates.push(pendingVal);
+  const dates = (r.bookingDates && r.bookingDates.length) ? r.bookingDates : [];
   if (dates.length === 0) {
     // لا تواريخ حجز محددة — استخدم تاريخ الطلب كافتراضي بدون تنبيه
     const fallback = r.contactDate || dateVal;
     if (fallback) dates.push(fallback);
     else return; // لا يوجد أي تاريخ
   }
-  dates.sort();
 
   const firstDate = dates[0] || dateVal;
   const fd = new Date(firstDate);
@@ -3523,6 +3475,7 @@ async function seSaveRow(r) {
   if(tr){ tr.classList.add('row-saved'); tr.querySelectorAll('[data-field="name"],[data-field="phone"]').forEach(el=>{el.style.color='#1a6b4a';el.style.fontWeight='600';}); }
   const n=document.getElementById('se-notice'); if(n){n.style.display='inline';clearTimeout(n._t);n._t=setTimeout(()=>n.style.display='none',2500);}
   seUpdateCounts();
+  buildMonthOptions();
 }
 
 async function seSaveAll() {
@@ -3644,6 +3597,7 @@ function seRender() {
 let srCharts = {};
 async function salesReportInit() {
   await salesLoadData();
+  buildMonthOptions();
   const ft = document.getElementById('sr-filter-type').value;
   const rw = document.getElementById('sr-range-wrap');
   const msel = document.getElementById('sr-month');
@@ -3750,13 +3704,7 @@ function srDestroyChart(id){ if(srCharts[id]){srCharts[id].destroy();delete srCh
 function srRenderCharts(d) {
   srDestroyChart('bar'); srDestroyChart('secPie'); srDestroyChart('srcPie'); srDestroyChart('daily');
   const dayMap={};
-  d.forEach(r=>{
-    const dts = (r.bookingDates && r.bookingDates.length) ? r.bookingDates : [r.date];
-    dts.filter(Boolean).forEach(dt => {
-      const dayNum = parseInt(dt.split('-')[2],10);
-      if(!isNaN(dayNum)) dayMap[dayNum]=(dayMap[dayNum]||0)+1;
-    });
-  });
+  d.forEach(r=>{ dayMap[r.day]=(dayMap[r.day]||0)+1; });
   const sortedDays=Object.keys(dayMap).map(Number).sort((a,b)=>a-b);
   const barCtx=document.getElementById('sr-bar-chart');
   if(barCtx) srCharts['bar']=new Chart(barCtx,{type:'bar',data:{labels:sortedDays.map(d=>''+d),datasets:[{label:'حجوزات',data:sortedDays.map(d=>dayMap[d]),backgroundColor:'#3b82f6',borderRadius:4}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1,font:{size:9}}},x:{ticks:{font:{size:9}}}}}});
@@ -3776,72 +3724,26 @@ function srRenderCharts(d) {
   if(dailyCtx) srCharts['daily']=new Chart(dailyCtx,{type:'line',data:{labels:sortedRevDays.map(d=>''+d),datasets:[{label:'ر.س',data:sortedRevDays.map(d=>revMap[d]),borderColor:'#e94560',backgroundColor:'rgba(233,69,96,0.07)',tension:0.3,fill:true,pointRadius:3,pointBackgroundColor:'#e94560'}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{callback:v=>v>=1000?Math.round(v/1000)+'k':v,font:{size:9}}},x:{ticks:{font:{size:9}}}}}});
 }
 
-function setDynPageSize(size) {
-  const el = document.getElementById('dyn-page-size');
-  if(!el) return;
-  const isA3 = size === 'a3';
-  el.textContent = `@page { size: ${isA3 ? 'A3' : 'A4'} landscape; margin: ${isA3 ? '10mm' : '8mm'}; }`;
-}
-
-// Freeze a live (correctly circular) canvas chart as a static square PNG for printing.
-// This avoids relying on Chart.js re-rendering the canvas bitmap at print time, which is
-// unreliable and causes donut charts to print as squashed ellipses instead of circles.
-function snapshotChartForPrint(id, sizePx) {
-  const canvas = document.getElementById(id);
-  if(!canvas) return;
-  let dataUrl;
-  try { dataUrl = canvas.toDataURL('image/png', 1.0); } catch(e) { return; }
-  const img = document.createElement('img');
-  img.id = id + '-print-snapshot';
-  img.src = dataUrl;
-  img.style.cssText = `width:${sizePx}px !important;height:${sizePx}px !important;display:block !important;margin:0 auto !important;object-fit:contain !important;`;
-  canvas.dataset.printHidden = '1';
-  canvas.style.setProperty('display', 'none', 'important');
-  canvas.insertAdjacentElement('afterend', img);
-}
-
-function restoreChartAfterPrint(id) {
-  const img = document.getElementById(id + '-print-snapshot');
-  if(img) img.remove();
-  const canvas = document.getElementById(id);
-  if(canvas && canvas.dataset.printHidden) {
-    canvas.style.removeProperty('display');
-    delete canvas.dataset.printHidden;
-  }
-}
-
-const SR_DONUT_IDS = ['sr-section-pie','sr-source-pie'];
-const CMP_DONUT_IDS = { sales: ['cmp-source-chart'], inquiries: ['cmp-inq-contact'] };
-
-function srPrint(size) {
-  setDynPageSize(size);
+function srPrint() {
   document.body.classList.remove('print-old-report','print-sales-report','print-cmp-sales','print-cmp-inq');
   document.body.classList.add('print-sales-report');
-  SR_DONUT_IDS.forEach(id => snapshotChartForPrint(id, 110));
+  // إعادة رسم الـ charts بحجم مناسب للطباعة قبل طباعة
+  Object.values(srCharts).forEach(ch => { try { ch.resize(); } catch(e){} });
   setTimeout(() => {
     window.print();
     setTimeout(() => {
       document.body.classList.remove('print-sales-report');
-      SR_DONUT_IDS.forEach(id => restoreChartAfterPrint(id));
-      setDynPageSize('a4');
+      // إعادة الـ charts لحجمها الأصلي
+      Object.values(srCharts).forEach(ch => { try { ch.resize(); } catch(e){} });
     }, 500);
   }, 300);
 }
 
-function cmpPrint(size) {
-  setDynPageSize(size);
+function cmpPrint() {
   document.body.classList.remove('print-old-report','print-sales-report','print-cmp-sales','print-cmp-inq');
   document.body.classList.add(cmpCurrentSection==='sales' ? 'print-cmp-sales' : 'print-cmp-inq');
-  const donutIds = CMP_DONUT_IDS[cmpCurrentSection] || [];
-  donutIds.forEach(id => snapshotChartForPrint(id, 100));
-  setTimeout(() => {
-    window.print();
-    setTimeout(() => {
-      document.body.classList.remove('print-cmp-sales','print-cmp-inq');
-      donutIds.forEach(id => restoreChartAfterPrint(id));
-      setDynPageSize('a4');
-    }, 500);
-  }, 300);
+  window.print();
+  document.body.classList.remove('print-cmp-sales','print-cmp-inq');
 }
 
 // ===== SALES COMPARE =====
@@ -3863,6 +3765,7 @@ function cmpSwitchSection(sec) {
 
 async function salesCompareInit() {
   await salesLoadData();
+  buildMonthOptions();
   ['a','b'].forEach(k=>{
     const t=document.getElementById(`cmp-${k}-type`).value;
     const ms=document.getElementById(`cmp-${k}-month`);
@@ -4011,8 +3914,7 @@ function cmpRenderInquiryCharts(aL,bL){
 
   // Bar: total vs bookings
   const barCtx=document.getElementById('cmp-inq-bar');
-  const _norm = s => (s||'').replace(/[\u200f\u0640\s]/g,'');
-  if(barCtx) cmpCharts.inqBar=new Chart(barCtx,{type:'bar',data:{labels:['إجمالي التواصل','الحجوزات','الاستفسارات','الشكاوى'],datasets:[{label:aL,data:[aD.length,aD.filter(r=>_norm(r.type)==='حجز').length,aD.filter(r=>_norm(r.type)==='استفسار').length,aD.filter(r=>_norm(r.type)==='شكوى').length],backgroundColor:'rgba(59,130,246,0.75)',borderRadius:5},{label:bL,data:[bD.length,bD.filter(r=>_norm(r.type)==='حجز').length,bD.filter(r=>_norm(r.type)==='استفسار').length,bD.filter(r=>_norm(r.type)==='شكوى').length],backgroundColor:'rgba(236,72,153,0.75)',borderRadius:5}]},options:{plugins:{legend:{position:'bottom',labels:{font:{family:'inherit',size:10}}}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
+  if(barCtx) cmpCharts.inqBar=new Chart(barCtx,{type:'bar',data:{labels:['إجمالي التواصل','الحجوزات','الاستفسارات','الشكاوى'],datasets:[{label:aL,data:[aD.length,aD.filter(r=>r.type==='حجز').length,aD.filter(r=>r.type==='استفسار').length,aD.filter(r=>r.type==='شكوى').length],backgroundColor:'rgba(59,130,246,0.75)',borderRadius:5},{label:bL,data:[bD.length,bD.filter(r=>r.type==='حجز').length,bD.filter(r=>r.type==='استفسار').length,bD.filter(r=>r.type==='شكوى').length],backgroundColor:'rgba(236,72,153,0.75)',borderRadius:5}]},options:{plugins:{legend:{position:'bottom',labels:{font:{family:'inherit',size:10}}}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
 
   // Sources
   const allSrcs=[...new Set([...aD.map(r=>r.source),...bD.map(r=>r.source)].filter(Boolean))];
@@ -4289,6 +4191,56 @@ function globalQueryDate() {
 }
 // ==================== END GLOBAL DATE QUERY ====================
 
+
+// ==================== DYNAMIC MONTH OPTIONS ====================
+function buildMonthOptions() {
+  if (!salesData.length) return;
+
+  // اجمع كل الشهور/السنوات الموجودة في البيانات
+  const monthSet = new Set();
+  salesData.forEach(r => {
+    if (r.month && r.year) monthSet.add(r.year + '-' + String(r.month).padStart(2,'0'));
+  });
+  const sortedMonths = [...monthSet].sort();
+  if (!sortedMonths.length) return;
+
+  // احفظ القيم الحالية قبل إعادة البناء
+  const srVal  = document.getElementById('sr-month')?.value;
+  const caVal  = document.getElementById('cmp-a-month')?.value;
+  const cbVal  = document.getElementById('cmp-b-month')?.value;
+  const sr2Val = document.getElementById('sr2-filter')?.value;
+
+  // اختر الشهر الافتراضي: آخر شهر موجود
+  const latestKey = sortedMonths[sortedMonths.length - 1];
+  const [latestYear, latestMonthStr] = latestKey.split('-');
+  const latestMonth = parseInt(latestMonthStr);
+  const latestYearN = parseInt(latestYear);
+
+  // دالة مساعدة لبناء options
+  const buildOpts = (sel, withAll, prevVal, defaultLatest) => {
+    if (!sel) return;
+    const cur = prevVal || (defaultLatest ? String(latestMonth) : '');
+    sel.innerHTML = withAll ? '<option value="all">جميع الشهور</option>' : '';
+    sortedMonths.forEach(key => {
+      const [y, m] = key.split('-');
+      const mn = parseInt(m); const yn = parseInt(y);
+      const label = MONTH_NAMES[mn] + ' ' + y;
+      const opt = document.createElement('option');
+      opt.value = mn;
+      opt.textContent = withAll ? label : MONTH_NAMES[mn];
+      // حدد الشهر الافتراضي
+      if (cur ? String(mn) === String(cur) : (mn === latestMonth && yn === latestYearN)) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  };
+
+  buildOpts(document.getElementById('sr-month'),   false, srVal,  true);
+  buildOpts(document.getElementById('cmp-a-month'), false, caVal,  true);
+  buildOpts(document.getElementById('cmp-b-month'), false, cbVal,  false);
+  buildOpts(document.getElementById('sr2-filter'),  true,  sr2Val, false);
+}
+// ==================== END DYNAMIC MONTH OPTIONS ====================
+
 // ==================== SALES IMPORT / EXPORT / DATE QUERY ====================
 
 function sr2Export() {
@@ -4445,6 +4397,7 @@ async function sr2Import(input) {
         await salesUpsertBatch(newRecs);
       }
       salesLoaded = true;
+      buildMonthOptions();
       salesRecordsInit();
       showToast('✅ تم استيراد ' + imported + ' سجل' + (skipped ? ' (تجاهل ' + skipped + ')' : ''), 'success');
     } catch (err) {
@@ -4481,6 +4434,7 @@ function sr2QueryDate() {
 
 async function salesRecordsInit() {
   await salesLoadData();
+  buildMonthOptions();
   const filt = document.getElementById('sr2-filter').value;
   const secFilt = document.getElementById('sr2-section').value;
   const statusFilt = document.getElementById('sr2-status').value;
@@ -4569,7 +4523,7 @@ function sr2EditRow(id) {
   const srcs = ['Google Map','TikTok','Instagram','Snap Chat','Facebook','غير محدد'];
   const stats = ['مؤكد','مؤقت','ملغي'];
   // بيانات التواريخ الحالية
-  let editBDates = []; // يبدأ فاضي دائماً — لو ما ضاف المستخدم شي جديد، نحافظ على القديم عند الحفظ (يُقرأ من r.bookingDates وقتها)
+  let editBDates = (r.bookingDates && r.bookingDates.length) ? [...r.bookingDates] : (r.date ? [r.date] : []);
 
   targetRow.setAttribute('id', 'sr2-inline-' + id);
   targetRow.style.background = '#fffde7';
@@ -4678,26 +4632,11 @@ async function sr2SaveInlineEdit(id) {
   if (!r) return;
 
   const contactDateVal2 = document.getElementById('sr2i-cdate-' + id)?.value || r.contactDate || r.date;
-  // اقرأ التواريخ اللي أضافها المستخدم بهذه الجلسة فقط (تبدأ فاضية دائماً)
+  const d = new Date(contactDateVal2);
+  // اقرأ التواريخ من _editBDates على الـ row
   const row = document.getElementById('sr2-inline-' + id);
-  let sessionDates = (row && row._editBDates) ? [...row._editBDates] : [];
-  // أي تاريخ مكتوب بحقل الإضافة ولم يُضغط "+" بعد — يُعتبر جزء من هذه الجلسة كمان
-  const pendingDateInp = document.getElementById('sr2i-date-add-' + id);
-  const pendingDate = pendingDateInp ? pendingDateInp.value : '';
-  if (pendingDate && !sessionDates.includes(pendingDate)) sessionDates.push(pendingDate);
-  sessionDates = sessionDates.filter(x => x !== null && x !== undefined && x !== '');
-
-  let bDates;
-  if (sessionDates.length) {
-    // المستخدم ضاف/غيّر تاريخ بهذه الجلسة — هذا يستبدل القديم بالكامل
-    bDates = sessionDates;
-  } else {
-    // ما صار أي تعديل على التواريخ — نحافظ على القديم كما هو
-    bDates = (r.bookingDates && r.bookingDates.length) ? [...r.bookingDates] : [r.date || contactDateVal2].filter(Boolean);
-  }
-  bDates.sort();
-  const dateVal = bDates[0] || r.date || contactDateVal2;
-  const fdObj = new Date(dateVal);
+  const bDates = (row && row._editBDates && row._editBDates.length) ? row._editBDates : (r.bookingDates && r.bookingDates.length ? r.bookingDates : [r.date || contactDateVal2]);
+  const dateVal = r.date || contactDateVal2;
 
   // ── تحقق من التعارض ──
   const newSection2 = document.getElementById('sr2i-section-' + id)?.value || r.section;
@@ -4714,7 +4653,7 @@ async function sr2SaveInlineEdit(id) {
   r.contactMonth = cdObj2.getMonth()+1;
   r.contactYear = cdObj2.getFullYear();
   r.bookingDates = bDates;
-  r.month = fdObj.getMonth()+1; r.year = fdObj.getFullYear(); r.day = fdObj.getDate();
+  r.month = d.getMonth()+1; r.year = d.getFullYear(); r.day = d.getDate();
   r.amount = parseFloat(document.getElementById('sr2i-amount-' + id)?.value) || 0;
   r.section = document.getElementById('sr2i-section-' + id)?.value || r.section;
   r.source = document.getElementById('sr2i-source-' + id)?.value || r.source;
