@@ -3710,9 +3710,9 @@ async function salesReportInit() {
   document.getElementById('sr-summary-label').textContent=filtered.length+' حجز مسجل';
   document.getElementById('sr-cal-title').textContent='كالندر الحجوزات — '+titleLabel;
 
-  srRenderKPIs(filtered, titleLabel);
-  srRenderCalendar(filtered, ft);
-  srRenderCharts(filtered);
+  try { srRenderKPIs(filtered, titleLabel); } catch(e) { console.error('srRenderKPIs error:', e); }
+  try { srRenderCalendar(filtered, ft); } catch(e) { console.error('srRenderCalendar error:', e); const cal=document.getElementById('sr-calendar'); if(cal) cal.innerHTML='<div style="padding:20px;color:#e53e3e;font-size:12px;">⚠️ تعذر عرض الكالندر — تحقق من بيانات السجلات (اسم/تاريخ مفقود)</div>'; }
+  try { srRenderCharts(filtered); } catch(e) { console.error('srRenderCharts error:', e); }
 }
 
 function srRenderKPIs(d, label) {
@@ -3781,7 +3781,7 @@ function srRenderCalendar(d, ft) {
     html+=`<div class="${cls}"><div class="s-cal-num">${day}</div>`;
     recs.forEach(r=>{
       const iW=r.section==='قسم الحريم';
-      html+=`<div class="s-cal-booking${iW?' women':''}"><span class="bname">${r.name.split(' ')[0]}</span><span class="bamt">${r.amount?r.amount.toLocaleString('ar-SA')+'﷼':''}</span></div>`;
+      html+=`<div class="s-cal-booking${iW?' women':''}"><span class="bname">${(r.name||'بدون اسم').split(' ')[0]}</span><span class="bamt">${r.amount?r.amount.toLocaleString('ar-SA')+'﷼':''}</span></div>`;
     });
     html+=`</div>`;
   }
