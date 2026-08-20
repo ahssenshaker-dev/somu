@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>تأكيد الحضور — SOMU RESORTS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: 'Tajawal', Arial, sans-serif;
+    background: linear-gradient(160deg, #0f1b2d 0%, #1a2c47 100%);
+    min-height: 100vh; color: #1a1a2e; direction: rtl;
+    display: flex; align-items: center; justify-content: center; padding: 16px;
+  }
+  .card {
+    background: #fff; border-radius: 20px; padding: 22px 18px;
+    max-width: 460px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+  }
+  .logo { text-align: center; margin-bottom: 6px; }
+  .logo h1 { font-size: 22px; margin: 0; color: #1a2c47; letter-spacing: 1px; font-weight: 900; }
+  .logo p { margin: 2px 0 0; font-size: 12px; color: #a0aec0; }
+  h2 { text-align: center; font-size: 17px; margin: 14px 0 4px; color: #1a1a2e; }
+  .sub { text-align: center; font-size: 12px; color: #718096; margin: 0 0 16px; }
+
+  #video-wrap {
+    position: relative; border-radius: 14px; overflow: hidden;
+    background: #000; display: none; margin-bottom: 14px; aspect-ratio: 3/4; max-height: 380px;
+  }
+  #video { width: 100%; height: 100%; object-fit: cover; display: block; }
+  #video-wrap .frame {
+    position: absolute; inset: 8%; border: 3px solid rgba(56,161,105,0.85);
+    border-radius: 16px; pointer-events: none;
+  }
+  canvas { display: none; }
+
+  .btn {
+    display: block; width: 100%; padding: 13px; border: none; border-radius: 12px;
+    font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; margin-top: 10px;
+  }
+  .btn-primary { background: #3182ce; color: #fff; }
+  .btn-danger { background: #e53e3e; color: #fff; }
+  .btn-outline { background: #fff; color: #4a5568; border: 1px solid #e2e8f0; }
+  .btn-confirm { background: #38a169; color: #fff; }
+
+  .divider { text-align: center; font-size: 11px; color: #a0aec0; margin: 14px 0; }
+  .upload-label {
+    display: block; text-align: center; padding: 11px; border-radius: 12px;
+    border: 1.5px dashed #cbd5e0; color: #4a5568; font-size: 13px; cursor: pointer;
+  }
+  .upload-label input { display: none; }
+
+  #status { margin-top: 12px; font-size: 13px; font-weight: 700; text-align: center; min-height: 18px; }
+  #status.err { color: #e53e3e; }
+  #status.ok { color: #38a169; }
+
+  #result { display: none; margin-top: 16px; border-top: 1px solid #edf2f7; padding-top: 16px; }
+  #result .head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  #result .head h3 { margin: 0; font-size: 15px; color: #1a1a2e; }
+  #result .status-pill { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 8px; }
+  #result .row { display: flex; justify-content: space-between; font-size: 13.5px; padding: 7px 0; border-bottom: 1px dashed #f0f0f0; }
+  #result .row b { color: #4a5568; font-weight: 600; }
+  #result .row span { color: #1a1a2e; font-weight: 700; }
+  .confirmed-note {
+    margin-top: 12px; padding: 10px; background: #38a16915; border-radius: 10px;
+    color: #38a169; font-size: 12.5px; font-weight: 700; text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo">
+    <h1>SOMU RESORTS</h1>
+    <p>نظام تأكيد الحضور — قسم الاستقبال</p>
+  </div>
+
+  <h2>📷 مسح كود الحجز</h2>
+  <p class="sub">وجّه الكاميرا نحو كود QR الخاص بالعميل لعرض بيانات الحجز</p>
+
+  <div id="video-wrap">
+    <video id="video" playsinline muted autoplay></video>
+    <div class="frame"></div>
+  </div>
+  <canvas id="canvas"></canvas>
+
+  <button id="startBtn" class="btn btn-primary" onclick="startScan()">🎥 تشغيل الكاميرا</button>
+  <button id="stopBtn" class="btn btn-danger" style="display:none;" onclick="stopScan()">⏹️ إيقاف الكاميرا</button>
+
+  <div class="divider">— أو —</div>
+  <label class="upload-label">
+    📁 ارفع صورة كود QR
+    <input type="file" accept="image/*" onchange="scanFromFile(this)">
+  </label>
+
+  <div id="status"></div>
+  <div id="result"></div>
+</div>
+
+<script>
+// ══════════════ إعدادات الاتصال بقاعدة البيانات (نفس قاعدة بيانات لوحة التحكم) ══════════════
+const SUPABASE_URL = 'https://taxzgrrsxtlkivphxfub.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRheHpncnJzeHRsa2l2cGh4ZnViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1ODkwODIsImV4cCI6MjA5OTE2NTA4Mn0.k-voV5AOuuPc24yKZqBwZGjsZKn8SlaX9fRC1KLlQ38';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// نفس منطق التوقيع المستخدم عند توليد الكود بلوحة التحكم — لازم يبقى مطابق تماماً
+const QR_SECRET = 'SOMU-RESORTS-QR-v1';
+function qrSign(id) {
+  const str = String(id) + QR_SECRET;
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) { hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0; }
+  return Math.abs(hash).toString(36);
+}
+function qrVerifyPayload(raw) {
+  try {
+    const obj = JSON.parse(raw);
+    if (!obj || obj.t !== 'somu-booking' || !obj.id || !obj.sig) return null;
+    if (qrSign(obj.id) !== obj.sig) return null;
+    return obj.id;
+  } catch (e) { return null; }
+}
+
+let stream = null;
+let scanning = false;
+let currentRecord = null;
+
+function setStatus(msg, type) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = type || '';
+}
+
+async function startScan() {
+  setStatus('');
+  const video = document.getElementById('video');
+  const wrap = document.getElementById('video-wrap');
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+  } catch (e) {
+    setStatus('⚠️ تعذر الوصول للكاميرا. تأكد من إعطاء الإذن، أو استخدم رفع صورة.', 'err');
+    return;
+  }
+  video.srcObject = stream;
+  await video.play();
+  wrap.style.display = 'block';
+  document.getElementById('startBtn').style.display = 'none';
+  document.getElementById('stopBtn').style.display = 'block';
+  scanning = true;
+  requestAnimationFrame(scanFrame);
+}
+
+function stopScan() {
+  scanning = false;
+  if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+  document.getElementById('video-wrap').style.display = 'none';
+  document.getElementById('startBtn').style.display = 'block';
+  document.getElementById('stopBtn').style.display = 'none';
+}
+
+function scanFrame() {
+  if (!scanning) return;
+  const video = document.getElementById('video');
+  const canvas = document.getElementById('canvas');
+  if (video.readyState === video.HAVE_ENOUGH_DATA) {
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const code = jsQR(imageData.data, imageData.width, imageData.height);
+    if (code && code.data) { handleScan(code.data); return; }
+  }
+  requestAnimationFrame(scanFrame);
+}
+
+function scanFromFile(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  const img = new Image();
+  const reader = new FileReader();
+  reader.onload = e => { img.src = e.target.result; };
+  img.onload = () => {
+    const canvas = document.getElementById('canvas');
+    canvas.width = img.width; canvas.height = img.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const code = jsQR(imageData.data, imageData.width, imageData.height);
+    if (code && code.data) handleScan(code.data);
+    else setStatus('⚠️ لم يتم العثور على كود QR واضح بالصورة. جرّب صورة أوضح.', 'err');
+    input.value = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+function parseBDates(r) {
+  if (r.bookingDates && typeof r.bookingDates === 'string') {
+    try { r.bookingDates = JSON.parse(r.bookingDates); } catch(e) { r.bookingDates = []; }
+  }
+  if (!Array.isArray(r.bookingDates)) r.bookingDates = [];
+  return r;
+}
+
+async function handleScan(raw) {
+  setStatus('');
+  const id = qrVerifyPayload(raw);
+  if (!id) {
+    setStatus('❌ كود غير صالح أو غير مرتبط بأي حجز — قد يكون تالف أو مزوّر.', 'err');
+    if (scanning) requestAnimationFrame(scanFrame);
+    return;
+  }
+  stopScan();
+  setStatus('⏳ جارٍ التحقق من الحجز...');
+
+  const { data, error } = await sb.from('sales_records').select('*').eq('_id', id).limit(1);
+  if (error) { setStatus('⚠️ تعذر الاتصال بقاعدة البيانات: ' + error.message, 'err'); return; }
+  if (!data || !data.length) {
+    setStatus('❌ الكود سليم التوقيع لكن لم يُعثر على حجز مطابق له (ربما تم حذفه).', 'err');
+    return;
+  }
+  setStatus('');
+  currentRecord = parseBDates(data[0]);
+  renderResult(currentRecord);
+}
+
+function escH(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function renderResult(r) {
+  const box = document.getElementById('result');
+  const bDates = (r.bookingDates && r.bookingDates.length) ? r.bookingDates : (r.date ? [r.date] : []);
+  const alreadyConfirmed = r.status === 'مؤكد';
+  const statusColor = r.status === 'مؤكد' ? '#38a169' : r.status === 'ملغي' ? '#e53e3e' : r.status === 'تم الحجز' ? '#3182ce' : '#dd6b20';
+  box.style.display = 'block';
+  box.innerHTML = `
+    <div class="head">
+      <h3>بيانات الحجز</h3>
+      <span class="status-pill" style="background:${statusColor}22;color:${statusColor};">${escH(r.status||'')}</span>
+    </div>
+    <div class="row"><b>الاسم</b><span>${escH(r.name||'—')}</span></div>
+    <div class="row"><b>الجوال</b><span style="direction:ltr;">${escH(r.phone||'—')}</span></div>
+    <div class="row"><b>القسم</b><span>${escH(r.section||'—')}</span></div>
+    <div class="row"><b>المبلغ</b><span>${r.amount ? Number(r.amount).toLocaleString('ar-SA')+' ﷼' : '—'}</span></div>
+    <div class="row"><b>تواريخ الحجز</b><span>${bDates.length ? bDates.join('، ') : '—'}</span></div>
+    ${alreadyConfirmed
+      ? `<div class="confirmed-note">✅ هذا الحجز مؤكد الحضور مسبقاً</div>`
+      : `<button class="btn btn-confirm" onclick="confirmAttendance()">✅ تأكيد الحضور الآن</button>`}
+    <button class="btn btn-outline" onclick="resetScan()">🔄 مسح حجز آخر</button>
+  `;
+}
+
+async function confirmAttendance() {
+  if (!currentRecord) return;
+  setStatus('⏳ جارٍ حفظ التأكيد...');
+  const { error } = await sb.from('sales_records').update({ status: 'مؤكد' }).eq('_id', currentRecord._id);
+  if (error) {
+    setStatus('⚠️ صار خطأ أثناء الحفظ، حاول مرة ثانية: ' + error.message, 'err');
+    return;
+  }
+  currentRecord.status = 'مؤكد';
+  setStatus('✅ تم تأكيد الحضور بنجاح', 'ok');
+  renderResult(currentRecord);
+}
+
+function resetScan() {
+  document.getElementById('result').style.display = 'none';
+  setStatus('');
+  currentRecord = null;
+}
+</script>
+</body>
+</html>
