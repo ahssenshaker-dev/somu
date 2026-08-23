@@ -38,17 +38,20 @@
   canvas { display: none; }
 
   .btn {
-    display: block; width: 100%; padding: 13px; border: none; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; padding: 13px; border: none; border-radius: 12px;
     font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; margin-top: 10px;
   }
+  .btn .ic { font-size: 19px; }
   .btn-primary { background: #3182ce; color: #fff; }
   .btn-danger { background: #e53e3e; color: #fff; }
   .btn-outline { background: #fff; color: #4a5568; border: 1px solid #e2e8f0; }
-  .btn-confirm { background: #38a169; color: #fff; }
+  .btn-confirm { background: #38a169; color: #fff; font-size: 15px; padding: 15px; }
 
   .divider { text-align: center; font-size: 11px; color: #a0aec0; margin: 14px 0; }
   .upload-label {
-    display: block; text-align: center; padding: 11px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 11px; border-radius: 12px;
     border: 1.5px dashed #cbd5e0; color: #4a5568; font-size: 13px; cursor: pointer;
   }
   .upload-label input { display: none; }
@@ -57,17 +60,25 @@
   #status.err { color: #e53e3e; }
   #status.ok { color: #38a169; }
 
+  /* ── بانر الحالة الكبير برمز ولون واضح — يظهر أعلى نتيجة كل مسح ── */
+  .big-banner {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 4px; border-radius: 16px; padding: 18px 10px; margin-top: 14px;
+    color: #fff; text-align: center;
+  }
+  .big-banner .banner-icon { font-size: 64px; line-height: 1; }
+  .big-banner .banner-text { font-size: 14px; font-weight: 700; }
+  .banner-ok     { background: linear-gradient(135deg,#38a169,#2f855a); }
+  .banner-repeat { background: linear-gradient(135deg,#dd8b20,#c05621); }
+  .banner-error  { background: linear-gradient(135deg,#e53e3e,#c53030); }
+
   #result { display: none; margin-top: 16px; border-top: 1px solid #edf2f7; padding-top: 16px; }
   #result .head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
   #result .head h3 { margin: 0; font-size: 15px; color: #1a1a2e; }
   #result .status-pill { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 8px; }
-  #result .row { display: flex; justify-content: space-between; font-size: 13.5px; padding: 7px 0; border-bottom: 1px dashed #f0f0f0; }
-  #result .row b { color: #4a5568; font-weight: 600; }
+  #result .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13.5px; padding: 7px 0; border-bottom: 1px dashed #f0f0f0; }
+  #result .row b { color: #4a5568; font-weight: 600; display: flex; align-items: center; gap: 6px; }
   #result .row span { color: #1a1a2e; font-weight: 700; }
-  .confirmed-note {
-    margin-top: 12px; padding: 10px; background: #38a16915; border-radius: 10px;
-    color: #38a169; font-size: 12.5px; font-weight: 700; text-align: center;
-  }
 </style>
 </head>
 <body>
@@ -87,16 +98,17 @@
   </div>
   <canvas id="canvas"></canvas>
 
-  <button id="startBtn" class="btn btn-primary" onclick="startScan()">🎥 تشغيل الكاميرا</button>
-  <button id="stopBtn" class="btn btn-danger" style="display:none;" onclick="stopScan()">⏹️ إيقاف الكاميرا</button>
+  <button id="startBtn" class="btn btn-primary" onclick="startScan()"><span class="ic">🎥</span> تشغيل الكاميرا</button>
+  <button id="stopBtn" class="btn btn-danger" style="display:none;" onclick="stopScan()"><span class="ic">⏹️</span> إيقاف الكاميرا</button>
 
   <div class="divider">— أو —</div>
   <label class="upload-label">
-    📁 ارفع صورة كود QR
+    <span class="ic">📁</span> ارفع صورة كود QR
     <input type="file" accept="image/*" onchange="scanFromFile(this)">
   </label>
 
   <div id="status"></div>
+  <div id="banner"></div>
   <div id="result"></div>
 </div>
 
@@ -133,6 +145,19 @@ function setStatus(msg, type) {
   el.className = type || '';
 }
 
+function showBanner(kind) {
+  const el = document.getElementById('banner');
+  if (kind === 'ok') {
+    el.innerHTML = `<div class="big-banner banner-ok"><div class="banner-icon">✔️</div><div class="banner-text">✅ دخول جديد — تم التأكيد الآن</div></div>`;
+  } else if (kind === 'repeat') {
+    el.innerHTML = `<div class="big-banner banner-repeat"><div class="banner-icon">↻✔️</div><div class="banner-text">⚠️ هذا الكود دخل من قبل</div></div>`;
+  } else if (kind === 'error') {
+    el.innerHTML = `<div class="big-banner banner-error"><div class="banner-icon">✕</div><div class="banner-text">❌ كود غير صالح</div></div>`;
+  } else {
+    el.innerHTML = '';
+  }
+}
+
 async function startScan() {
   setStatus('');
   const video = document.getElementById('video');
@@ -147,7 +172,7 @@ async function startScan() {
   await video.play();
   wrap.style.display = 'block';
   document.getElementById('startBtn').style.display = 'none';
-  document.getElementById('stopBtn').style.display = 'block';
+  document.getElementById('stopBtn').style.display = 'flex';
   scanning = true;
   requestAnimationFrame(scanFrame);
 }
@@ -156,7 +181,7 @@ function stopScan() {
   scanning = false;
   if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
   document.getElementById('video-wrap').style.display = 'none';
-  document.getElementById('startBtn').style.display = 'block';
+  document.getElementById('startBtn').style.display = 'flex';
   document.getElementById('stopBtn').style.display = 'none';
 }
 
@@ -190,7 +215,7 @@ function scanFromFile(input) {
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const code = jsQR(imageData.data, imageData.width, imageData.height);
     if (code && code.data) handleScan(code.data);
-    else setStatus('⚠️ لم يتم العثور على كود QR واضح بالصورة. جرّب صورة أوضح.', 'err');
+    else { setStatus('⚠️ لم يتم العثور على كود QR واضح بالصورة. جرّب صورة أوضح.', 'err'); showBanner('error'); }
     input.value = '';
   };
   reader.readAsDataURL(file);
@@ -209,20 +234,25 @@ async function handleScan(raw) {
   const id = qrVerifyPayload(raw);
   if (!id) {
     setStatus('❌ كود غير صالح أو غير مرتبط بأي حجز — قد يكون تالف أو مزوّر.', 'err');
+    showBanner('error');
+    document.getElementById('result').style.display = 'none';
     if (scanning) requestAnimationFrame(scanFrame);
     return;
   }
   stopScan();
   setStatus('⏳ جارٍ التحقق من الحجز...');
+  showBanner('');
 
   const { data, error } = await sb.from('sales_records').select('*').eq('_id', id).limit(1);
-  if (error) { setStatus('⚠️ تعذر الاتصال بقاعدة البيانات: ' + error.message, 'err'); return; }
+  if (error) { setStatus('⚠️ تعذر الاتصال بقاعدة البيانات: ' + error.message, 'err'); showBanner('error'); return; }
   if (!data || !data.length) {
     setStatus('❌ الكود سليم التوقيع لكن لم يُعثر على حجز مطابق له (ربما تم حذفه).', 'err');
+    showBanner('error');
     return;
   }
   setStatus('');
   currentRecord = parseBDates(data[0]);
+  showBanner(currentRecord.status === 'تم الدخول' ? 'repeat' : '');
   renderResult(currentRecord);
 }
 
@@ -233,41 +263,44 @@ function escH(s) {
 function renderResult(r) {
   const box = document.getElementById('result');
   const bDates = (r.bookingDates && r.bookingDates.length) ? r.bookingDates : (r.date ? [r.date] : []);
-  const alreadyConfirmed = r.status === 'مؤكد';
-  const statusColor = r.status === 'مؤكد' ? '#38a169' : r.status === 'ملغي' ? '#e53e3e' : r.status === 'تم الحجز' ? '#3182ce' : '#dd6b20';
+  const alreadyIn = r.status === 'تم الدخول';
+  const statusColor = r.status === 'تم الدخول' ? '#38a169' : r.status === 'ملغي' ? '#e53e3e' : r.status === 'تم الحجز' ? '#3182ce' : '#dd6b20';
+  const statusIcon = r.status === 'تم الدخول' ? '✅' : r.status === 'ملغي' ? '🚫' : r.status === 'تم الحجز' ? '🕓' : '⏳';
   box.style.display = 'block';
   box.innerHTML = `
     <div class="head">
-      <h3>بيانات الحجز</h3>
-      <span class="status-pill" style="background:${statusColor}22;color:${statusColor};">${escH(r.status||'')}</span>
+      <h3>👤 بيانات الحجز</h3>
+      <span class="status-pill" style="background:${statusColor}22;color:${statusColor};">${statusIcon} ${escH(r.status||'')}</span>
     </div>
-    <div class="row"><b>الاسم</b><span>${escH(r.name||'—')}</span></div>
-    <div class="row"><b>الجوال</b><span style="direction:ltr;">${escH(r.phone||'—')}</span></div>
-    <div class="row"><b>القسم</b><span>${escH(r.section||'—')}</span></div>
-    <div class="row"><b>المبلغ</b><span>${r.amount ? Number(r.amount).toLocaleString('ar-SA')+' ﷼' : '—'}</span></div>
-    <div class="row"><b>تواريخ الحجز</b><span>${bDates.length ? bDates.join('، ') : '—'}</span></div>
-    ${alreadyConfirmed
-      ? `<div class="confirmed-note">✅ هذا الحجز مؤكد الحضور مسبقاً</div>`
-      : `<button class="btn btn-confirm" onclick="confirmAttendance()">✅ تأكيد الحضور الآن</button>`}
-    <button class="btn btn-outline" onclick="resetScan()">🔄 مسح حجز آخر</button>
+    <div class="row"><b>🙍 الاسم</b><span>${escH(r.name||'—')}</span></div>
+    <div class="row"><b>📱 الجوال</b><span style="direction:ltr;">${escH(r.phone||'—')}</span></div>
+    <div class="row"><b>🏷️ القسم</b><span>${escH(r.section||'—')}</span></div>
+    <div class="row"><b>💰 المبلغ</b><span>${r.amount ? Number(r.amount).toLocaleString('ar-SA')+' ﷼' : '—'}</span></div>
+    <div class="row"><b>📅 تواريخ الحجز</b><span>${bDates.length ? bDates.join('، ') : '—'}</span></div>
+    ${alreadyIn
+      ? ``
+      : `<button class="btn btn-confirm" onclick="confirmAttendance()"><span class="ic">✅</span> تأكيد الحضور الآن</button>`}
+    <button class="btn btn-outline" onclick="resetScan()"><span class="ic">🔄</span> مسح حجز آخر</button>
   `;
 }
 
 async function confirmAttendance() {
   if (!currentRecord) return;
   setStatus('⏳ جارٍ حفظ التأكيد...');
-  const { error } = await sb.from('sales_records').update({ status: 'مؤكد' }).eq('_id', currentRecord._id);
+  const { error } = await sb.from('sales_records').update({ status: 'تم الدخول' }).eq('_id', currentRecord._id);
   if (error) {
     setStatus('⚠️ صار خطأ أثناء الحفظ، حاول مرة ثانية: ' + error.message, 'err');
     return;
   }
-  currentRecord.status = 'مؤكد';
+  currentRecord.status = 'تم الدخول';
   setStatus('✅ تم تأكيد الحضور بنجاح', 'ok');
+  showBanner('ok');
   renderResult(currentRecord);
 }
 
 function resetScan() {
   document.getElementById('result').style.display = 'none';
+  showBanner('');
   setStatus('');
   currentRecord = null;
 }
