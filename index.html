@@ -3330,15 +3330,30 @@ async function salesLoadData() {
       if (yy && mm && dd) { r.date = primary; r.year = yy; r.month = mm; r.day = dd; }
     }
     // ترحيل حالة قديمة: أي سجل لسا فيه القيمة القديمة "مؤكد" (قبل تغيير المسمى) يتحول لـ"تم الدخول"
-    if (r.status === 'مؤكد') r.status = 'تم الدخول';
+    if (r.status === 'مؤكد') { r.status = 'تم الدخول'; r.__statusFixed = true; }
     // من 25/08/2026: أي حجز لم يُؤكَّد دخوله فعلياً عبر QR (ولم يُلغَ) يبقى دائماً "تم الحجز"
     // حتى لو كانت حالته المحفوظة قديمة/يدوية من قبل تفعيل نظام تأكيد الحضور
     const primaryDate = (validDates.length ? validDates[0] : r.date) || '';
-    if (primaryDate >= '2026-08-25' && r.status !== 'تم الدخول' && r.status !== 'ملغي') {
+    if (primaryDate >= '2026-08-25' && r.status !== 'تم الدخول' && r.status !== 'ملغي' && r.status !== 'تم الحجز') {
       r.status = 'تم الحجز';
+      r.__statusFixed = true;
     }
     return r;
   };
+
+  // يحفظ تصحيحات الحالة رجوعاً لقاعدة البيانات نفسها بصمت (بدون إشعارات)، عشان أي جهة
+  // ثانية تقرأ من Supabase مباشرة (مثل صفحة تأكيد الحضور المستقلة) تشوف نفس الحالة الصحيحة
+  async function persistStatusFixes(rows) {
+    const fixed = rows.filter(r => r.__statusFixed).map(r => ({ _id: r._id, status: r.status }));
+    rows.forEach(r => { delete r.__statusFixed; });
+    if (!fixed.length || !USE_CLOUD || !isOnline) return;
+    try {
+      for (let i = 0; i < fixed.length; i += 50) {
+        const chunk = fixed.slice(i, i + 50);
+        await sbClient.from('sales_records').upsert(chunk, { onConflict: '_id' });
+      }
+    } catch (e) { console.warn('persistStatusFixes error:', e.message); }
+  }
 
   // ── 1. حاول Supabase أولاً ──
   if (USE_CLOUD && isOnline) {
@@ -3360,6 +3375,7 @@ async function salesLoadData() {
 
       if (allRows.length > 0) {
         salesData = allRows.map(parseBDates);
+        persistStatusFixes(salesData);
         // حفظ نسخة محلية دائماً
         try { localStorage.setItem(SALES_DATA_KEY, JSON.stringify(salesData)); } catch(e) {}
         salesLoaded = true;
@@ -3378,6 +3394,7 @@ async function salesLoadData() {
       const parsed = JSON.parse(stored);
       if (parsed && parsed.length > 0) {
         salesData = parsed.map(parseBDates);
+        persistStatusFixes(salesData);
         salesLoaded = true;
         return;
       }
@@ -3732,7 +3749,7 @@ async function salesEntryInit() {
 // اعتبارًا من 25/08/2026، الحجوزات الجديدة تبدأ بحالة "تم الحجز" (تُصبح "تم الدخول" فقط بعد تأكيد الحضور عبر QR)
 const STATUS_POLICY_CUTOFF = new Date('2026-08-25T00:00:00');
 function defaultBookingStatus() {
-  return (new Date() >= STATUS_POLICY_CUTOFF) ? 'تم الحجز' : 'تم الدخول';
+  return 'تم الحجز';
 }
 
 function seNewRow() {
@@ -4743,7 +4760,7 @@ async function sr2Import(input) {
           rec.contactYear  = rec.year;
         }
 
-        if (!rec.status)  rec.status  = 'تم الدخول';
+        if (!rec.status)  rec.status  = 'تم الحجز';
         if (!rec.section) rec.section = 'قسم الرجال';
 
         const existIdx = salesData.findIndex(x => x._id === rec._id);
