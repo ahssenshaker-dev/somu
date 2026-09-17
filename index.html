@@ -36,6 +36,14 @@
   .tab:hover { color: #1a1a2e; }
   .tab.active { color: #e94560; border-bottom-color: #e94560; font-weight: 600; }
 
+  /* NAV TAB DROPDOWN (تجميع تبويبات فرعية تحت تبويب واحد، مثل الصيانة) */
+  .tab-dropdown { position: relative; }
+  .tab-dropdown-menu { display: none; position: absolute; top: 100%; right: 0; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 6px 18px rgba(0,0,0,0.12); z-index: 60; min-width: 170px; padding: 6px; }
+  .tab-dropdown-menu.open { display: block; }
+  .tab-dropdown-item { padding: 10px 14px; font-size: 13px; font-weight: 500; color: #4a5568; cursor: pointer; border-radius: 6px; white-space: nowrap; transition: all 0.15s; }
+  .tab-dropdown-item:hover { background: #f7fafc; color: #1a1a2e; }
+  .tab-dropdown-item.active { color: #e94560; background: #fff5f6; font-weight: 700; }
+
   /* CONTENT */
   .content { padding: 28px 32px; }
 
@@ -123,6 +131,7 @@
     .header, .nav-tabs, .modal-overlay, .btn-add, .s-toolbar,
     #tab-dashboard, #tab-records, #tab-entry, #tab-sales-entry, #tab-sales-records,
     #tab-report, #tab-sales-report, #tab-sales-compare,
+    #tab-maintenance-entry, #tab-maintenance-records,
     #pin-overlay, #pin-change-modal, #sr2-edit-overlay,
     .print-controls, #report-count,
     #cmp-tab-sales, #cmp-tab-inquiries { display: none !important; }
@@ -577,12 +586,18 @@
 <div class="nav-tabs">
   <div class="tab active" onclick="showTab('dashboard')" data-roles="admin">لوحة البيانات</div>
   <div class="tab" onclick="showTab('report')" data-roles="admin">التقرير والطباعة</div>
-  <div class="tab" onclick="showTab('entry')" data-roles="staff,admin">📝 تواصل - الإدخال</div>
-  <div class="tab" onclick="showTab('sales-entry')" data-roles="staff,admin">💰 مبيعات - الإدخال</div>
+  <div class="tab" onclick="showTab('entry')" data-roles="staff,admin">📝 الإدخال (تواصل وحجوزات)</div>
   <div class="tab" onclick="showTab('records')" data-roles="staff,admin">📋 سجلات التواصل</div>
   <div class="tab" onclick="showTab('sales-records')" data-roles="staff,admin">📋 سجل المبيعات</div>
+  <div class="tab tab-dropdown" id="maint-parent-tab" data-roles="staff,admin" onclick="toggleMaintDropdown(event)">
+    🔧 الصيانة ▾
+    <div class="tab-dropdown-menu" id="maint-dropdown-menu">
+      <div class="tab-dropdown-item" data-roles="staff,admin" onclick="event.stopPropagation(); showTab('maintenance-entry'); closeMaintDropdown();">➕ إدخال الصيانة</div>
+      <div class="tab-dropdown-item" data-roles="staff,admin" onclick="event.stopPropagation(); showTab('maintenance-records'); closeMaintDropdown();">📋 سجلات الصيانة</div>
+    </div>
+  </div>
   <div class="tab" onclick="showTab('checkin')" data-roles="staff,admin">📷 تأكيد الحضور</div>
-  <div class="tab" onclick="showTab('sales-report')" data-roles="admin">📊 تقرير المبيعات</div>
+  <div class="tab" onclick="showTab('sales-report')" data-roles="staff,admin">📊 تقرير المبيعات</div>
   <div class="tab" onclick="showTab('sales-compare')" data-roles="admin">⚖️ مقارنة الفترات</div>
 </div>
 
@@ -1122,6 +1137,100 @@
   </div>
 </div>
 
+<!-- ===== MAINTENANCE ENTRY TAB ===== -->
+<div class="content" id="tab-maintenance-entry" style="display:none">
+  <div class="entry-toolbar">
+    <span class="entry-date-label">📅 تاريخ اليوم:</span>
+    <input type="date" class="entry-date-input" id="maint-date" onchange="maintRender()">
+    <button class="entry-btn-add" onclick="maintAddRow()">+ إضافة صف</button>
+    <button class="entry-btn-save-all" onclick="maintSaveAll()">💾 حفظ الكل</button>
+    <button class="entry-btn-clear" onclick="maintClearSaved()">🗑️ مسح المحفوظة</button>
+    <span class="entry-row-count" id="maint-row-count">0 صفوف</span>
+    <span class="entry-save-notice" id="maint-save-notice">✅ تم الحفظ التلقائي</span>
+  </div>
+  <div class="excel-wrapper">
+    <div class="excel-scroll">
+      <table class="excel-table" id="maint-table">
+        <thead>
+          <tr>
+            <th class="col-num" style="min-width:44px">الرقم</th>
+            <th style="min-width:115px;background:#0f3460;">تاريخ الابلاغ</th>
+            <th style="min-width:100px;background:#1a3a5c;">العمارة</th>
+            <th style="min-width:100px;background:#6b46c1;">نوع الطلب</th>
+            <th style="min-width:200px;background:#374a1e;">وصف المشكلة</th>
+            <th style="min-width:95px;background:#b7421a;">الاولوية</th>
+            <th style="min-width:120px;background:#2c4a6e;">المسؤول / الفني</th>
+            <th style="min-width:100px;background:#1a5e7a;">الحالة</th>
+            <th style="min-width:115px;background:#3a3a5c;">تاريخ التعامل</th>
+            <th style="min-width:90px;background:#7a5a1a;">التكلفة</th>
+            <th style="min-width:85px;background:#5a2d6e;">أيام التأخير</th>
+            <th style="min-width:160px;background:#2d5a4a;">ملاحظات</th>
+            <th class="col-del" style="min-width:36px"></th>
+          </tr>
+        </thead>
+        <tbody id="maint-body"></tbody>
+      </table>
+    </div>
+    <div class="entry-footer">
+      <span class="entry-footer-info">💡 اضغط Tab للانتقال بين الخلايا — الحفظ تلقائي عند الانتقال من الصف</span>
+      <span class="entry-footer-info">المحفوظة: <b id="maint-saved-count">0</b> بلاغ</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MAINTENANCE RECORDS TAB ===== -->
+<div class="content" id="tab-maintenance-records" style="display:none">
+  <div class="table-section">
+    <div class="table-header">
+      <div class="table-title">سجلات الصيانة (<span id="maint-count-display">0</span>)</div>
+      <div class="table-controls">
+        <input class="search-box" type="text" id="maint-filter-search" placeholder="بحث بالعمارة أو الوصف أو الفني..." oninput="maintFilterAndRender()">
+        <select class="filter-sel" id="maint-filter-type" onchange="maintFilterAndRender()">
+          <option value="">كل الأنواع</option>
+          <option>كهرباء</option><option>مياه</option><option>تكييف</option>
+          <option>سباكة</option><option>نجارة</option><option>دهانات</option><option>اخرى</option>
+        </select>
+        <select class="filter-sel" id="maint-filter-priority" onchange="maintFilterAndRender()">
+          <option value="">كل الأولويات</option>
+          <option>عالية</option><option>متوسطة</option><option>منخفضة</option>
+        </select>
+        <select class="filter-sel" id="maint-filter-status" onchange="maintFilterAndRender()">
+          <option value="">كل الحالات</option>
+          <option>جديد</option><option>قيد التنفيذ</option><option>منتهي</option>
+        </select>
+        <label style="font-size:13px;color:#4a5568;margin-right:4px">من:</label>
+        <input type="date" id="maint-filter-date-from" class="filter-sel" onchange="maintFilterAndRender()" style="padding:6px 8px;">
+        <label style="font-size:13px;color:#4a5568;margin-right:4px">إلى:</label>
+        <input type="date" id="maint-filter-date-to" class="filter-sel" onchange="maintFilterAndRender()" style="padding:6px 8px;">
+        <button class="btn btn-secondary" style="color:#1a1a2e; border-color:#e2e8f0;" onclick="maintResetFilters()">إعادة تعيين</button>
+        <button class="btn btn-secondary" style="color:#fff;background:#38a169;border-color:#38a169;" onclick="maintExportExcel()">📊 Excel</button>
+      </div>
+    </div>
+    <div style="overflow-x: auto;">
+      <table id="maint-main-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>تاريخ الابلاغ</th>
+            <th>العمارة</th>
+            <th>نوع الطلب</th>
+            <th>وصف المشكلة</th>
+            <th>الاولوية</th>
+            <th>المسؤول / الفني</th>
+            <th>الحالة</th>
+            <th>تاريخ التعامل</th>
+            <th>التكلفة</th>
+            <th>أيام التأخير</th>
+            <th>ملاحظات</th>
+            <th>إجراءات</th>
+          </tr>
+        </thead>
+        <tbody id="maint-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 <!-- CHECK-IN / QR CONFIRM TAB -->
 <div class="content" id="tab-checkin" style="display:none">
   <div style="max-width:560px;margin:0 auto;">
@@ -1513,7 +1622,8 @@ async function loadAllRecords() {
         contact:  r.contact || '',
         request:  r.request || '',
         details:  r.details || '',
-        fullDate: r.full_date || ''
+        fullDate: r.full_date || '',
+        linkedSalesId: r.linked_sales_id || ''
       });
 
       if (allRows.length === 0) {
@@ -1668,7 +1778,8 @@ function toSupabaseRecord(r) {
     full_date: r.fullDate || null,
     gender:    r.gender || null,
     occasion:  r.occasion || null,
-    days:      r.days ? parseInt(r.days) : null
+    days:      r.days ? parseInt(r.days) : null,
+    linked_sales_id: r.linkedSalesId || null
   };
 }
 
@@ -1776,7 +1887,8 @@ function mapFromSupabase(r) {
     fullDate: r.full_date || '',
     gender:   r.gender || '',
     occasion: r.occasion || '',
-    days:     r.days || ''
+    days:     r.days || '',
+    linkedSalesId: r.linked_sales_id || ''
   };
 }
 
@@ -2505,14 +2617,35 @@ async function deleteRecord(id) {
 }
 
 // ==================== TABS ====================
+// ==================== قائمة تبويب "الصيانة" المنسدلة ====================
+function toggleMaintDropdown(e) {
+  e.stopPropagation();
+  const menu = document.getElementById('maint-dropdown-menu');
+  if (menu) menu.classList.toggle('open');
+}
+function closeMaintDropdown() {
+  const menu = document.getElementById('maint-dropdown-menu');
+  if (menu) menu.classList.remove('open');
+}
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('maint-dropdown-menu');
+  const parent = document.getElementById('maint-parent-tab');
+  if (menu && menu.classList.contains('open') && parent && !parent.contains(e.target)) {
+    menu.classList.remove('open');
+  }
+});
+
 function showTab(name) {
-  ['dashboard','records','report','entry','sales-entry','sales-records','checkin','sales-report','sales-compare'].forEach(t=>{
+  ['dashboard','records','report','entry','sales-entry','sales-records','checkin','sales-report','sales-compare','maintenance-entry','maintenance-records'].forEach(t=>{
     const el = document.getElementById('tab-'+t);
     if(el) el.style.display = t===name?'block':'none';
   });
-  document.querySelectorAll('.tab[data-roles]').forEach(el=>{
-    el.classList.toggle('active', el.getAttribute('onclick')===`showTab('${name}')`);
+  document.querySelectorAll('.tab[data-roles], .tab-dropdown-item[data-roles]').forEach(el=>{
+    const tn = el.dataset.tabname || (el.getAttribute('onclick')||'').match(/showTab\('([^']+)'\)/)?.[1];
+    el.classList.toggle('active', tn===name);
   });
+  const maintParentTab = document.getElementById('maint-parent-tab');
+  if (maintParentTab) maintParentTab.classList.toggle('active', name==='maintenance-entry' || name==='maintenance-records');
   if(name!=='checkin' && typeof checkinStopScan==='function') checkinStopScan();
   if(name==='records') { filteredData=getApplied(); renderTable(); }
   if(name==='report') renderReport();
@@ -2522,6 +2655,8 @@ function showTab(name) {
   if(name==='checkin') { if(typeof checkinReset==='function') checkinReset(); }
   if(name==='sales-report') salesReportInit();
   if(name==='sales-compare') salesCompareInit();
+  if(name==='maintenance-entry') maintEntryInit();
+  if(name==='maintenance-records') maintRecordsInit();
 }
 
 // ==================== REPORT ====================
@@ -3050,7 +3185,8 @@ async function entrySaveRow(r) {
     days: r.days ? parseInt(r.days) : null,
     details: r.details, employee: r.employee,
     fullDate: dateVal,
-    day: parseInt(dateVal.split('-')[2]) || 0
+    day: parseInt(dateVal.split('-')[2]) || 0,
+    linkedSalesId: r.linkedSalesId || null
   };
 
   // Check if already exists in data array
@@ -3166,6 +3302,7 @@ function entryRender() {
       });
       el.addEventListener('change', () => {
         entrySetFieldDirect(eid, field, el.value);
+        if (field === 'type') entryToggleSalesSubrow(eid, el.value);
         // Auto-save immediately on select change if row has data
         const rowR = entryRows.find(x => x._eid === eid);
         if (rowR && (rowR.name || rowR.phone)) {
@@ -3206,7 +3343,8 @@ function entryRender() {
           e.preventDefault();
           const allInputs = Array.from(tr.querySelectorAll('.excel-input:not([readonly]),.excel-select,.excel-textarea'));
           const colIdx = allInputs.indexOf(el);
-          const nextTr = tr.nextElementSibling;
+          let nextTr = tr.nextElementSibling;
+          while (nextTr && nextTr.classList.contains('entry-sales-subrow')) nextTr = nextTr.nextElementSibling;
           if (nextTr) {
             const nextInputs = nextTr.querySelectorAll('.excel-input:not([readonly]),.excel-select,.excel-textarea');
             if (nextInputs[colIdx]) nextInputs[colIdx].focus();
@@ -3216,6 +3354,19 @@ function entryRender() {
     });
 
     body.appendChild(tr);
+    // إدراج صف بيانات الحجز الفرعي مباشرة بعد صف العميل، وربط أحداثه
+    tr.insertAdjacentHTML('afterend', entrySalesSubrowHTML(r));
+    const subTr = tr.nextElementSibling;
+    if (subTr) {
+      const dateInp = subTr.querySelector(`#ssub-date-${r._eid}`);
+      const sectionSel = subTr.querySelector(`#ssub-section-${r._eid}`);
+      const amountInp = subTr.querySelector(`#ssub-amount-${r._eid}`);
+      const statusSel = subTr.querySelector(`#ssub-status-${r._eid}`);
+      if (dateInp) dateInp.addEventListener('change', () => entrySalesFieldChanged(r._eid, 'salesDate', dateInp.value));
+      if (sectionSel) sectionSel.addEventListener('change', () => entrySalesFieldChanged(r._eid, 'salesSection', sectionSel.value));
+      if (amountInp) amountInp.addEventListener('input', () => entrySalesFieldChanged(r._eid, 'salesAmount', amountInp.value));
+      if (statusSel) statusSel.addEventListener('change', () => entrySalesFieldChanged(r._eid, 'salesStatus', statusSel.value));
+    }
   });
 
   entryUpdateCounts();
@@ -3238,6 +3389,92 @@ function entrySetFieldDirect(eid, field, value) {
 function escH(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+
+// ==================== LINK CONTACT ENTRY ↔ SALES (توحيد الادخالات) ====================
+// بدل نافذة منبثقة منفصلة (كانت تتعلّق بمشاكل تحديث الواجهة)، تظهر بيانات الحجز
+// كصف فرعي ملوّن مباشرة تحت نفس صف العميل بجدول الإدخال — فور اختيار "نوع الطلب: حجز".
+// هذا يمنع تكرار كتابة الاسم/الجوال بجدول منفصل، وأي تعديل يُحفظ فوراً بسجل المبيعات
+// ويُربط بنفس معرّف سجل التواصل (contactRecordId) بدون حذف أي من السجلين الأصليين.
+let entrySalesAutoTimer = null;
+
+function entrySalesSubrowHTML(r) {
+  const show = r.type === 'حجز';
+  const statusColor = r.linkedSalesId ? '#38a169' : '#a0aec0';
+  const statusText = r.linkedSalesId ? '✅ تم حفظ بيانات الحجز' : '— أدخل تاريخ الحجز للحفظ —';
+  return `<tr class="entry-sales-subrow" id="sales-sub-${r._eid}" style="display:${show?'table-row':'none'};background:#f5f3ff;">
+    <td colspan="13" style="padding:8px 14px;border-top:1px dashed #a78bfa;border-bottom:1px solid #dde3ec;">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;">
+        <span style="font-weight:700;color:#6b46c1;">💰 بيانات الحجز:</span>
+        <label style="color:#4a5568;">تاريخ الحجز:</label>
+        <input type="date" id="ssub-date-${r._eid}" value="${escH(r.salesDate||'')}" style="direction:ltr;padding:4px 6px;border:1px solid #c4b5fd;border-radius:5px;font-size:12px;">
+        <label style="color:#4a5568;">القسم:</label>
+        <select id="ssub-section-${r._eid}" style="padding:4px 6px;border:1px solid #c4b5fd;border-radius:5px;font-size:12px;">
+          ${['قسم الرجال','قسم الحريم','قسمين'].map(v=>`<option ${(r.salesSection||'قسم الرجال')===v?'selected':''}>${v}</option>`).join('')}
+        </select>
+        <label style="color:#4a5568;">المبلغ:</label>
+        <input type="number" id="ssub-amount-${r._eid}" value="${escH(r.salesAmount||'')}" placeholder="بالريال" style="width:90px;padding:4px 6px;border:1px solid #c4b5fd;border-radius:5px;font-size:12px;">
+        <label style="color:#4a5568;">حالة الحجز:</label>
+        <select id="ssub-status-${r._eid}" style="padding:4px 6px;border:1px solid #c4b5fd;border-radius:5px;font-size:12px;">
+          ${['تم الحجز','تم الدخول','مؤقت','ملغي'].map(v=>`<option ${(r.salesStatus||'تم الحجز')===v?'selected':''}>${v}</option>`).join('')}
+        </select>
+        <span id="ssub-status-msg-${r._eid}" style="font-weight:700;color:${statusColor};">${statusText}</span>
+      </div>
+    </td>
+  </tr>`;
+}
+
+function entryToggleSalesSubrow(eid, typeVal) {
+  const sub = document.getElementById('sales-sub-' + eid);
+  if (sub) sub.style.display = (typeVal === 'حجز') ? 'table-row' : 'none';
+}
+
+// يُستدعى فور تغيير أي حقل من حقول الحجز (وليس فقط عند الحفظ) — هذا يحقق فحص
+// تعارض الحجز اللحظي المطلوب بمجرد إدخال التاريخ.
+function entrySalesFieldChanged(eid, field, val) {
+  const r = entryRows.find(x => x._eid === eid);
+  if (!r) return;
+  if (field === 'salesDate' && val) {
+    const section = document.getElementById('ssub-section-' + eid)?.value || r.salesSection || 'قسم الرجال';
+    const conflicts = checkBookingConflict([val], section, r.linkedSalesId || null);
+    if (conflicts.length > 0 && !showConflictWarning(conflicts)) {
+      const inp = document.getElementById('ssub-date-' + eid);
+      if (inp) inp.value = r.salesDate || '';
+      return; // المستخدم رفض المتابعة — لا تحفظ هذا التاريخ
+    }
+  }
+  r[field] = val;
+  clearTimeout(entrySalesAutoTimer);
+  entrySalesAutoTimer = setTimeout(() => entrySaveSalesLink(eid), 500);
+}
+
+async function entrySaveSalesLink(eid) {
+  const r = entryRows.find(x => x._eid === eid);
+  if (!r || !r.name || !r.phone || !r.salesDate) return;
+  await salesLoadData();
+  const d = new Date(r.salesDate);
+  const salesId = r.linkedSalesId || crypto.randomUUID();
+  const rec = {
+    _id: salesId, name: r.name, phone: r.phone, date: r.salesDate, contactDate: r.salesDate,
+    contactMonth: d.getMonth()+1, contactYear: d.getFullYear(),
+    bookingDates: [r.salesDate], month: d.getMonth()+1, year: d.getFullYear(), day: d.getDate(),
+    section: r.salesSection || 'قسم الرجال', duration: 'يوم', source: r.source || 'Google Map',
+    amount: parseFloat(r.salesAmount)||0, status: r.salesStatus || 'تم الحجز', notes: r.details || '',
+    contactRecordId: eid
+  };
+  const idx = salesData.findIndex(x => x._id === salesId);
+  if (idx > -1) salesData[idx] = rec; else salesData.push(rec);
+  await salesUpsertRow(rec);
+  const isNewLink = !r.linkedSalesId;
+  r.linkedSalesId = salesId;
+  if (isNewLink) {
+    const dataRow = data.find(x => x.id === eid);
+    if (dataRow) { dataRow.linkedSalesId = salesId; await saveRecordDB(dataRow); }
+  }
+  const statusEl = document.getElementById('ssub-status-msg-' + eid);
+  if (statusEl) { statusEl.style.color = '#38a169'; statusEl.textContent = '✅ تم حفظ بيانات الحجز'; }
+  showToast('✅ تم حفظ بيانات الحجز وربطها بسجل التواصل', 'success');
+}
+// ==================== END LINK CONTACT ↔ SALES ====================
 
 // ==================== END ENTRY TAB ====================
 
@@ -3405,7 +3642,7 @@ async function salesSaveData() {
 }
 
 // الحقول المسموح بها في جدول Supabase sales_records
-const SALES_FIELDS = ['_id','name','phone','date','contactDate','contactMonth','contactYear','bookingDates','month','year','day','section','duration','source','amount','status','notes'];
+const SALES_FIELDS = ['_id','name','phone','date','contactDate','contactMonth','contactYear','bookingDates','month','year','day','section','duration','source','amount','status','notes','contactRecordId'];
 
 function salesCleanRec(rec) {
   // نبقي فقط الحقول الموجودة في الجدول + نحول arrays لـ JSON text
@@ -3814,14 +4051,29 @@ async function seSaveRow(r) {
   if (!dateVal || (!r.name && !r.phone)) return;
   const d = new Date(dateVal);
   let dates = (r.bookingDates && r.bookingDates.length) ? [...r.bookingDates] : [];
+  const section = r.section || 'قسم الرجال';
   // إذا فيه تاريخ مكتوب بحقل الإضافة ولم يُضغط "+" بعد — اعتبره التاريخ المقصود وأضفه تلقائياً
+  // (هذا هو المسار الذي كان يتخطى فحص التعارض سابقاً — عند الحفظ عبر "حفظ الكل" أو الحفظ
+  // التلقائي بينما التاريخ لسا في حقل الإضافة ولم يُؤكَّد بالزر "+" أو Enter)
   const pendingInp = document.getElementById('se-date-inp-' + r._id);
   const pendingVal = pendingInp ? pendingInp.value : '';
-  if (pendingVal && !dates.includes(pendingVal)) dates.push(pendingVal);
+  if (pendingVal && !dates.includes(pendingVal)) {
+    const pendingConflicts = checkBookingConflict([pendingVal], section, r._id);
+    if (pendingConflicts.length > 0 && !showConflictWarning(pendingConflicts)) {
+      // المستخدم رفض — تجاهل هذا التاريخ ولا تحفظه، وامسحه من الحقل
+      if (pendingInp) pendingInp.value = '';
+    } else {
+      dates.push(pendingVal);
+    }
+  }
   if (dates.length === 0) {
-    // لا تواريخ حجز محددة — استخدم تاريخ الطلب كافتراضي بدون تنبيه
+    // لا تواريخ حجز محددة — استخدم تاريخ الطلب كافتراضي، لكن افحص التعارض عليه أيضاً
     const fallback = r.contactDate || dateVal;
-    if (fallback) dates.push(fallback);
+    if (fallback) {
+      const fallbackConflicts = checkBookingConflict([fallback], section, r._id);
+      if (fallbackConflicts.length > 0 && !showConflictWarning(fallbackConflicts)) return; // المستخدم رفض — لا تحفظ
+      dates.push(fallback);
+    }
     else return; // لا يوجد أي تاريخ
   }
   dates.sort();
@@ -3962,6 +4214,335 @@ function seRender() {
   });
   seUpdateCounts();
 }
+
+// ==================== MAINTENANCE MODULE (الصيانة) ====================
+const MAINT_DATA_KEY = 'smo_maintenance_records';
+let maintData = [];
+let maintLoaded = false;
+let maintRows = [];
+let maintAutoTimer = null;
+
+function maintCalcDelayDays(reportDate, handledDate, status) {
+  if (!reportDate) return 0;
+  const start = new Date(reportDate + 'T00:00:00');
+  if (isNaN(start.getTime())) return 0;
+  let end;
+  if (status === 'منتهي' && handledDate) end = new Date(handledDate + 'T00:00:00');
+  else if (status === 'منتهي') return 0; // انتهى بدون تاريخ تعامل محدد
+  else end = new Date(); // لسا مستمر — احسب حتى اليوم
+  const diff = Math.round((end - start) / 86400000);
+  return diff > 0 ? diff : 0;
+}
+
+async function maintLoadData() {
+  if (maintLoaded && maintData.length > 0) return;
+  if (USE_CLOUD && isOnline) {
+    try {
+      const { data: rows, error } = await sbClient
+        .from('maintenance_records')
+        .select('*')
+        .order('reportDate', { ascending: false });
+      if (!error && rows) {
+        maintData = rows;
+        maintLoaded = true;
+        try { localStorage.setItem(MAINT_DATA_KEY, JSON.stringify(maintData)); } catch(e) {}
+        return;
+      }
+      if (error) console.warn('Maintenance load error:', error.message);
+    } catch(e) { console.warn('Maintenance load exception:', e.message); }
+  }
+  // fallback: local cache
+  try {
+    const cached = localStorage.getItem(MAINT_DATA_KEY);
+    if (cached) maintData = JSON.parse(cached);
+  } catch(e) {}
+  maintLoaded = true;
+}
+
+async function maintSaveLocal() {
+  try { localStorage.setItem(MAINT_DATA_KEY, JSON.stringify(maintData)); } catch(e) {}
+}
+
+const MAINT_FIELDS = ['_id','reportDate','building','requestType','description','priority','assignee','status','handledDate','cost','delayDays','notes'];
+function maintCleanRec(rec) {
+  const clean = {};
+  MAINT_FIELDS.forEach(f => {
+    const v = rec[f];
+    if (v !== undefined && v !== null && v !== '') clean[f] = v;
+  });
+  if (!clean._id) clean._id = rec._id || crypto.randomUUID();
+  return clean;
+}
+
+async function maintUpsertRow(rec) {
+  const clean = maintCleanRec(rec);
+  await maintSaveLocal();
+  if (USE_CLOUD && isOnline) {
+    try {
+      const { error } = await sbClient.from('maintenance_records').upsert(clean, { onConflict: '_id' });
+      if (error) {
+        console.error('Maintenance upsert failed:', error.message);
+        showToast('❌ خطأ Supabase: ' + error.message.slice(0,60), 'warn');
+      }
+    } catch(e) { console.error('Maintenance upsert error:', e.message); }
+  } else {
+    showToast('⚠️ حُفظ محلياً — غير متصل', 'warn');
+  }
+}
+
+async function maintDeleteRow(id) {
+  if (USE_CLOUD && isOnline) {
+    try {
+      const { error } = await sbClient.from('maintenance_records').delete().eq('_id', id);
+      if (error) console.warn('Maintenance delete failed:', error);
+    } catch(e) { console.warn('Maintenance delete error:', e); }
+  }
+  maintData = maintData.filter(r => r._id !== id);
+  await maintSaveLocal();
+}
+
+// ---- Entry grid (إدخال) ----
+function maintNewRow() {
+  return { _id: crypto.randomUUID(), saved: false, reportDate: '', building: '', requestType: 'كهرباء',
+    description: '', priority: 'متوسطة', assignee: '', status: 'جديد', handledDate: '', cost: '', notes: '' };
+}
+
+async function maintEntryInit() {
+  await maintLoadData();
+  const inp = document.getElementById('maint-date');
+  if (!inp.value) inp.value = new Date().toISOString().split('T')[0];
+  if (maintRows.length === 0) for (let i = 0; i < 5; i++) maintRows.push(maintNewRow());
+  maintRender();
+}
+
+function maintAddRow() {
+  maintRows.push(maintNewRow());
+  maintRender();
+  setTimeout(() => {
+    const b = document.getElementById('maint-body');
+    if (b && b.lastElementChild) { const fi = b.lastElementChild.querySelector('.excel-input,.excel-select,.excel-textarea'); if (fi) fi.focus(); }
+  }, 40);
+}
+
+function maintDeleteEntryRow(eid) { maintRows = maintRows.filter(r => r._id !== eid); maintRender(); }
+
+function maintClearSaved() {
+  if (!confirm('هل تريد مسح الصفوف المحفوظة من الشبكة؟ (لن تُحذف من قاعدة البيانات)')) return;
+  maintRows = maintRows.filter(r => !r.saved);
+  if (maintRows.length === 0) for (let i = 0; i < 3; i++) maintRows.push(maintNewRow());
+  maintRender();
+}
+
+function maintSetField(eid, field, val) {
+  const r = maintRows.find(r => r._id === eid); if (!r) return;
+  r[field] = val; r.saved = false;
+  const tr = document.querySelector(`#maint-body tr[data-mid="${eid}"]`);
+  if (tr) tr.classList.remove('row-saved');
+  // حدّث خلية أيام التأخير مباشرة بدون إعادة رسم كامل الصف
+  const delayCell = document.getElementById('maint-delay-' + eid);
+  if (delayCell) delayCell.textContent = maintCalcDelayDays(r.reportDate, r.handledDate, r.status);
+  clearTimeout(maintAutoTimer);
+  maintAutoTimer = setTimeout(() => { if (r.building || r.description) maintSaveRow(r); }, 900);
+}
+
+async function maintSaveRow(r) {
+  const dateInp = document.getElementById('maint-date');
+  const reportDate = r.reportDate || dateInp.value;
+  if (!reportDate) { showToast('⚠️ اختر تاريخ الإبلاغ أولاً', 'warn'); return; }
+  if (!r.building && !r.description) return;
+  r.reportDate = reportDate;
+  const delayDays = maintCalcDelayDays(r.reportDate, r.handledDate, r.status);
+  const rec = { _id: r._id, reportDate: r.reportDate, building: r.building, requestType: r.requestType,
+    description: r.description, priority: r.priority, assignee: r.assignee, status: r.status,
+    handledDate: r.handledDate || '', cost: r.cost ? parseFloat(r.cost) : null, delayDays, notes: r.notes || '' };
+  const idx = maintData.findIndex(x => x._id === r._id);
+  if (idx > -1) maintData[idx] = rec; else maintData.push(rec);
+  await maintUpsertRow(rec);
+  r.saved = true;
+  const tr = document.querySelector(`#maint-body tr[data-mid="${r._id}"]`);
+  if (tr) { tr.classList.add('row-saved'); tr.querySelectorAll('[data-field="building"],[data-field="description"]').forEach(el => { el.style.color = '#1a6b4a'; el.style.fontWeight = '600'; }); }
+  const notice = document.getElementById('maint-save-notice');
+  if (notice) { notice.classList.add('show'); clearTimeout(notice._hideTimer); notice._hideTimer = setTimeout(() => notice.classList.remove('show'), 2500); }
+  maintUpdateCounts();
+}
+
+async function maintSaveAll() {
+  const unsaved = maintRows.filter(r => !r.saved && (r.building || r.description));
+  if (!unsaved.length) { showToast('لا يوجد بلاغات جديدة للحفظ', 'info'); return; }
+  const dateInp = document.getElementById('maint-date');
+  if (!dateInp.value) { showToast('⚠️ اختر التاريخ أولاً', 'warn'); return; }
+  showToast('جاري الحفظ...', 'info');
+  for (const r of unsaved) await maintSaveRow(r);
+  showToast('✅ تم حفظ ' + unsaved.length + ' بلاغ', 'success');
+  maintRender();
+}
+
+function maintUpdateCounts() {
+  const el = document.getElementById('maint-row-count'); if (el) el.textContent = maintRows.length + ' صفوف';
+  const sc = document.getElementById('maint-saved-count'); if (sc) sc.textContent = maintRows.filter(r => r.saved).length;
+}
+
+function maintRender() {
+  const body = document.getElementById('maint-body'); if (!body) return;
+  const dateVal = document.getElementById('maint-date').value;
+  const REQ_TYPES = ['كهرباء','مياه','تكييف','سباكة','نجارة','دهانات','اخرى'];
+  const PRIORITIES = ['عالية','متوسطة','منخفضة'];
+  const STATUSES = ['جديد','قيد التنفيذ','منتهي'];
+  body.innerHTML = '';
+  maintRows.forEach((r, idx) => {
+    if (!r.reportDate) r.reportDate = dateVal;
+    const tr = document.createElement('tr');
+    tr.setAttribute('data-mid', r._id);
+    if (r.saved) tr.classList.add('row-saved');
+    const delay = maintCalcDelayDays(r.reportDate, r.handledDate, r.status);
+    tr.innerHTML = `
+      <td class="cell-num">${idx + 1}</td>
+      <td><input class="excel-input" type="date" value="${escH(r.reportDate || dateVal)}" data-field="reportDate" data-mid="${r._id}" style="direction:ltr;font-size:11px;"></td>
+      <td><input class="excel-input" placeholder="رقم/اسم العمارة" value="${escH(r.building)}" data-field="building" data-mid="${r._id}" ${r.saved?'style="color:#1a6b4a;font-weight:600;"':''}></td>
+      <td><select class="excel-select" data-field="requestType" data-mid="${r._id}">
+        ${REQ_TYPES.map(v=>`<option ${r.requestType===v?'selected':''}>${v}</option>`).join('')}
+      </select></td>
+      <td><textarea class="excel-textarea" placeholder="وصف المشكلة..." data-field="description" data-mid="${r._id}" rows="2" ${r.saved?'style="color:#1a6b4a;font-weight:600;"':''}>${escH(r.description)}</textarea></td>
+      <td><select class="excel-select" data-field="priority" data-mid="${r._id}" style="font-weight:600;">
+        ${PRIORITIES.map(v=>`<option ${r.priority===v?'selected':''}>${v}</option>`).join('')}
+      </select></td>
+      <td><input class="excel-input" placeholder="اسم المسؤول/الفني" value="${escH(r.assignee)}" data-field="assignee" data-mid="${r._id}"></td>
+      <td><select class="excel-select" data-field="status" data-mid="${r._id}">
+        ${STATUSES.map(v=>`<option ${r.status===v?'selected':''}>${v}</option>`).join('')}
+      </select></td>
+      <td><input class="excel-input" type="date" value="${escH(r.handledDate)}" data-field="handledDate" data-mid="${r._id}" style="direction:ltr;font-size:11px;"></td>
+      <td><input class="excel-input" placeholder="التكلفة" value="${escH(r.cost)}" data-field="cost" data-mid="${r._id}" type="number" style="text-align:center;"></td>
+      <td style="text-align:center;font-weight:700;color:#7a5a1a;" id="maint-delay-${r._id}">${delay}</td>
+      <td><textarea class="excel-textarea" placeholder="ملاحظات..." data-field="notes" data-mid="${r._id}" rows="2">${escH(r.notes)}</textarea></td>
+      <td style="text-align:center;"><button class="row-del-btn" onclick="maintDeleteEntryRow('${r._id}')" title="حذف الصف">✕</button></td>`;
+    tr.querySelectorAll('.excel-input,.excel-select,.excel-textarea').forEach(el => {
+      el.addEventListener('input', () => maintSetField(el.dataset.mid, el.dataset.field, el.value));
+      el.addEventListener('change', () => {
+        maintSetField(el.dataset.mid, el.dataset.field, el.value);
+        const rv = maintRows.find(x => x._id === el.dataset.mid);
+        if (rv && (rv.building || rv.description)) { clearTimeout(maintAutoTimer); maintAutoTimer = setTimeout(() => maintSaveRow(rv), 400); }
+      });
+      el.addEventListener('blur', () => {
+        const rv = maintRows.find(x => x._id === el.dataset.mid);
+        if (rv && (rv.building || rv.description) && !rv.saved) { clearTimeout(maintAutoTimer); maintAutoTimer = setTimeout(() => maintSaveRow(rv), 600); }
+      });
+    });
+    body.appendChild(tr);
+  });
+  maintUpdateCounts();
+}
+
+// ---- Records view (سجلات) ----
+function maintGetApplied() {
+  let d = [...maintData];
+  const s = (document.getElementById('maint-filter-search')?.value || '').toLowerCase();
+  const type = document.getElementById('maint-filter-type')?.value || '';
+  const priority = document.getElementById('maint-filter-priority')?.value || '';
+  const status = document.getElementById('maint-filter-status')?.value || '';
+  const dfrom = document.getElementById('maint-filter-date-from')?.value || '';
+  const dto = document.getElementById('maint-filter-date-to')?.value || '';
+  if (s) d = d.filter(r => (r.building||'').toLowerCase().includes(s) || (r.description||'').toLowerCase().includes(s) || (r.assignee||'').toLowerCase().includes(s));
+  if (type) d = d.filter(r => r.requestType === type);
+  if (priority) d = d.filter(r => r.priority === priority);
+  if (status) d = d.filter(r => r.status === status);
+  if (dfrom || dto) d = d.filter(r => (!dfrom || (r.reportDate||'') >= dfrom) && (!dto || (r.reportDate||'') <= dto));
+  d.sort((a,b) => (b.reportDate||'').localeCompare(a.reportDate||''));
+  return d;
+}
+
+function maintResetFilters() {
+  document.getElementById('maint-filter-search').value = '';
+  ['maint-filter-type','maint-filter-priority','maint-filter-status','maint-filter-date-from','maint-filter-date-to'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  maintFilterAndRender();
+}
+
+function maintFilterAndRender() { maintRenderTable(); }
+
+const PRIORITY_COLORS = { 'عالية':'#e53e3e', 'متوسطة':'#dd6b20', 'منخفضة':'#38a169' };
+const MSTATUS_COLORS = { 'جديد':'#3182ce', 'قيد التنفيذ':'#dd6b20', 'منتهي':'#38a169' };
+
+function maintRenderTable() {
+  const filtered = maintGetApplied();
+  const tbody = document.getElementById('maint-table-body');
+  if (!tbody) return;
+  tbody.innerHTML = filtered.map((r, i) => {
+    const pColor = PRIORITY_COLORS[r.priority] || '#718096';
+    const sColor = MSTATUS_COLORS[r.status] || '#718096';
+    const delay = maintCalcDelayDays(r.reportDate, r.handledDate, r.status);
+    return `<tr>
+      <td>${i+1}</td>
+      <td style="direction:ltr;text-align:center;font-size:12px;">${r.reportDate||''}</td>
+      <td>${r.building||''}</td>
+      <td>${r.requestType||''}</td>
+      <td style="max-width:220px;font-size:12px;color:#718096;">${r.description||''}</td>
+      <td><span class="badge" style="background:${pColor}22;color:${pColor};font-weight:700;padding:3px 8px;border-radius:6px;font-size:11px;">${r.priority||''}</span></td>
+      <td style="font-size:12px;">${r.assignee||''}</td>
+      <td><span class="badge" style="background:${sColor}22;color:${sColor};font-weight:700;padding:3px 8px;border-radius:6px;font-size:11px;">${r.status||''}</span></td>
+      <td style="direction:ltr;text-align:center;font-size:12px;">${r.handledDate||'—'}</td>
+      <td style="text-align:center;font-weight:600;">${r.cost ? r.cost.toLocaleString('ar-SA') + ' ر.س' : '—'}</td>
+      <td style="text-align:center;font-weight:700;color:#7a5a1a;">${delay}</td>
+      <td style="max-width:180px;font-size:12px;color:#718096;">${r.notes||''}</td>
+      <td>
+        <div class="actions-cell">
+          <button class="icon-btn" onclick="maintEditRecord('${r._id}')">✏️</button>
+          <button class="icon-btn del" onclick="maintDeleteRecord('${r._id}')">🗑️</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="13" class="empty-state">لا توجد نتائج</td></tr>';
+  const countEl = document.getElementById('maint-count-display');
+  if (countEl) countEl.textContent = filtered.length;
+}
+
+async function maintRecordsInit() {
+  await maintLoadData();
+  maintRenderTable();
+}
+
+function maintEditRecord(id) {
+  const r = maintData.find(x => x._id === id);
+  if (!r) return;
+  // حمّل السجل داخل شبكة الإدخال للتعديل ثم احفظه بنفس المعرف
+  const row = { _id: r._id, saved: true, reportDate: r.reportDate || '', building: r.building || '',
+    requestType: r.requestType || 'كهرباء', description: r.description || '', priority: r.priority || 'متوسطة',
+    assignee: r.assignee || '', status: r.status || 'جديد', handledDate: r.handledDate || '',
+    cost: r.cost || '', notes: r.notes || '' };
+  const existingIdx = maintRows.findIndex(x => x._id === id);
+  if (existingIdx > -1) maintRows[existingIdx] = row; else maintRows.unshift(row);
+  showTab('maintenance-entry');
+  showToast('✏️ السجل جاهز للتعديل بأعلى شبكة الإدخال', 'info');
+}
+
+async function maintDeleteRecord(id) {
+  if (!confirm('هل تريد حذف بلاغ الصيانة هذا؟')) return;
+  await maintDeleteRow(id);
+  maintRenderTable();
+}
+
+function maintExportExcel() {
+  const d = maintGetApplied();
+  const headers = ['#','تاريخ الابلاغ','العمارة','نوع الطلب','وصف المشكلة','الاولوية','المسؤول/الفني','الحالة','تاريخ التعامل','التكلفة','أيام التأخير','ملاحظات'];
+  const bom = '\uFEFF';
+  const rows = [headers];
+  d.forEach((r, i) => {
+    rows.push([i+1, r.reportDate||'', r.building||'', r.requestType||'', (r.description||'').replace(/,/g,'،'),
+      r.priority||'', r.assignee||'', r.status||'', r.handledDate||'', r.cost||'',
+      maintCalcDelayDays(r.reportDate, r.handledDate, r.status), (r.notes||'').replace(/,/g,'،')]);
+  });
+  const csv = bom + rows.map(row => row.map(cell => {
+    const val = String(cell).replace(/"/g,'""');
+    return val.includes(',') || val.includes('\n') || val.includes('"') ? `"${val}"` : val;
+  }).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const now = new Date();
+  a.href = url;
+  a.download = 'سجلات_الصيانة_' + now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0') + '.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+// ==================== END MAINTENANCE MODULE ====================
 
 // ===== SALES REPORT =====
 let srCharts = {};
@@ -4386,8 +4967,8 @@ function cmpRenderCharts(aD,bD,aL,bL){
 
 // ==================== PIN LOGIN SYSTEM ====================
 const PIN_CONFIG = {
-  admin: { pin: '1234', label: 'مدير', roles: ['dashboard','records','report','entry','sales-entry','sales-records','sales-report','sales-compare'] },
-  staff: { pin: '5678', label: 'موظف', roles: ['entry','sales-entry','records','sales-records'] }
+  admin: { pin: '1234', label: 'مدير', roles: ['dashboard','records','report','entry','sales-records','sales-report','sales-compare','maintenance-entry','maintenance-records'] },
+  staff: { pin: '5678', label: 'موظف', roles: ['entry','sales-records','records','sales-report','maintenance-entry','maintenance-records'] }
 };
 
 let pinCurrentRole = 'admin';
@@ -4455,11 +5036,17 @@ function pinLogout() {
 function pinApplyPermissions() {
   if (!pinLoggedInRole) return;
   const allowed = PIN_CONFIG[pinLoggedInRole].roles;
-  document.querySelectorAll('.tab[data-roles]').forEach(tab => {
+  document.querySelectorAll('.tab[data-roles], .tab-dropdown-item[data-roles]').forEach(tab => {
     const tabRoles = tab.getAttribute('data-roles').split(',');
     const hasAccess = tabRoles.includes(pinLoggedInRole);
     tab.style.display = hasAccess ? '' : 'none';
   });
+  // إخفاء تبويب "الصيانة" الأب بالكامل إذا ما عنده صلاحية أي من التبويبين الفرعيين
+  const maintParent = document.getElementById('maint-parent-tab');
+  if (maintParent) {
+    const maintAccess = ['maintenance-entry','maintenance-records'].some(r => PIN_CONFIG[pinLoggedInRole].roles.includes(r));
+    maintParent.style.display = maintAccess ? '' : 'none';
+  }
   // Hide/show header buttons based on role
   const isAdmin = pinLoggedInRole === 'admin';
   const addBtn = document.querySelector('.btn-add');
@@ -4922,7 +5509,8 @@ function sr2EditRow(id) {
         <input type="date" id="sr2i-date-add-${id}"
           style="border:none;outline:none;font-size:11px;direction:ltr;flex:1;min-width:105px;background:transparent;"
           title="اختر تاريخ الحجز"
-          onkeydown="if(event.key==='Enter'){sr2iAddDate('${id}',this.value);this.value='';}">
+          onkeydown="if(event.key==='Enter'){sr2iAddDate('${id}',this.value);this.value='';}"
+          onchange="sr2iAddDate('${id}',this.value);this.value='';">
         <button onclick="sr2iAddDate('${id}',document.getElementById('sr2i-date-add-${id}').value);document.getElementById('sr2i-date-add-${id}').value='';" style="background:#3b82f6;color:#fff;border:none;border-radius:4px;padding:2px 8px;font-size:13px;font-weight:700;cursor:pointer;line-height:1.4;" title="إضافة التاريخ">+</button>
       </div>
     </td>
