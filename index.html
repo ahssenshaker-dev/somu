@@ -3450,23 +3450,36 @@ function entryToggleSalesSubrow(eid, typeVal) {
 }
 
 // يُستدعى فور تغيير أي حقل من حقول الحجز (وليس فقط عند الحفظ) — هذا يحقق فحص
-// تعارض الحجز اللحظي المطلوب بمجرد إدخال التاريخ.
+// تعارض الحجز اللحظي المطلوب بمجرد إدخال التاريخ. الفحص يعتمد دائماً على التاريخ
+// والقسم معاً، ويُعاد سواء تغيّر التاريخ أو تغيّر القسم لوحده بعد اختيار التاريخ —
+// وإلا لو اخترت قسم غير محجوز أولاً ثم رجعت وغيّرته للقسم المحجوز، ما كان يظهر التنبيه.
 async function entrySalesFieldChanged(eid, field, val) {
   const r = entryRows.find(x => x._eid === eid);
   if (!r) return;
-  if (field === 'salesDate' && val) {
-    // تأكد من تحميل بيانات المبيعات قبل الفحص — بدون هذا السطر كان الفحص أحياناً
-    // "يفوّت" التعارض بصمت لو تم إدخال التاريخ قبل ما تكتمل تحميل بيانات المبيعات
-    // بالخلفية (يحصل هذا غالباً أول دخول للنظام مباشرة).
-    await salesLoadData();
-    const section = document.getElementById('ssub-section-' + eid)?.value || r.salesSection || 'قسم الرجال';
-    const conflicts = checkBookingConflict([val], section, r.linkedSalesId || null);
-    if (conflicts.length > 0 && !showConflictWarning(conflicts)) {
-      const inp = document.getElementById('ssub-date-' + eid);
-      if (inp) inp.value = r.salesDate || '';
-      return; // المستخدم رفض المتابعة — لا تحفظ هذا التاريخ
+
+  if (field === 'salesDate' || field === 'salesSection') {
+    const dateVal = field === 'salesDate' ? val : (document.getElementById('ssub-date-' + eid)?.value || r.salesDate || '');
+    const sectionVal = field === 'salesSection' ? val : (document.getElementById('ssub-section-' + eid)?.value || r.salesSection || 'قسم الرجال');
+    if (dateVal) {
+      // تأكد من تحميل بيانات المبيعات قبل الفحص — بدون هذا السطر كان الفحص أحياناً
+      // "يفوّت" التعارض بصمت لو تم إدخال التاريخ قبل ما تكتمل تحميل بيانات المبيعات
+      // بالخلفية (يحصل هذا غالباً أول دخول للنظام مباشرة).
+      await salesLoadData();
+      const conflicts = checkBookingConflict([dateVal], sectionVal, r.linkedSalesId || null);
+      if (conflicts.length > 0 && !showConflictWarning(conflicts)) {
+        // المستخدم رفض المتابعة — تراجع عن الحقل الذي غيّره الآن فقط وارجعه لقيمته السابقة
+        if (field === 'salesDate') {
+          const inp = document.getElementById('ssub-date-' + eid);
+          if (inp) inp.value = r.salesDate || '';
+        } else {
+          const sel = document.getElementById('ssub-section-' + eid);
+          if (sel) sel.value = r.salesSection || 'قسم الرجال';
+        }
+        return; // لا تحفظ هذا التغيير
+      }
     }
   }
+
   r[field] = val;
   clearTimeout(entrySalesAutoTimer);
   entrySalesAutoTimer = setTimeout(() => entrySaveSalesLink(eid), 500);
