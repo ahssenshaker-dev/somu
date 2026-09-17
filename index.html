@@ -1645,6 +1645,24 @@ async function loadAllRecords() {
         data = allRows.map(mapRow);
       }
 
+      // ادمج أي سجلات محفوظة محلياً لكنها لم تصل للسحابة بعد (فشل رفع سابق، مثل عمود
+      // ناقص بقاعدة البيانات) — بدون هذا الدمج كانت هذي السجلات "تختفي" فور تحديث الصفحة
+      // رغم أنها محفوظة فعلياً بذاكرة المتصفح (IndexedDB) بانتظار المزامنة.
+      try {
+        const cloudIds = new Set(data.map(r => r.id));
+        const localAll = await idbGetAll();
+        localAll.forEach(r => { if (r && r.id && !cloudIds.has(r.id)) data.push(r); });
+        const pending = await new Promise((resolve, reject) => {
+          const tx = idb.transaction('sync_queue', 'readonly');
+          const req = tx.objectStore('sync_queue').getAll();
+          req.onsuccess = () => resolve(req.result || []);
+          req.onerror = () => reject(req.error);
+        });
+        pending.filter(p => p.action === 'delete' && p.record && p.record.id).forEach(p => {
+          data = data.filter(x => x.id !== p.record.id);
+        });
+      } catch(e) { console.warn('تعذّر دمج السجلات المعلّقة بالمزامنة:', e); }
+
       for (const r of data) await idbPut(r);
       showToast('✅ تم تحميل ' + data.length + ' سجل من السحابة', 'success');
 
@@ -3109,7 +3127,7 @@ function exportExcel() {
 let entryRows = [];       // { id, fields, saved }
 let entryAutoSaveTimer = null;
 
-function entryInit() {
+async function entryInit() {
   // Set today's date if not set
   const inp = document.getElementById('entry-date');
   if (!inp.value) {
@@ -3121,6 +3139,9 @@ function entryInit() {
     for (let i = 0; i < 5; i++) entryRows.push(entryNewRowObj());
   }
   entryRender();
+  // حمّل بيانات المبيعات فوراً عند فتح تبويب الإدخال — بدونها كان فحص تعارض الحجز
+  // يفشل بصمت أول مرة (خصوصاً مباشرة بعد تسجيل الدخول) لأن مصفوفة المبيعات تكون فاضية
+  await salesLoadData();
 }
 
 function entryNewRowObj() {
@@ -3430,10 +3451,14 @@ function entryToggleSalesSubrow(eid, typeVal) {
 
 // يُستدعى فور تغيير أي حقل من حقول الحجز (وليس فقط عند الحفظ) — هذا يحقق فحص
 // تعارض الحجز اللحظي المطلوب بمجرد إدخال التاريخ.
-function entrySalesFieldChanged(eid, field, val) {
+async function entrySalesFieldChanged(eid, field, val) {
   const r = entryRows.find(x => x._eid === eid);
   if (!r) return;
   if (field === 'salesDate' && val) {
+    // تأكد من تحميل بيانات المبيعات قبل الفحص — بدون هذا السطر كان الفحص أحياناً
+    // "يفوّت" التعارض بصمت لو تم إدخال التاريخ قبل ما تكتمل تحميل بيانات المبيعات
+    // بالخلفية (يحصل هذا غالباً أول دخول للنظام مباشرة).
+    await salesLoadData();
     const section = document.getElementById('ssub-section-' + eid)?.value || r.salesSection || 'قسم الرجال';
     const conflicts = checkBookingConflict([val], section, r.linkedSalesId || null);
     if (conflicts.length > 0 && !showConflictWarning(conflicts)) {
