@@ -1111,7 +1111,7 @@
     <button onclick="sr2ClearAll()" style="padding:6px 14px;border-radius:7px;border:none;background:#742a2a;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">🗑️ مسح جميع البيانات</button>
   </div>
   <!-- KPI strip -->
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;" id="sr2-kpis"></div>
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px;" id="sr2-kpis"></div>
   <!-- Table -->
   <div class="excel-wrapper">
     <div class="excel-scroll">
@@ -1125,6 +1125,8 @@
           <th style="min-width:105px;background:#6b46c1">القسم</th>
           <th style="min-width:95px;background:#1a6b4a">المصدر</th>
           <th style="min-width:95px;background:#0f4a2a">المبلغ</th>
+          <th style="min-width:95px;background:#1a6e5a">المدفوع</th>
+          <th style="min-width:95px;background:#7a1a1a">متبقي الإيجار</th>
           <th style="min-width:70px;background:#374a1e">الحالة</th>
           <th style="min-width:110px;background:#2c4a6e">الجوال</th>
           <th style="min-width:130px;background:#374a1e">ملاحظات</th>
@@ -3382,10 +3384,12 @@ function entryRender() {
       const dateInp = subTr.querySelector(`#ssub-date-${r._eid}`);
       const sectionSel = subTr.querySelector(`#ssub-section-${r._eid}`);
       const amountInp = subTr.querySelector(`#ssub-amount-${r._eid}`);
+      const paidInp = subTr.querySelector(`#ssub-paid-${r._eid}`);
       const statusSel = subTr.querySelector(`#ssub-status-${r._eid}`);
       if (dateInp) dateInp.addEventListener('change', () => entrySalesFieldChanged(r._eid, 'salesDate', dateInp.value));
       if (sectionSel) sectionSel.addEventListener('change', () => entrySalesFieldChanged(r._eid, 'salesSection', sectionSel.value));
       if (amountInp) amountInp.addEventListener('input', () => entrySalesFieldChanged(r._eid, 'salesAmount', amountInp.value));
+      if (paidInp) paidInp.addEventListener('input', () => entrySalesFieldChanged(r._eid, 'salesPaid', paidInp.value));
       if (statusSel) statusSel.addEventListener('change', () => entrySalesFieldChanged(r._eid, 'salesStatus', statusSel.value));
     }
   });
@@ -3433,7 +3437,11 @@ function entrySalesSubrowHTML(r) {
           ${['قسم الرجال','قسم الحريم','قسمين'].map(v=>`<option ${(r.salesSection||'قسم الرجال')===v?'selected':''}>${v}</option>`).join('')}
         </select>
         <label style="color:#4a5568;">المبلغ:</label>
-        <input type="number" id="ssub-amount-${r._eid}" value="${escH(r.salesAmount||'')}" placeholder="بالريال" style="width:90px;padding:4px 6px;border:1px solid #c4b5fd;border-radius:5px;font-size:12px;">
+        <input type="number" id="ssub-amount-${r._eid}" value="${escH(r.salesAmount||'')}" placeholder="بالريال" oninput="entrySalesRecalcRemaining('${r._eid}')" style="width:90px;padding:4px 6px;border:1px solid #c4b5fd;border-radius:5px;font-size:12px;">
+        <label style="color:#4a5568;">المدفوع:</label>
+        <input type="number" id="ssub-paid-${r._eid}" value="${escH(r.salesPaid||'')}" placeholder="المدفوع" oninput="entrySalesRecalcRemaining('${r._eid}')" style="width:90px;padding:4px 6px;border:1px solid #6ee7b7;border-radius:5px;font-size:12px;">
+        <label style="color:#7a1a1a;font-weight:700;">متبقي الإيجار:</label>
+        <span id="ssub-remaining-${r._eid}" style="font-weight:800;color:${((r.salesAmount||0)-(r.salesPaid||0))>0?'#c53030':'#38a169'};">${((r.salesAmount||0)-(r.salesPaid||0)).toLocaleString('ar-SA')} ﷼</span>
         <label style="color:#4a5568;">حالة الحجز:</label>
         <select id="ssub-status-${r._eid}" style="padding:4px 6px;border:1px solid #c4b5fd;border-radius:5px;font-size:12px;">
           ${['تم الحجز','تم الدخول','مؤقت','ملغي'].map(v=>`<option ${(r.salesStatus||'تم الحجز')===v?'selected':''}>${v}</option>`).join('')}
@@ -3442,6 +3450,17 @@ function entrySalesSubrowHTML(r) {
       </div>
     </td>
   </tr>`;
+}
+
+function entrySalesRecalcRemaining(eid) {
+  const amount = parseFloat(document.getElementById('ssub-amount-' + eid)?.value) || 0;
+  const paid = parseFloat(document.getElementById('ssub-paid-' + eid)?.value) || 0;
+  const el = document.getElementById('ssub-remaining-' + eid);
+  if (el) {
+    const remaining = amount - paid;
+    el.textContent = remaining.toLocaleString('ar-SA') + ' ﷼';
+    el.style.color = remaining > 0 ? '#c53030' : '#38a169';
+  }
 }
 
 function entryToggleSalesSubrow(eid, typeVal) {
@@ -3496,7 +3515,8 @@ async function entrySaveSalesLink(eid) {
     contactMonth: d.getMonth()+1, contactYear: d.getFullYear(),
     bookingDates: [r.salesDate], month: d.getMonth()+1, year: d.getFullYear(), day: d.getDate(),
     section: r.salesSection || 'قسم الرجال', duration: 'يوم', source: r.source || 'Google Map',
-    amount: parseFloat(r.salesAmount)||0, status: r.salesStatus || 'تم الحجز', notes: r.details || '',
+    amount: parseFloat(r.salesAmount)||0, paidAmount: parseFloat(r.salesPaid)||0,
+    status: r.salesStatus || 'تم الحجز', notes: r.details || '',
     contactRecordId: eid
   };
   const idx = salesData.findIndex(x => x._id === salesId);
@@ -3680,7 +3700,7 @@ async function salesSaveData() {
 }
 
 // الحقول المسموح بها في جدول Supabase sales_records
-const SALES_FIELDS = ['_id','name','phone','date','contactDate','contactMonth','contactYear','bookingDates','month','year','day','section','duration','source','amount','status','notes','contactRecordId'];
+const SALES_FIELDS = ['_id','name','phone','date','contactDate','contactMonth','contactYear','bookingDates','month','year','day','section','duration','source','amount','paidAmount','status','notes','contactRecordId'];
 
 function salesCleanRec(rec) {
   // نبقي فقط الحقول الموجودة في الجدول + نحول arrays لـ JSON text
@@ -5445,6 +5465,7 @@ async function salesRecordsInit() {
   filtered.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
   const total = filtered.reduce((s, r) => s + (r.amount || 0), 0);
+  const totalRemaining = filtered.reduce((s, r) => s + Math.max((r.amount||0) - (r.paidAmount||0), 0), 0);
   const confirmed = filtered.filter(r => r.status === 'تم الدخول').length;
 
   // KPIs
@@ -5452,7 +5473,8 @@ async function salesRecordsInit() {
     <div class="s-kpi" style="padding:10px 14px;"><div class="s-kpi-val">${filtered.length}</div><div class="s-kpi-lbl">إجمالي الحجوزات</div></div>
     <div class="s-kpi green" style="padding:10px 14px;"><div class="s-kpi-val">${confirmed}</div><div class="s-kpi-lbl">دخلوا</div></div>
     <div class="s-kpi blue" style="padding:10px 14px;"><div class="s-kpi-val">${total.toLocaleString('ar-SA')} ﷼</div><div class="s-kpi-lbl">إجمالي المبيعات</div></div>
-    <div class="s-kpi purple" style="padding:10px 14px;"><div class="s-kpi-val">${filtered.length ? Math.round(total/filtered.length).toLocaleString('ar-SA') : 0} ﷼</div><div class="s-kpi-lbl">متوسط الحجز</div></div>`;
+    <div class="s-kpi purple" style="padding:10px 14px;"><div class="s-kpi-val">${filtered.length ? Math.round(total/filtered.length).toLocaleString('ar-SA') : 0} ﷼</div><div class="s-kpi-lbl">متوسط الحجز</div></div>
+    <div class="s-kpi" style="padding:10px 14px;background:#fef2f2;"><div class="s-kpi-val" style="color:${totalRemaining>0?'#c53030':'#38a169'}">${totalRemaining.toLocaleString('ar-SA')} ﷼</div><div class="s-kpi-lbl">إجمالي متبقي الإيجار</div></div>`;
 
   document.getElementById('sr2-summary').textContent = filtered.length + ' سجل';
 
@@ -5477,6 +5499,8 @@ async function salesRecordsInit() {
       <td style="padding:5px 8px;text-align:center;"><span style="background:${secColor}22;color:${secColor};font-size:11px;font-weight:700;padding:3px 7px;border-radius:6px;">${escH(r.section||'')}</span></td>
       <td style="padding:5px 8px;font-size:11px;text-align:center;">${escH(r.source||'')}</td>
       <td style="padding:5px 8px;font-size:13px;font-weight:800;color:#047857;text-align:center;">${r.amount ? r.amount.toLocaleString('ar-SA')+' ﷼' : '—'}</td>
+      <td style="padding:5px 8px;font-size:13px;font-weight:700;color:#1a6e5a;text-align:center;">${r.paidAmount ? r.paidAmount.toLocaleString('ar-SA')+' ﷼' : '—'}</td>
+      <td style="padding:5px 8px;font-size:13px;font-weight:800;text-align:center;color:${((r.amount||0)-(r.paidAmount||0))>0?'#c53030':'#38a169'};">${((r.amount||0)-(r.paidAmount||0)).toLocaleString('ar-SA')} ﷼</td>
       <td style="padding:5px 8px;text-align:center;"><span style="background:${statusColor}22;color:${statusColor};font-size:11px;font-weight:700;padding:3px 7px;border-radius:6px;">${escH(r.status||'')}</span></td>
       <td style="padding:5px 8px;font-size:11px;direction:ltr;text-align:center;">${escH(r.phone||'')}</td>
       <td style="padding:5px 8px;font-size:11px;color:#718096;">${escH(r.notes||'')}</td>
@@ -5555,7 +5579,9 @@ function sr2EditRow(id) {
     <td style="text-align:center;font-size:13px;font-weight:800;color:#7a5a1a;" id="sr2i-days-${id}">${editBDates.length||1}</td>
     <td><select class="excel-select" id="sr2i-section-${id}" style="border:1px solid #e94560;border-radius:4px;padding:5px 7px;width:100%;">${secs.map(v=>'<option'+(r.section===v?' selected':'')+'>'+v+'</option>').join('')}</select></td>
     <td><select class="excel-select" id="sr2i-source-${id}" style="border:1px solid #e94560;border-radius:4px;padding:5px 7px;width:100%;">${srcs.map(v=>'<option'+(r.source===v?' selected':'')+'>'+v+'</option>').join('')}</select></td>
-    <td><input class="excel-input" id="sr2i-amount-${id}" type="number" value="${r.amount||''}" style="border:1px solid #e94560;border-radius:4px;padding:5px 7px;width:100%;text-align:center;"></td>
+    <td><input class="excel-input" id="sr2i-amount-${id}" type="number" value="${r.amount||''}" oninput="sr2iRecalcRemaining('${id}')" style="border:1px solid #e94560;border-radius:4px;padding:5px 7px;width:100%;text-align:center;"></td>
+    <td><input class="excel-input" id="sr2i-paid-${id}" type="number" value="${r.paidAmount||''}" placeholder="المدفوع" oninput="sr2iRecalcRemaining('${id}')" style="border:1px solid #1a6e5a;border-radius:4px;padding:5px 7px;width:100%;text-align:center;"></td>
+    <td style="text-align:center;font-weight:800;font-size:12px;" id="sr2i-remaining-${id}">${((r.amount||0)-(r.paidAmount||0)).toLocaleString('ar-SA')} ﷼</td>
     <td><select class="excel-select" id="sr2i-status-${id}" style="border:1px solid #e94560;border-radius:4px;padding:5px 7px;width:100%;">${stats.map(v=>'<option'+(r.status===v?' selected':'')+'>'+v+'</option>').join('')}</select></td>
     <td><input class="excel-input" id="sr2i-phone-${id}" value="${(r.phone||'').replace(/"/g,'&quot;')}" placeholder="الجوال" style="border:1px solid #e94560;border-radius:4px;padding:5px 7px;width:100%;"></td>
     <td><textarea class="excel-textarea" id="sr2i-notes-${id}" style="border:1px solid #e94560;border-radius:4px;padding:5px 7px;width:100%;min-height:38px;">${r.notes||''}</textarea></td>
@@ -5628,6 +5654,17 @@ function sr2CancelInlineEdit(id) {
   salesRecordsInit();
 }
 
+function sr2iRecalcRemaining(id) {
+  const amount = parseFloat(document.getElementById('sr2i-amount-' + id)?.value) || 0;
+  const paid = parseFloat(document.getElementById('sr2i-paid-' + id)?.value) || 0;
+  const el = document.getElementById('sr2i-remaining-' + id);
+  if (el) {
+    const remaining = amount - paid;
+    el.textContent = remaining.toLocaleString('ar-SA') + ' ﷼';
+    el.style.color = remaining > 0 ? '#c53030' : '#38a169';
+  }
+}
+
 async function sr2SaveInlineEdit(id) {
   const r = salesData.find(x => x._id === id);
   if (!r) return;
@@ -5671,6 +5708,7 @@ async function sr2SaveInlineEdit(id) {
   r.bookingDates = bDates;
   r.month = fdObj.getMonth()+1; r.year = fdObj.getFullYear(); r.day = fdObj.getDate();
   r.amount = parseFloat(document.getElementById('sr2i-amount-' + id)?.value) || 0;
+  r.paidAmount = parseFloat(document.getElementById('sr2i-paid-' + id)?.value) || 0;
   r.section = document.getElementById('sr2i-section-' + id)?.value || r.section;
   r.source = document.getElementById('sr2i-source-' + id)?.value || r.source;
   r.status = document.getElementById('sr2i-status-' + id)?.value || r.status;
