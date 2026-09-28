@@ -44,6 +44,33 @@
   .tab-dropdown-item:hover { background: #f7fafc; color: #1a1a2e; }
   .tab-dropdown-item.active { color: #e94560; background: #fff5f6; font-weight: 700; }
 
+  /* ===== المصروفات وصافي الأرباح (تقرير المبيعات) ===== */
+  .sr-exp-wrap { display: none; grid-template-columns: minmax(0, 620px); gap: 10px; margin-top: 10px; }
+  #exp-modal-overlay .modal { width: 660px; padding: 22px; }
+  #exp-modal-overlay .sr-exp-card { border: none; }
+  .s-kpi.clickable { cursor: pointer; transition: transform .12s, box-shadow .12s; }
+  .s-kpi.clickable:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+  .sr-exp-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; }
+  .sr-exp-table { width: 100%; border-collapse: collapse; }
+  .sr-exp-table th { background: #c7d2f5; color: #1a1a2e; padding: 9px; font-size: 14px; font-weight: 800; text-align: center; }
+  .sr-exp-table td { border-top: 1px solid #e2e8f0; padding: 4px 10px; font-size: 13px; }
+  .sr-exp-table td.exp-amt { text-align: center; font-weight: 800; width: 140px; }
+  .sr-exp-table td.exp-del { width: 34px; text-align: center; }
+  .sr-exp-table input { border: 1px solid transparent; background: transparent; font: inherit; color: inherit; padding: 5px 6px; width: 100%; border-radius: 5px; }
+  .sr-exp-table input:hover, .sr-exp-table input:focus { border-color: #93a3e0; background: #f8faff; outline: none; }
+  .sr-exp-table td.exp-amt input { text-align: center; font-weight: 800; }
+  .sr-exp-table tr.exp-total td { background: #eef1fb; font-weight: 800; font-size: 14px; }
+  .sr-exp-actions { display: flex; gap: 8px; padding: 8px 10px; border-top: 1px solid #e2e8f0; flex-wrap: wrap; align-items: center; }
+  .sr-exp-btn { padding: 6px 14px; font-size: 12px; font-weight: 700; border-radius: 6px; border: 1px solid #93a3e0; background: #eef1fb; color: #1a1a2e; cursor: pointer; }
+  .sr-exp-btn:hover { background: #dfe5fa; }
+  .sr-exp-del-btn { border: none; background: transparent; color: #c53030; cursor: pointer; font-size: 14px; }
+  .sr-exp-summary { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; justify-content: center; }
+  .sr-exp-line { display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: #4a5568; font-weight: 600; }
+  .sr-exp-line b { font-size: 16px; color: #1a1a2e; }
+  .sr-exp-net { border-top: 2px solid #1a1a2e; padding-top: 12px; font-size: 16px; font-weight: 800; color: #1a1a2e; }
+  .sr-exp-net b { font-size: 22px; }
+  @media (max-width: 768px) { .sr-exp-wrap { grid-template-columns: minmax(0, 1fr); } }
+
   /* CONTENT */
   .content { padding: 28px 32px; }
 
@@ -162,7 +189,7 @@
     body.print-sales-report #tab-sales-report { display: block !important; }
     body.print-sales-report #tab-sales-report .content { padding: 0 !important; margin: 0 !important; }
     /* KPIs */
-    body.print-sales-report #sr-kpis { display: grid !important; grid-template-columns: repeat(5,1fr) !important; gap: 3px !important; margin-bottom: 4px !important; }
+    body.print-sales-report #sr-kpis { display: grid !important; grid-template-columns: repeat(6,1fr) !important; gap: 3px !important; margin-bottom: 4px !important; }
     body.print-sales-report .s-kpi { padding: 4px 8px !important; box-shadow: none !important; border: 1px solid #dde3ec !important; break-inside: avoid; }
     body.print-sales-report .s-kpi-val { font-size: 13px !important; }
     body.print-sales-report .s-kpi-lbl { font-size: 7px !important; margin-top: 0 !important; }
@@ -187,6 +214,18 @@
     /* Donuts must render as true circles, not stretched ellipses */
     body.print-sales-report #tab-sales-report > div:nth-child(4) { align-items: center !important; }
     body.print-sales-report #tab-sales-report > div:nth-child(4) > div > div:last-child { max-height: 115px !important; display: flex !important; justify-content: center !important; }
+    /* المصروفات وصافي الأرباح */
+    body.print-sales-report #sr-expenses { display: grid !important; grid-template-columns: minmax(0, 60%) !important; gap: 4mm !important; margin-top: 4mm !important; break-inside: avoid; }
+    body.print-sales-report #sr-expenses .exp-noprint { display: none !important; }
+    body.print-sales-report #sr-expenses .sr-exp-card, body.print-sales-report #sr-expenses .sr-exp-summary { box-shadow: none !important; border: 1px solid #dde3ec !important; }
+    body.print-sales-report #sr-expenses .sr-exp-table th { font-size: 9px !important; padding: 3px !important; }
+    body.print-sales-report #sr-expenses .sr-exp-table td { font-size: 8px !important; padding: 1px 6px !important; }
+    body.print-sales-report #sr-expenses .sr-exp-table input { border: none !important; background: transparent !important; padding: 0 !important; font-size: 8px !important; }
+    body.print-sales-report #sr-expenses .sr-exp-summary { padding: 6px 10px !important; gap: 4px !important; }
+    body.print-sales-report #sr-expenses .sr-exp-line { font-size: 8px !important; }
+    body.print-sales-report #sr-expenses .sr-exp-line b { font-size: 10px !important; }
+    body.print-sales-report #sr-expenses .sr-exp-net { font-size: 9px !important; padding-top: 4px !important; }
+    body.print-sales-report #sr-expenses .sr-exp-net b { font-size: 13px !important; }
 
     /* ── Print: مقارنة المبيعات (body.print-cmp-sales) ── */
     body.print-cmp-sales #tab-sales-compare { display: block !important; }
@@ -301,6 +340,7 @@
   .s-kpi.blue { border-right-color:#3182ce; }
   .s-kpi.purple { border-right-color:#6b46c1; }
   .s-kpi.orange { border-right-color:#dd6b20; }
+  .s-kpi.rose { border-right-color:#c53030; }
   .s-kpi-val { font-size:18px; font-weight:800; color:#1a1a2e; line-height:1.1; }
   .s-kpi-lbl { font-size:10px; color:#718096; font-weight:600; margin-top:3px; }
 
@@ -934,7 +974,7 @@
   </div>
 
   <!-- KPI Row -->
-  <div id="sr-kpis" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px;"></div>
+  <div id="sr-kpis" style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:10px;"></div>
 
   <!-- ROW 1: Calendar + 2 bar charts stacked -->
   <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:10px;margin-bottom:10px;">
@@ -975,6 +1015,20 @@
         <canvas id="sr-source-pie" height="155"></canvas>
       </div>
     </div>
+  </div>
+
+  <!-- المصروفات وصافي الأرباح -->
+  <div class="sr-exp-wrap" id="sr-expenses"></div>
+</div>
+
+<!-- نافذة المصاريف الثابتة (تفتح عند الضغط على مربع إجمالي المصروفات) -->
+<div class="modal-overlay" id="exp-modal-overlay" onclick="if(event.target===this)expCloseModal()">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div style="font-size:16px;font-weight:800;color:#1a1a2e;">💸 المصاريف الثابتة</div>
+      <button onclick="expCloseModal()" style="border:none;background:#edf2f7;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer;">✕ إغلاق</button>
+    </div>
+    <div id="exp-modal-body"></div>
   </div>
 </div>
 
@@ -4647,7 +4701,215 @@ async function salesReportInit() {
   try { srRenderKPIs(filtered, titleLabel); } catch(e) { console.error('srRenderKPIs error:', e); }
   try { srRenderCalendar(filtered, ft); } catch(e) { console.error('srRenderCalendar error:', e); const cal=document.getElementById('sr-calendar'); if(cal) cal.innerHTML='<div style="padding:20px;color:#e53e3e;font-size:12px;">⚠️ تعذر عرض الكالندر — تحقق من بيانات السجلات (اسم/تاريخ مفقود)</div>'; }
   try { srRenderCharts(filtered); } catch(e) { console.error('srRenderCharts error:', e); }
+  try { await expRenderPanel(ft, filtered.reduce((s,r)=>s+(r.amount||0),0), titleLabel); } catch(e) { console.error('expRenderPanel error:', e); }
 }
+
+// ==================== المصروفات وصافي الأرباح (تقرير المبيعات) ====================
+// قائمة المصاريف الثابتة الافتراضية لكل شهر — تظهر تلقائياً وتُعدَّل/تُضاف لكل شهر على حدة
+const EXP_DEFAULTS = [
+  { name: 'مصاريف الكهرباء', amount: 2357 },
+  { name: 'مصاريف المياه',   amount: 1000 },
+  { name: 'مرتب الحارس',     amount: 1300 },
+  { name: 'منظفات',          amount: 346 },
+  { name: 'صيانة',           amount: 250 },
+  { name: 'عمولة بنكية',     amount: 230 },
+  { name: 'حملة تسويق',      amount: 3500 },
+  { name: 'باقة نت للحارس',  amount: 70 }
+];
+const EXP_LS_KEY = 'smo_monthly_expenses';
+const EXP_DIRTY_KEY = 'smo_monthly_expenses_dirty';
+let expStore = {};      // { 'YYYY-MM': [{name, amount}] } — الأشهر التي تم تعديلها فقط
+let expLoaded = false;
+let expState = null;    // حالة اللوحة المعروضة حالياً
+
+function expLsRead(key, fallback) {
+  try { const v = JSON.parse(localStorage.getItem(key)); return (v === null || v === undefined) ? fallback : v; }
+  catch (e) { return fallback; }
+}
+function expMarkDirty(key, isDirty) {
+  const set = new Set(expLsRead(EXP_DIRTY_KEY, []));
+  if (isDirty) set.add(key); else set.delete(key);
+  try { localStorage.setItem(EXP_DIRTY_KEY, JSON.stringify([...set])); } catch (e) {}
+}
+async function expPushCloud(key) {
+  if (!(USE_CLOUD && isOnline)) return false;
+  try {
+    const { error } = await sbClient.from('monthly_expenses').upsert({ monthKey: key, items: expStore[key] || [] }, { onConflict: 'monthKey' });
+    if (error) { console.warn('Expenses upsert failed:', error.message); showToast('❌ Supabase: ' + error.message.slice(0, 60), 'warn'); return false; }
+    return true;
+  } catch (e) { console.warn('Expenses upsert error:', e.message); return false; }
+}
+async function expLoadAll() {
+  if (expLoaded) return;
+  expStore = expLsRead(EXP_LS_KEY, {});
+  const dirty = new Set(expLsRead(EXP_DIRTY_KEY, []));
+  if (USE_CLOUD && isOnline) {
+    try {
+      const { data: rows, error } = await sbClient.from('monthly_expenses').select('*');
+      if (!error && rows) {
+        // النسخة المحلية للأشهر التي فشل رفعها سابقاً تتقدّم على السحابة حتى لا تضيع
+        rows.forEach(r => { if (!dirty.has(r.monthKey)) expStore[r.monthKey] = Array.isArray(r.items) ? r.items : []; });
+        expLoaded = true;
+        for (const k of dirty) { if (await expPushCloud(k)) expMarkDirty(k, false); }
+        try { localStorage.setItem(EXP_LS_KEY, JSON.stringify(expStore)); } catch (e) {}
+        return;
+      }
+      if (error) console.warn('Expenses load error:', error.message);
+    } catch (e) { console.warn('Expenses load exception:', e.message); }
+  }
+  // غير متصل أو الجدول غير موجود: استخدم النسخة المحلية وأعد المحاولة بالعرض القادم
+}
+async function expPersist(key) {
+  try { localStorage.setItem(EXP_LS_KEY, JSON.stringify(expStore)); } catch (e) {}
+  const ok = await expPushCloud(key);
+  expMarkDirty(key, !ok);
+  if (!ok && !(USE_CLOUD && isOnline)) showToast('⚠️ حُفظت المصاريف محلياً — غير متصل', 'warn');
+}
+
+function expMonthKey(y, m) { return y + '-' + String(m).padStart(2, '0'); }
+function expItemsFor(key) {
+  const saved = expStore[key];
+  if (Array.isArray(saved)) return saved.map(x => ({ name: x.name || '', amount: Number(x.amount) || 0 }));
+  return EXP_DEFAULTS.map(x => ({ ...x }));
+}
+function expMonthsInRange(from, to) {
+  const keys = [];
+  let [y, m] = from.split('-').map(Number);
+  const [ty, tm] = to.split('-').map(Number);
+  while ((y < ty || (y === ty && m <= tm)) && keys.length < 36) {
+    keys.push(expMonthKey(y, m));
+    m++; if (m > 12) { m = 1; y++; }
+  }
+  return keys;
+}
+const expFmt = n => (Number(n) || 0).toLocaleString('ar-SA');
+
+async function expRenderPanel(ft, salesTotal, titleLabel) {
+  const host = document.getElementById('sr-expenses');
+  if (!host) return;
+  await expLoadAll();
+  let keys = [], editable = false, note = '';
+  if (ft === 'month') {
+    const [yy, mm] = document.getElementById('sr-month').value.split('-').map(Number);
+    keys = [expMonthKey(yy, mm)];
+    editable = true;
+  } else {
+    const from = document.getElementById('sr-from').value;
+    const to = document.getElementById('sr-to').value;
+    if (!from || !to || from > to) { host.innerHTML = ''; expState = null; return; }
+    keys = expMonthsInRange(from, to);
+    editable = keys.length === 1;
+    note = editable
+      ? 'المصاريف شهرية وتُحتسب للشهر كاملاً حتى لو الفترة جزء منه.'
+      : 'الفترة تشمل أكثر من شهر — تُجمع مصاريف كل شهر كاملة. للتعديل استخدم العرض الشهري.';
+  }
+  let items;
+  if (editable) items = expItemsFor(keys[0]);
+  else {
+    const agg = {};
+    keys.forEach(k => expItemsFor(k).forEach(it => { agg[it.name] = (agg[it.name] || 0) + it.amount; }));
+    items = Object.entries(agg).map(([name, amount]) => ({ name, amount }));
+  }
+  expState = { key: keys[0], editable, items, salesTotal, titleLabel, note, isDefault: editable && !Array.isArray(expStore[keys[0]]) };
+  expDraw();
+}
+
+function expTableHTML(editable) {
+  const st = expState;
+  const rows = st.items.map((it, i) => editable
+    ? `<tr>
+        <td><input type="text" value="${escH(it.name)}" placeholder="اسم المصروف" oninput="expFieldChanged(${i},'name',this.value)" onchange="expCommit()"></td>
+        <td class="exp-amt"><input type="number" min="0" step="any" value="${it.amount}" oninput="expFieldChanged(${i},'amount',this.value)" onchange="expCommit()"></td>
+        <td class="exp-del"><button class="sr-exp-del-btn" title="حذف المصروف" onclick="expDeleteRow(${i})">✕</button></td>
+      </tr>`
+    : `<tr><td>${escH(it.name)}</td><td class="exp-amt">${expFmt(it.amount)}</td><td class="exp-del"></td></tr>`
+  ).join('');
+  return `<table class="sr-exp-table">
+      <thead><tr><th colspan="3">مصاريف ثابتة — ${escH(st.titleLabel || '')}</th></tr></thead>
+      <tbody>
+        ${rows}
+        <tr class="exp-total"><td>الإجمالي</td><td class="exp-amt exp-total-cell"></td><td class="exp-del"></td></tr>
+      </tbody>
+    </table>`;
+}
+
+function expDraw() {
+  const st = expState;
+  if (!st) return;
+  // نسخة للقراءة فقط تظهر بالطباعة فقط (مخفية على الشاشة)
+  const host = document.getElementById('sr-expenses');
+  if (host) host.innerHTML = `<div class="sr-exp-card">${expTableHTML(false)}</div>`;
+  // النسخة القابلة للتعديل داخل النافذة المنبثقة
+  const body = document.getElementById('exp-modal-body');
+  if (body) body.innerHTML = `
+    <div class="sr-exp-card">
+      ${expTableHTML(st.editable)}
+      <div class="sr-exp-actions">
+        ${st.editable ? `<button class="sr-exp-btn" onclick="expAddRow()">＋ إضافة مصروف</button><button class="sr-exp-btn" onclick="expReset()">↺ القيم الافتراضية</button>` : ''}
+        <span style="font-size:11px;color:#718096;">${st.editable && st.isDefault ? 'قيم افتراضية — عدّل أي رقم ليُحفظ لهذا الشهر. ' : ''}${escH(st.note || '')}</span>
+      </div>
+    </div>`;
+  expUpdateTotals();
+}
+
+function expOpenModal() {
+  if (!expState) { showToast('اختر الفترة أولاً لعرض المصاريف', 'info'); return; }
+  expDraw();
+  document.getElementById('exp-modal-overlay').classList.add('open');
+}
+function expCloseModal() {
+  document.getElementById('exp-modal-overlay').classList.remove('open');
+}
+
+function expUpdateTotals() {
+  if (!expState) return;
+  const total = expState.items.reduce((s, it) => s + (Number(it.amount) || 0), 0);
+  const net = (expState.salesTotal || 0) - total;
+  const set = (id, txt, color) => { const el = document.getElementById(id); if (el) { el.textContent = txt; if (color) el.style.color = color; } };
+  document.querySelectorAll('.exp-total-cell').forEach(el => { el.textContent = expFmt(total); });
+  set('exp-kpi-exp', expFmt(total) + ' ﷼');
+  set('exp-kpi-net', expFmt(net) + ' ﷼', net >= 0 ? '#047857' : '#c53030');
+  const card = document.getElementById('exp-kpi-net-card');
+  if (card) card.style.borderRightColor = net >= 0 ? '#38a169' : '#c53030';
+}
+
+function expFieldChanged(idx, field, val) {
+  if (!expState || !expState.editable) return;
+  const it = expState.items[idx]; if (!it) return;
+  if (field === 'amount') it.amount = parseFloat(val) || 0; else it.name = val;
+  expUpdateTotals();
+}
+function expCommit() {
+  if (!expState || !expState.editable) return;
+  expStore[expState.key] = expState.items
+    .filter(it => (it.name || '').trim() || it.amount)
+    .map(it => ({ name: (it.name || '').trim(), amount: Number(it.amount) || 0 }));
+  expState.isDefault = false;
+  expPersist(expState.key);
+}
+function expAddRow() {
+  if (!expState || !expState.editable) return;
+  expState.items.push({ name: '', amount: 0 });
+  expDraw();
+  const inputs = document.querySelectorAll('#exp-modal-body .sr-exp-table td:first-child input');
+  if (inputs.length) inputs[inputs.length - 1].focus();
+}
+function expDeleteRow(idx) {
+  if (!expState || !expState.editable) return;
+  const it = expState.items[idx]; if (!it) return;
+  if (!confirm('حذف "' + (it.name || 'هذا المصروف') + '" من مصاريف هذا الشهر؟')) return;
+  expState.items.splice(idx, 1);
+  expCommit();
+  expDraw();
+}
+function expReset() {
+  if (!expState || !expState.editable) return;
+  if (!confirm('إعادة مصاريف هذا الشهر للقائمة الافتراضية؟ ستضيع تعديلاتك على هذا الشهر.')) return;
+  expState.items = EXP_DEFAULTS.map(x => ({ ...x }));
+  expCommit();
+  expDraw();
+}
+// ==================== END المصروفات ====================
 
 function srRenderKPIs(d, label) {
   const total=d.reduce((s,r)=>s+r.amount,0);
@@ -4662,8 +4924,9 @@ function srRenderKPIs(d, label) {
     <div class="s-kpi"><div class="s-kpi-val">${total.toLocaleString('ar-SA')} ﷼</div><div class="s-kpi-lbl">إجمالي المبيعات</div></div>
     <div class="s-kpi green"><div class="s-kpi-val">${cnt}</div><div class="s-kpi-lbl">عدد الحجوزات</div></div>
     <div class="s-kpi blue"><div class="s-kpi-val">${days}</div><div class="s-kpi-lbl">أيام الحجز</div></div>
-    <div class="s-kpi purple"><div class="s-kpi-val">${avg.toLocaleString('ar-SA')} ﷼</div><div class="s-kpi-lbl">متوسط قيمة الحجز</div></div>
     <div class="s-kpi orange"><div class="s-kpi-val">${topSrc?topSrc[0]:'-'}</div><div class="s-kpi-lbl">أعلى مصدر (${topSrc?topSrc[1]:0} حجز)</div></div>
+    <div class="s-kpi rose clickable" onclick="expOpenModal()" title="اضغط لعرض وتعديل المصاريف الثابتة"><div class="s-kpi-val" id="exp-kpi-exp">—</div><div class="s-kpi-lbl">إجمالي المصروفات ✏️ (اضغط للتفاصيل)</div></div>
+    <div class="s-kpi" id="exp-kpi-net-card"><div class="s-kpi-val" id="exp-kpi-net">—</div><div class="s-kpi-lbl">صافي الأرباح</div></div>
   `;
 }
 
