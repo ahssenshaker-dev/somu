@@ -526,8 +526,9 @@
     <div style="font-size:20px;font-weight:800;color:#1a1a2e;margin-bottom:4px;">سمو</div>
     <div style="font-size:12px;color:#718096;margin-bottom:28px;">أدخل رمز الدخول PIN</div>
     <div style="display:flex;gap:8px;margin-bottom:20px;">
-      <button id="pin-role-admin" style="flex:1;padding:10px;border:2px solid #e94560;border-radius:10px;background:#e94560;color:#fff;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;">🔐 مدير</button>
-      <button id="pin-role-staff" style="flex:1;padding:10px;border:2px solid #e2e8f0;border-radius:10px;background:#f7fafc;color:#4a5568;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;">👤 موظف</button>
+      <button id="pin-role-admin" style="flex:1;padding:10px 4px;border:2px solid #e94560;border-radius:10px;background:#e94560;color:#fff;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;">🔐 مدير</button>
+      <button id="pin-role-staff" style="flex:1;padding:10px 4px;border:2px solid #e2e8f0;border-radius:10px;background:#f7fafc;color:#4a5568;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;">👤 موظف</button>
+      <button id="pin-role-accounts" style="flex:1;padding:10px 4px;border:2px solid #e2e8f0;border-radius:10px;background:#f7fafc;color:#4a5568;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;">💼 الحسابات</button>
     </div>
     <div style="display:flex;justify-content:center;gap:12px;margin-bottom:24px;" id="pin-dots">
       <div class="pin-dot"></div><div class="pin-dot"></div>
@@ -559,8 +560,9 @@
     <div style="font-size:18px;font-weight:800;color:#1a1a2e;margin-bottom:6px;">⚙️ تغيير رمز الدخول PIN</div>
     <div style="font-size:12px;color:#718096;margin-bottom:20px;">أدخل الرمز الحالي ثم الرمز الجديد</div>
     <div style="display:flex;gap:8px;margin-bottom:16px;">
-      <button id="pcm-role-admin" onclick="pcmSelectRole('admin')" style="flex:1;padding:8px;border:2px solid #e94560;border-radius:8px;background:#e94560;color:#fff;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;">🔐 مدير</button>
-      <button id="pcm-role-staff" onclick="pcmSelectRole('staff')" style="flex:1;padding:8px;border:2px solid #e2e8f0;border-radius:8px;background:#f7fafc;color:#4a5568;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;">👤 موظف</button>
+      <button id="pcm-role-admin" onclick="pcmSelectRole('admin')" style="flex:1;padding:8px 2px;border:2px solid #e94560;border-radius:8px;background:#e94560;color:#fff;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;">🔐 مدير</button>
+      <button id="pcm-role-staff" onclick="pcmSelectRole('staff')" style="flex:1;padding:8px 2px;border:2px solid #e2e8f0;border-radius:8px;background:#f7fafc;color:#4a5568;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;">👤 موظف</button>
+      <button id="pcm-role-accounts" onclick="pcmSelectRole('accounts')" style="flex:1;padding:8px 2px;border:2px solid #e2e8f0;border-radius:8px;background:#f7fafc;color:#4a5568;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;">💼 الحسابات</button>
     </div>
     <div style="margin-bottom:12px;">
       <label style="font-size:12px;color:#718096;display:block;margin-bottom:4px;text-align:right;">الرمز الحالي</label>
@@ -957,7 +959,7 @@
   <div class="s-toolbar" style="padding:10px 16px;gap:10px;">
     <span class="s-label" style="font-size:13px;">📊 تقرير المبيعات</span>
     <select class="s-select" id="sr-filter-type" onchange="salesReportInit()" style="padding:5px 10px;font-size:12px;">
-      <option value="month">شهري</option><option value="range">فترة مخصصة</option>
+      <option value="month">شهري</option><option value="range">فترة مخصصة</option><option value="all">الفترة كاملة</option>
     </select>
     <select class="s-select" id="sr-month" onchange="salesReportInit()" style="padding:5px 10px;font-size:12px;">
       <option value="2026-7">يوليو 2026</option><option value="2026-8" selected>أغسطس 2026</option>
@@ -1029,6 +1031,17 @@
       <button onclick="expCloseModal()" style="border:none;background:#edf2f7;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer;">✕ إغلاق</button>
     </div>
     <div id="exp-modal-body"></div>
+  </div>
+</div>
+
+<!-- نافذة إجمالي المدفوع والمتبقي (تفتح عند الضغط على مربع إجمالي المبيعات) -->
+<div class="modal-overlay" id="sr-totals-modal-overlay" onclick="if(event.target===this)srCloseTotalsModal()">
+  <div class="modal" style="width:420px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div style="font-size:16px;font-weight:800;color:#1a1a2e;">💳 المدفوع والمتبقي</div>
+      <button onclick="srCloseTotalsModal()" style="border:none;background:#edf2f7;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer;">✕ إغلاق</button>
+    </div>
+    <div id="sr-totals-modal-body" style="display:flex;flex-direction:column;gap:10px;"></div>
   </div>
 </div>
 
@@ -4698,6 +4711,7 @@ async function salesReportInit() {
   const rw = document.getElementById('sr-range-wrap');
   const msel = document.getElementById('sr-month');
   if(ft==='range'){rw.style.display='flex';msel.style.display='none';}
+  else if(ft==='all'){rw.style.display='none';msel.style.display='none';}
   else{rw.style.display='none';msel.style.display='';}
 
   let filtered;
@@ -4706,6 +4720,9 @@ async function salesReportInit() {
     const [yy,mm]=document.getElementById('sr-month').value.split('-').map(Number);
     filtered=salesGetFiltered(mm,yy);
     titleLabel=MONTH_NAMES[mm]+' '+yy;
+  } else if(ft==='all'){
+    filtered=[...salesData];
+    titleLabel='الفترة كاملة';
   } else {
     const from=document.getElementById('sr-from').value;
     const to=document.getElementById('sr-to').value;
@@ -4811,6 +4828,12 @@ async function expRenderPanel(ft, salesTotal, titleLabel) {
     const [yy, mm] = document.getElementById('sr-month').value.split('-').map(Number);
     keys = [expMonthKey(yy, mm)];
     editable = true;
+  } else if (ft === 'all') {
+    const monthKeys = new Set(salesData.map(r => (r.date || '').slice(0, 7)).filter(Boolean));
+    keys = [...monthKeys].sort();
+    if (!keys.length) { host.innerHTML = ''; expState = null; return; }
+    editable = false;
+    note = 'تُجمع مصاريف كل الأشهر اللي فيها حجوزات. للتعديل استخدم العرض الشهري.';
   } else {
     const from = document.getElementById('sr-from').value;
     const to = document.getElementById('sr-to').value;
@@ -4929,7 +4952,12 @@ function expReset() {
 }
 // ==================== END المصروفات ====================
 
+let srCurrentFiltered = [];
+let srCurrentLabel = '';
+
 function srRenderKPIs(d, label) {
+  srCurrentFiltered = d;
+  srCurrentLabel = label;
   const total=d.reduce((s,r)=>s+r.amount,0);
   const cnt=d.length;
   const days=new Set(d.map(r=>r.date)).size;
@@ -4939,13 +4967,72 @@ function srRenderKPIs(d, label) {
   const avg=cnt?Math.round(total/cnt):0;
   const maxDay=days?Math.round(total/days):0;
   document.getElementById('sr-kpis').innerHTML=`
-    <div class="s-kpi"><div class="s-kpi-val">${total.toLocaleString('ar-SA')} ﷼</div><div class="s-kpi-lbl">إجمالي المبيعات</div></div>
+    <div class="s-kpi clickable" onclick="srOpenTotalsModal()" title="اضغط لعرض إجمالي المدفوع والمتبقي"><div class="s-kpi-val">${total.toLocaleString('ar-SA')} ﷼</div><div class="s-kpi-lbl">إجمالي المبيعات 💳 (اضغط للتفاصيل)</div></div>
     <div class="s-kpi green"><div class="s-kpi-val">${cnt}</div><div class="s-kpi-lbl">عدد الحجوزات</div></div>
     <div class="s-kpi blue"><div class="s-kpi-val">${days}</div><div class="s-kpi-lbl">أيام الحجز</div></div>
     <div class="s-kpi orange"><div class="s-kpi-val">${topSrc?topSrc[0]:'-'}</div><div class="s-kpi-lbl">أعلى مصدر (${topSrc?topSrc[1]:0} حجز)</div></div>
     <div class="s-kpi rose clickable" onclick="expOpenModal()" title="اضغط لعرض وتعديل المصاريف الثابتة"><div class="s-kpi-val" id="exp-kpi-exp">—</div><div class="s-kpi-lbl">إجمالي المصروفات ✏️ (اضغط للتفاصيل)</div></div>
     <div class="s-kpi" id="exp-kpi-net-card"><div class="s-kpi-val" id="exp-kpi-net">—</div><div class="s-kpi-lbl">صافي الأرباح</div></div>
   `;
+}
+
+// ==================== نافذة إجمالي المدفوع / المتبقي (تقرير المبيعات) ====================
+function srOpenTotalsModal() {
+  const d = srCurrentFiltered || [];
+  const total = d.reduce((s,r) => s + (r.amount||0), 0);
+  const paid = d.reduce((s,r) => s + (r.paidAmount||0), 0);
+  const remaining = total - paid;
+  const body = document.getElementById('sr-totals-modal-body');
+  if (body) {
+    body.innerHTML = `
+      <div class="sr-exp-line"><span>الفترة</span><b>${escH(srCurrentLabel||'')}</b></div>
+      <div class="sr-exp-line"><span>عدد الحجوزات</span><b>${d.length}</b></div>
+      <div class="sr-exp-line"><span>إجمالي المبيعات</span><b>${total.toLocaleString('ar-SA')} ﷼</b></div>
+      <div class="sr-exp-line"><span>إجمالي المدفوع</span><b style="color:#047857;">${paid.toLocaleString('ar-SA')} ﷼</b></div>
+      <div class="sr-exp-line sr-exp-net"><span>إجمالي المتبقي</span><b style="color:${remaining>0?'#c53030':'#38a169'};">${remaining.toLocaleString('ar-SA')} ﷼</b></div>
+    `;
+  }
+  document.getElementById('sr-totals-modal-overlay').classList.add('open');
+}
+function srCloseTotalsModal() {
+  document.getElementById('sr-totals-modal-overlay').classList.remove('open');
+}
+
+function srRenderYearlyCalendar(d) {
+  // اجمع عدد الحجوزات وإجمالي مبلغها لكل شهر (سنة-شهر) بناءً على تواريخ الحجز الفعلية
+  const byMonth = {}; // 'YYYY-MM' -> { count, total, men, women, both }
+  d.forEach(r => {
+    const dates = (r.bookingDates && r.bookingDates.length) ? r.bookingDates : [r.date];
+    const seen = new Set();
+    dates.filter(Boolean).forEach(dt => {
+      const key = dt.slice(0, 7);
+      if (seen.has(key)) return; // لا تكرر نفس الحجز بنفس الشهر لو له أكثر من تاريخ بنفس الشهر
+      seen.add(key);
+      if (!byMonth[key]) byMonth[key] = { count: 0, total: 0 };
+      byMonth[key].count++;
+      byMonth[key].total += (r.amount || 0);
+    });
+  });
+  const keys = Object.keys(byMonth).sort();
+  if (!keys.length) {
+    document.getElementById('sr-calendar').innerHTML = '<div style="padding:20px;color:#718096;font-size:12px;text-align:center;">لا توجد حجوزات لعرضها</div>';
+    return;
+  }
+  const thisMonthKey = new Date().toISOString().slice(0, 7);
+  let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;">';
+  keys.forEach(key => {
+    const [yy, mm] = key.split('-').map(Number);
+    const info = byMonth[key];
+    const isThis = key === thisMonthKey;
+    html += `<div style="background:${isThis ? '#fff5f6' : '#f7fafc'};border:1px solid ${isThis ? '#e94560' : '#e2e8f0'};border-radius:8px;padding:8px 6px;text-align:center;">
+      <div style="font-size:11px;font-weight:700;color:#4a5568;margin-bottom:4px;">${MONTH_NAMES[mm]} ${yy}</div>
+      <div style="font-size:16px;font-weight:800;color:#1a1a2e;">${info.count}</div>
+      <div style="font-size:9px;color:#a0aec0;margin-bottom:3px;">حجز</div>
+      <div style="font-size:10px;font-weight:700;color:#047857;">${info.total.toLocaleString('ar-SA')} ﷼</div>
+    </div>`;
+  });
+  html += '</div>';
+  document.getElementById('sr-calendar').innerHTML = html;
 }
 
 function srRenderCalendar(d, ft) {
@@ -4959,6 +5046,9 @@ function srRenderCalendar(d, ft) {
       if(!bookingsByDate[dt].find(x=>x._id===r._id)) bookingsByDate[dt].push(r);
     });
   });
+
+  // ── الفترة كاملة: شبكة سنوية — عدد الحجوزات وإجمالي المبلغ لكل شهر بدل تقويم يومي ──
+  if (ft === 'all') { srRenderYearlyCalendar(d); return; }
 
   // Get the month to display
   let year=2026, month;
@@ -5322,7 +5412,8 @@ function cmpRenderCharts(aD,bD,aL,bL){
 // ==================== PIN LOGIN SYSTEM ====================
 const PIN_CONFIG = {
   admin: { pin: '1234', label: 'مدير', roles: ['dashboard','records','report','entry','sales-records','sales-report','sales-compare','maintenance-entry','maintenance-records'] },
-  staff: { pin: '5678', label: 'موظف', roles: ['entry','sales-records','records','sales-report','maintenance-entry','maintenance-records'] }
+  staff: { pin: '5678', label: 'موظف', roles: ['entry','sales-records','records','sales-report','maintenance-entry','maintenance-records'] },
+  accounts: { pin: '2690', label: 'الحسابات', roles: ['dashboard','records','report','entry','sales-records','sales-report','sales-compare','maintenance-entry','maintenance-records'] }
 };
 
 let pinCurrentRole = 'admin';
@@ -5335,7 +5426,7 @@ function pinSelectRole(role) {
   pinUpdateDots();
   document.getElementById('pin-error').textContent = '';
   document.getElementById('pin-role-label').textContent = 'تسجيل الدخول كـ ' + PIN_CONFIG[role].label;
-  ['admin','staff'].forEach(r => {
+  ['admin','staff','accounts'].forEach(r => {
     const btn = document.getElementById('pin-role-' + r);
     if (r === role) { btn.style.background='#e94560'; btn.style.color='#fff'; btn.style.borderColor='#e94560'; }
     else { btn.style.background='#f7fafc'; btn.style.color='#4a5568'; btn.style.borderColor='#e2e8f0'; }
@@ -5401,8 +5492,8 @@ function pinApplyPermissions() {
     const maintAccess = ['maintenance-entry','maintenance-records'].some(r => PIN_CONFIG[pinLoggedInRole].roles.includes(r));
     maintParent.style.display = maintAccess ? '' : 'none';
   }
-  // Hide/show header buttons based on role
-  const isAdmin = pinLoggedInRole === 'admin';
+  // Hide/show header buttons based on role (الحسابات لها نفس صلاحيات المدير الكاملة)
+  const isAdmin = pinLoggedInRole === 'admin' || pinLoggedInRole === 'accounts';
   const addBtn = document.querySelector('.btn-add');
   if (addBtn) addBtn.style.display = isAdmin ? '' : 'none';
   const exportBtns = document.querySelectorAll('.btn-secondary');
@@ -5428,6 +5519,8 @@ document.addEventListener('DOMContentLoaded', function() {
   if (adminBtn) adminBtn.addEventListener('click', function() { pinSelectRole('admin'); });
   const staffBtn = document.getElementById('pin-role-staff');
   if (staffBtn) staffBtn.addEventListener('click', function() { pinSelectRole('staff'); });
+  const accountsBtn = document.getElementById('pin-role-accounts');
+  if (accountsBtn) accountsBtn.addEventListener('click', function() { pinSelectRole('accounts'); });
   // Change PIN button
   const changeBtn = document.getElementById('pin-change-btn');
   if (changeBtn) changeBtn.addEventListener('click', pinShowChangeModal);
@@ -5465,7 +5558,7 @@ function pinHideChangeModal() {
 
 function pcmSelectRole(role) {
   pcmCurrentRole = role;
-  ['admin','staff'].forEach(r => {
+  ['admin','staff','accounts'].forEach(r => {
     const btn = document.getElementById('pcm-role-' + r);
     if (r === role) { btn.style.background='#e94560'; btn.style.color='#fff'; btn.style.borderColor='#e94560'; }
     else { btn.style.background='#f7fafc'; btn.style.color='#4a5568'; btn.style.borderColor='#e2e8f0'; }
@@ -5488,7 +5581,7 @@ function pcmSave() {
     errEl.textContent = '❌ رمز التأكيد غير متطابق'; return;
   }
   PIN_CONFIG[pcmCurrentRole].pin = newPin;
-  try { localStorage.setItem('smo_pins', JSON.stringify({admin: PIN_CONFIG.admin.pin, staff: PIN_CONFIG.staff.pin})); } catch(e) {}
+  try { localStorage.setItem('smo_pins', JSON.stringify({admin: PIN_CONFIG.admin.pin, staff: PIN_CONFIG.staff.pin, accounts: PIN_CONFIG.accounts.pin})); } catch(e) {}
   errEl.style.color = '#38a169';
   errEl.textContent = '✅ تم تغيير الرمز بنجاح!';
   setTimeout(pinHideChangeModal, 1200);
@@ -5501,6 +5594,7 @@ function pinLoadSavedPins() {
       const p = JSON.parse(saved);
       if (p.admin) PIN_CONFIG.admin.pin = p.admin;
       if (p.staff) PIN_CONFIG.staff.pin = p.staff;
+      if (p.accounts) PIN_CONFIG.accounts.pin = p.accounts;
     }
   } catch(e) {}
 }
