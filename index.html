@@ -3732,6 +3732,16 @@ async function salesLoadData() {
 
       if (allRows.length > 0) {
         salesData = allRows.map(parseBDates);
+        // ادمج أي حجوزات محفوظة محلياً لكنها لم تصل للسحابة بعد (فشل رفع سابق، مثل عمود
+        // ناقص بقاعدة البيانات) — بدون هذا الدمج كانت هذي الحجوزات "تختفي" فور تحديث
+        // الصفحة رغم ظهور رسالة "تم الحفظ" وقت إدخالها.
+        try {
+          const cachedRaw = localStorage.getItem(SALES_DATA_KEY);
+          if (cachedRaw) {
+            const cloudIds = new Set(salesData.map(r => r._id));
+            JSON.parse(cachedRaw).forEach(c => { if (c && c._id && !cloudIds.has(c._id)) salesData.push(parseBDates(c)); });
+          }
+        } catch(e) { console.warn('تعذّر دمج حجوزات محلية معلّقة:', e); }
         persistStatusFixes(salesData);
         // حفظ نسخة محلية دائماً
         try { localStorage.setItem(SALES_DATA_KEY, JSON.stringify(salesData)); } catch(e) {}
@@ -4371,6 +4381,14 @@ async function maintLoadData() {
         .order('reportDate', { ascending: false });
       if (!error && rows) {
         maintData = rows;
+        // ادمج أي بلاغات صيانة محفوظة محلياً لم تصل للسحابة بعد (نفس احتياط الحجوزات)
+        try {
+          const cachedRaw = localStorage.getItem(MAINT_DATA_KEY);
+          if (cachedRaw) {
+            const cloudIds = new Set(maintData.map(r => r._id));
+            JSON.parse(cachedRaw).forEach(c => { if (c && c._id && !cloudIds.has(c._id)) maintData.push(c); });
+          }
+        } catch(e) { console.warn('تعذّر دمج بلاغات صيانة معلّقة:', e); }
         maintLoaded = true;
         try { localStorage.setItem(MAINT_DATA_KEY, JSON.stringify(maintData)); } catch(e) {}
         return;
