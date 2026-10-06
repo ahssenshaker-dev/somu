@@ -48,6 +48,37 @@
   .sr-exp-wrap { display: none; grid-template-columns: minmax(0, 620px); gap: 10px; margin-top: 10px; }
   #exp-modal-overlay .modal { width: 660px; padding: 22px; }
   #exp-modal-overlay .sr-exp-card { border: none; }
+
+  /* ===== الفترة الكاملة: نافذة الإيرادات + تخطيط الشارتات ===== */
+  #fp-rev-modal-overlay .modal { width: 520px; padding: 22px; }
+  .fp-mode-switch { display:flex; gap:0; background:#edf2f7; border-radius:10px; padding:4px; margin-bottom:12px; }
+  .fp-mode-switch button { flex:1; padding:8px; border:none; border-radius:8px; cursor:pointer; font-size:12px; font-weight:700; font-family:inherit; background:transparent; color:#718096; }
+  .fp-mode-switch button.on { background:#e94560; color:#fff; }
+  .fp-rev-list { max-height:46vh; overflow-y:auto; display:flex; flex-direction:column; gap:6px; padding:2px; }
+  .fp-rev-row { display:flex; align-items:center; justify-content:space-between; gap:10px; background:#f7fafc; border:1px solid #e2e8f0; border-radius:8px; padding:7px 10px; }
+  .fp-rev-row .fp-m { font-size:13px; font-weight:700; color:#2d3748; }
+  .fp-rev-row .fp-m small { display:block; font-size:10px; font-weight:600; color:#a0aec0; }
+  .fp-inp { position:relative; width:170px; }
+  .fp-inp input { width:100%; padding:8px 34px 8px 10px; border:1.5px solid #e2e8f0; border-radius:8px; font:inherit; font-size:14px; font-weight:700; text-align:center; outline:none; box-sizing:border-box; }
+  .fp-inp input:focus { border-color:#e94560; }
+  .fp-inp .fp-cur { position:absolute; right:10px; top:50%; transform:translateY(-50%); font-size:14px; font-weight:800; color:#047857; display:none; pointer-events:none; }
+  .fp-inp.has .fp-cur { display:block; }
+  .fp-rev-sum { margin-top:12px; display:flex; justify-content:space-between; align-items:center; background:#ecfdf5; border:1px solid #a7f3d0; border-radius:10px; padding:10px 14px; font-size:13px; font-weight:700; color:#065f46; }
+  .fp-rev-sum b { font-size:18px; font-weight:800; }
+  .fp-rev-actions { display:flex; gap:8px; margin-top:12px; }
+  .fp-list-card, .fp-chart-card { background:#fff; border-radius:12px; padding:12px; box-shadow:0 1px 4px rgba(0,0,0,0.08); min-width:0; }
+  #fp-calendar > div { grid-template-columns:repeat(auto-fill,minmax(120px,1fr)) !important; }
+  .fp-charts-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  .fp-chart-card.half { grid-column:span 2; }
+  .fp-chart-card .fp-ct { font-size:12px; font-weight:700; color:#4a5568; margin-bottom:6px; }
+  .fp-chart-box { position:relative; height:210px; }
+  @media (max-width: 1100px) { .fp-charts-grid { grid-template-columns:repeat(2,1fr); } }
+  @media (max-width: 600px) { .fp-charts-grid { grid-template-columns:1fr; } .fp-chart-card.half { grid-column:span 1; } }
+  .sr-mode-switch { display:inline-flex; gap:0; background:#edf2f7; border-radius:10px; padding:3px; }
+  .sr-mode-switch button { padding:5px 12px; border:none; border-radius:8px; cursor:pointer; font-size:12px; font-weight:700; font-family:inherit; background:transparent; color:#718096; }
+  .sr-mode-switch button.on { background:#e94560; color:#fff; }
+  .sr-hide-in-fp { display:none !important; }
+  @media print { body.print-sales-report #sr-fp-wrap { display:none !important; } }
   .s-kpi.clickable { cursor: pointer; transition: transform .12s, box-shadow .12s; }
   .s-kpi.clickable:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
   .sr-exp-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; }
@@ -593,14 +624,11 @@
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:16px;">
+    <span id="user-badge" style="font-size:12px;font-weight:700;background:rgba(255,255,255,0.12);padding:5px 12px;border-radius:20px;"></span>
     <span id="online-badge" style="font-size:12px;font-weight:600;">🟢 متصل</span>
   </div>
   <div class="header-actions">
-    <button class="btn btn-secondary" onclick="exportExcel()" style="background:rgba(56,161,105,0.85);border-color:rgba(56,161,105,0.5);color:#fff;">📊 تصدير Excel</button>
     <button class="btn btn-secondary" onclick="clearAllLocalData()" style="background:rgba(197,48,48,0.85);border-color:rgba(197,48,48,0.5);color:#fff;">🗑️ مسح الكاش</button>
-    <button class="btn btn-secondary" onclick="document.getElementById('import-input').click()" style="background:rgba(49,130,206,0.85);border-color:rgba(49,130,206,0.5);color:#fff;">📥 استيراد CSV</button>
-    <input type="file" id="import-input" accept=".csv" style="display:none" onchange="importCSV(this)">
-    <button class="btn btn-primary btn-add" onclick="openModal()">+ إضافة سجل جديد</button>
     <button onclick="pinLogout()" style="padding:6px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.1);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;" title="تسجيل الخروج">🔒 خروج</button>
     <button class="btn btn-print" onclick="showTab('report')">📊 التقرير والطباعة</button>
   </div>
@@ -629,8 +657,8 @@
   <div class="tab active" onclick="showTab('dashboard')" data-roles="admin">لوحة البيانات</div>
   <div class="tab" onclick="showTab('report')" data-roles="admin">التقرير والطباعة</div>
   <div class="tab" onclick="showTab('entry')" data-roles="staff,admin">📝 الإدخال (تواصل وحجوزات)</div>
-  <div class="tab" onclick="showTab('records')" data-roles="staff,admin">📋 سجلات التواصل</div>
-  <div class="tab" onclick="showTab('sales-records')" data-roles="staff,admin">📋 سجل المبيعات</div>
+  <div class="tab" onclick="showTab('records')" data-roles="staff,admin,accounts">📋 سجلات التواصل</div>
+  <div class="tab" onclick="showTab('sales-records')" data-roles="staff,admin,accounts">📋 سجل المبيعات</div>
   <div class="tab tab-dropdown" id="maint-parent-tab" data-roles="staff,admin" onclick="toggleMaintDropdown(event)">
     🔧 الصيانة ▾
     <div class="tab-dropdown-menu" id="maint-dropdown-menu">
@@ -639,7 +667,7 @@
     </div>
   </div>
   <div class="tab" onclick="showTab('checkin')" data-roles="staff,admin">📷 تأكيد الحضور</div>
-  <div class="tab" onclick="showTab('sales-report')" data-roles="staff,admin">📊 تقرير المبيعات</div>
+  <div class="tab" onclick="showTab('sales-report')" data-roles="staff,admin,accounts">📊 تقرير المبيعات</div>
   <div class="tab" onclick="showTab('sales-compare')" data-roles="admin">⚖️ مقارنة الفترات</div>
 </div>
 
@@ -743,6 +771,7 @@
         <button class="btn btn-secondary" style="color:#1a1a2e; border-color:#e2e8f0;" onclick="resetFilters()">إعادة تعيين</button>
         <button class="btn btn-secondary" style="color:#fff;background:#38a169;border-color:#38a169;" onclick="exportExcel()">📊 Excel</button>
         <button class="btn btn-secondary" style="color:#fff;background:#3182ce;border-color:#3182ce;" onclick="document.getElementById('import-input').click()">📥 استيراد</button>
+        <input type="file" id="import-input" accept=".csv" style="display:none" onchange="importCSV(this)">
         <button class="btn btn-primary btn-add" onclick="openModal()">+ إضافة جديد</button>
       </div>
     </div>
@@ -958,8 +987,12 @@
 <div class="content" id="tab-sales-report" style="display:none">
   <div class="s-toolbar" style="padding:10px 16px;gap:10px;">
     <span class="s-label" style="font-size:13px;">📊 تقرير المبيعات</span>
+    <span id="sr-mode-switch" class="sr-mode-switch" style="display:none;">
+      <button id="sr-mode-report" class="on" onclick="srSetMode('report')">📊 التقرير</button>
+      <button id="sr-mode-full" onclick="srSetMode('full')">📅 الفترة الكاملة</button>
+    </span>
     <select class="s-select" id="sr-filter-type" onchange="salesReportInit()" style="padding:5px 10px;font-size:12px;">
-      <option value="month">شهري</option><option value="range">فترة مخصصة</option><option value="all">الفترة كاملة</option>
+      <option value="month">شهري</option><option value="range">فترة مخصصة</option>
     </select>
     <select class="s-select" id="sr-month" onchange="salesReportInit()" style="padding:5px 10px;font-size:12px;">
       <option value="2026-7">يوليو 2026</option><option value="2026-8" selected>أغسطس 2026</option>
@@ -976,10 +1009,10 @@
   </div>
 
   <!-- KPI Row -->
-  <div id="sr-kpis" style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:10px;"></div>
+  <div id="sr-kpis" class="sr-rep-part" style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:10px;"></div>
 
   <!-- ROW 1: Calendar + 2 bar charts stacked -->
-  <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:10px;margin-bottom:10px;">
+  <div class="sr-rep-part" style="display:grid;grid-template-columns:1.6fr 1fr;gap:10px;margin-bottom:10px;">
     <div class="s-calendar-wrap" style="padding:10px;margin:0;">
       <div class="s-cal-header" style="margin-bottom:8px;">
         <span class="s-cal-title" id="sr-cal-title" style="font-size:13px;font-weight:700;">كالندر الحجوزات</span>
@@ -1004,7 +1037,7 @@
   </div>
 
   <!-- ROW 2: All pie/doughnut charts side by side -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+  <div class="sr-rep-part" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
     <div class="s-chart-card" style="padding:10px;display:flex;flex-direction:column;">
       <div class="s-chart-title" style="font-size:11px;margin-bottom:6px;">🏠 توزيع الأقسام</div>
       <div style="display:flex;align-items:center;justify-content:center;flex:1;max-height:165px;">
@@ -1021,6 +1054,23 @@
 
   <!-- المصروفات وصافي الأرباح -->
   <div class="sr-exp-wrap" id="sr-expenses"></div>
+
+  <!-- ===== الفترة الكاملة (للمدير والحسابات فقط) ===== -->
+  <div id="sr-fp-wrap" style="display:none;">
+    <div id="fp-kpis" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px;"></div>
+    <div class="fp-list-card" style="margin-bottom:10px;">
+      <div class="s-cal-title" id="fp-cal-title" style="font-size:13px;font-weight:700;color:#4a5568;margin-bottom:8px;">📊 الحجوزات شهرياً — كل الفترة</div>
+      <div id="fp-calendar"></div>
+    </div>
+    <div class="fp-charts-grid" id="fp-charts">
+      <div class="fp-chart-card half"><div class="fp-ct">📅 الحجوزات شهرياً</div><div class="fp-chart-box"><canvas id="fp-ch-book"></canvas></div></div>
+      <div class="fp-chart-card half"><div class="fp-ct">💰 المبيعات شهرياً <span id="fp-ch-sales-note" style="font-weight:600;color:#a0aec0;font-size:10px;"></span></div><div class="fp-chart-box"><canvas id="fp-ch-sales"></canvas></div></div>
+      <div class="fp-chart-card"><div class="fp-ct">⚖️ الإيرادات والمصروفات والأرباح</div><div class="fp-chart-box"><canvas id="fp-ch-fin"></canvas></div></div>
+      <div class="fp-chart-card"><div class="fp-ct">💳 المدفوع والمتبقي</div><div class="fp-chart-box"><canvas id="fp-ch-paid"></canvas></div></div>
+      <div class="fp-chart-card"><div class="fp-ct">🏠 توزيع الأقسام</div><div class="fp-chart-box"><canvas id="fp-ch-sec"></canvas></div></div>
+      <div class="fp-chart-card"><div class="fp-ct">📣 مصادر الحجوزات</div><div class="fp-chart-box"><canvas id="fp-ch-src"></canvas></div></div>
+    </div>
+  </div>
 </div>
 
 <!-- نافذة المصاريف الثابتة (تفتح عند الضغط على مربع إجمالي المصروفات) -->
@@ -1042,6 +1092,32 @@
       <button onclick="srCloseTotalsModal()" style="border:none;background:#edf2f7;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer;">✕ إغلاق</button>
     </div>
     <div id="sr-totals-modal-body" style="display:flex;flex-direction:column;gap:10px;"></div>
+  </div>
+</div>
+
+<!-- نافذة إدخال إجمالي الإيرادات (تفتح عند الضغط على مربع إجمالي الإيرادات) -->
+<div class="modal-overlay" id="fp-rev-modal-overlay" onclick="if(event.target===this)fpCloseRevModal()">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div style="font-size:16px;font-weight:800;color:#1a1a2e;">💰 إجمالي الإيرادات</div>
+      <button onclick="fpCloseRevModal()" style="border:none;background:#edf2f7;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer;">✕ إغلاق</button>
+    </div>
+    <div class="fp-mode-switch">
+      <button id="fp-mode-monthly" onclick="fpSetRevMode('monthly')">📆 حسب الشهر</button>
+      <button id="fp-mode-total" onclick="fpSetRevMode('total')">Σ إجمالي الشهور</button>
+    </div>
+    <div id="fp-rev-monthly-panel" class="fp-rev-list"></div>
+    <div id="fp-rev-total-panel" style="display:none;">
+      <div class="fp-rev-row">
+        <div class="fp-m">إجمالي إيرادات كل الشهور</div>
+        <div class="fp-inp"><input type="number" min="0" step="any" id="fp-rev-total-input" placeholder="أدخل المبلغ" oninput="fpRevInput(this)"><span class="fp-cur">﷼</span></div>
+      </div>
+    </div>
+    <div class="fp-rev-sum"><span>الإجمالي</span><b id="fp-rev-sum-val">—</b></div>
+    <div class="fp-rev-actions">
+      <button class="s-btn s-btn-primary" onclick="fpSaveRevModal()" style="flex:1;padding:9px;font-size:13px;">💾 حفظ</button>
+      <button class="s-btn" onclick="fpClearRevModal()" style="padding:9px 14px;font-size:13px;background:#fff;color:#c53030;border:1px solid #e2e8f0;">مسح الكل</button>
+    </div>
   </div>
 </div>
 
@@ -2724,7 +2800,8 @@ document.addEventListener('click', (e) => {
 });
 
 function showTab(name) {
-  ['dashboard','records','report','entry','sales-entry','sales-records','checkin','sales-report','sales-compare','maintenance-entry','maintenance-records'].forEach(t=>{
+  if (name === 'full-period') { srMode = 'full'; name = 'sales-report'; }
+  ['dashboard','records','report','entry','sales-entry','sales-records','checkin','sales-report','sales-compare','maintenance-entry','maintenance-records','full-period'].forEach(t=>{
     const el = document.getElementById('tab-'+t);
     if(el) el.style.display = t===name?'block':'none';
   });
@@ -4705,13 +4782,14 @@ function maintExportExcel() {
 // ===== SALES REPORT =====
 let srCharts = {};
 async function salesReportInit() {
+  srApplyMode();
+  if (srMode === 'full' && fpCanAccess()) { await fullPeriodInit(); return; }
   await salesLoadData();
   populateSalesMonthSelects();
   const ft = document.getElementById('sr-filter-type').value;
   const rw = document.getElementById('sr-range-wrap');
   const msel = document.getElementById('sr-month');
   if(ft==='range'){rw.style.display='flex';msel.style.display='none';}
-  else if(ft==='all'){rw.style.display='none';msel.style.display='none';}
   else{rw.style.display='none';msel.style.display='';}
 
   let filtered;
@@ -4720,9 +4798,6 @@ async function salesReportInit() {
     const [yy,mm]=document.getElementById('sr-month').value.split('-').map(Number);
     filtered=salesGetFiltered(mm,yy);
     titleLabel=MONTH_NAMES[mm]+' '+yy;
-  } else if(ft==='all'){
-    filtered=[...salesData];
-    titleLabel='الفترة كاملة';
   } else {
     const from=document.getElementById('sr-from').value;
     const to=document.getElementById('sr-to').value;
@@ -4828,12 +4903,6 @@ async function expRenderPanel(ft, salesTotal, titleLabel) {
     const [yy, mm] = document.getElementById('sr-month').value.split('-').map(Number);
     keys = [expMonthKey(yy, mm)];
     editable = true;
-  } else if (ft === 'all') {
-    const monthKeys = new Set(salesData.map(r => (r.date || '').slice(0, 7)).filter(Boolean));
-    keys = [...monthKeys].sort();
-    if (!keys.length) { host.innerHTML = ''; expState = null; return; }
-    editable = false;
-    note = 'تُجمع مصاريف كل الأشهر اللي فيها حجوزات. للتعديل استخدم العرض الشهري.';
   } else {
     const from = document.getElementById('sr-from').value;
     const to = document.getElementById('sr-to').value;
@@ -4879,17 +4948,17 @@ function expDraw() {
   if (!st) return;
   // نسخة للقراءة فقط تظهر بالطباعة فقط (مخفية على الشاشة)
   const host = document.getElementById('sr-expenses');
-  if (host) host.innerHTML = `<div class="sr-exp-card">${expTableHTML(false)}</div>`;
+  if (host && !st.fp) host.innerHTML = `<div class="sr-exp-card">${expTableHTML(false)}</div>`;
   // النسخة القابلة للتعديل داخل النافذة المنبثقة
   const body = document.getElementById('exp-modal-body');
-  if (body) body.innerHTML = `
+  if (body) body.innerHTML = (st.fp ? fpExpBarHTML() : '') + `
     <div class="sr-exp-card">
       ${expTableHTML(st.editable)}
       <div class="sr-exp-actions">
         ${st.editable ? `<button class="sr-exp-btn" onclick="expAddRow()">＋ إضافة مصروف</button><button class="sr-exp-btn" onclick="expReset()">↺ القيم الافتراضية</button>` : ''}
         <span style="font-size:11px;color:#718096;">${st.editable && st.isDefault ? 'قيم افتراضية — عدّل أي رقم ليُحفظ لهذا الشهر. ' : ''}${escH(st.note || '')}</span>
       </div>
-    </div>`;
+    </div>` + (st.fp ? fpExpSummaryWrap() : '');
   expUpdateTotals();
 }
 
@@ -4902,6 +4971,396 @@ function expCloseModal() {
   document.getElementById('exp-modal-overlay').classList.remove('open');
 }
 
+// ==================== تبويب "الفترة الكاملة" (admin/accounts فقط) ====================
+const FP_REVENUE_KEY = 'smo_full_period_revenue';
+// بنية الإيرادات: { mode: 'total' | 'monthly', total: رقم, months: { 'YYYY-MM': رقم } }
+let fpRevData = { mode: 'total', total: 0, months: {}, expMode: 'total' };
+let fpRevenue = 0; // الإجمالي المحسوب حسب الوضع الحالي
+let fpRevenueLoaded = false;
+let fpRevMode = 'total'; // وضع النافذة المفتوحة
+
+// ---------- وضع تقرير المبيعات: تقرير عادي / الفترة الكاملة (للمدير والحسابات) ----------
+let srMode = 'report';
+function srApplyMode() {
+  const allowed = fpCanAccess();
+  if (!allowed) srMode = 'report';
+  const full = srMode === 'full';
+  const sw = document.getElementById('sr-mode-switch');
+  if (sw) sw.style.display = allowed ? 'inline-flex' : 'none';
+  const bR = document.getElementById('sr-mode-report'), bF = document.getElementById('sr-mode-full');
+  if (bR) bR.classList.toggle('on', !full);
+  if (bF) bF.classList.toggle('on', full);
+  const wrap = document.getElementById('sr-fp-wrap');
+  if (wrap) wrap.style.display = full ? 'block' : 'none';
+  document.querySelectorAll('#tab-sales-report .sr-rep-part').forEach(el => el.classList.toggle('sr-hide-in-fp', full));
+  document.querySelectorAll('#tab-sales-report .s-toolbar > *:not(.s-label):not(.s-spacer):not(#sr-mode-switch)').forEach(el => el.classList.toggle('sr-hide-in-fp', full));
+}
+function srSetMode(mode) { srMode = mode; salesReportInit(); }
+
+function fpCanAccess() {
+  return !pinLoggedInRole || pinLoggedInRole === 'admin' || pinLoggedInRole === 'accounts';
+}
+
+function fpParseRev(raw) {
+  if (raw === null || raw === undefined || raw === '') return { mode: 'total', total: 0, months: {}, expMode: 'total' };
+  const str = String(raw).trim();
+  if (str.startsWith('{')) {
+    try {
+      const o = JSON.parse(str);
+      const months = {};
+      Object.entries(o.months || {}).forEach(([k, v]) => { const n = parseFloat(v) || 0; if (n) months[k] = n; });
+      return { mode: o.mode === 'monthly' ? 'monthly' : 'total', total: parseFloat(o.total) || 0, months, expMode: o.expMode === 'monthly' ? 'monthly' : 'total' };
+    } catch (e) {}
+  }
+  // قيمة قديمة: رقم واحد = إجمالي
+  return { mode: 'total', total: parseFloat(str) || 0, months: {}, expMode: 'total' };
+}
+
+function fpRevTotalOf(d) {
+  if (d.mode === 'monthly') return Object.values(d.months).reduce((s, v) => s + (Number(v) || 0), 0);
+  return Number(d.total) || 0;
+}
+
+async function fpLoadRevenue() {
+  if (fpRevenueLoaded) return;
+  if (USE_CLOUD && isOnline) {
+    try {
+      const { data: rows, error } = await sbClient.from('app_settings').select('*').eq('key', 'full_period_revenue').limit(1);
+      if (!error) {
+        fpRevData = (rows && rows.length) ? fpParseRev(rows[0].value) : fpParseRev(null);
+        fpRevenue = fpRevTotalOf(fpRevData);
+        fpRevenueLoaded = true;
+        try { localStorage.setItem(FP_REVENUE_KEY, JSON.stringify(fpRevData)); } catch(e) {}
+        return;
+      }
+      console.warn('app_settings load error:', error.message);
+    } catch(e) { console.warn('app_settings load exception:', e.message); }
+  }
+  try { const cached = localStorage.getItem(FP_REVENUE_KEY); if (cached !== null) fpRevData = fpParseRev(cached); } catch(e) {}
+  fpRevenue = fpRevTotalOf(fpRevData);
+  fpRevenueLoaded = true;
+}
+
+async function fpSaveRevenue() {
+  fpRevenue = fpRevTotalOf(fpRevData);
+  const payload = JSON.stringify(fpRevData);
+  try { localStorage.setItem(FP_REVENUE_KEY, payload); } catch(e) {}
+  if (USE_CLOUD && isOnline) {
+    try {
+      const { error } = await sbClient.from('app_settings').upsert({ key: 'full_period_revenue', value: payload }, { onConflict: 'key' });
+      if (error) { console.warn('app_settings save failed:', error.message); showToast('❌ Supabase: ' + error.message.slice(0, 60), 'warn'); }
+    } catch(e) { console.warn('app_settings save error:', e.message); }
+  } else {
+    showToast('⚠️ حُفظ محلياً — غير متصل', 'warn');
+  }
+  fpUpdateProfit();
+}
+
+function fpUpdateProfit() {
+  const expTotal = fpExpTotal();
+  const profit = fpRevenue - expTotal;
+  const el = document.getElementById('fp-profit-val');
+  if (el) { el.textContent = expFmt(profit) + ' ﷼'; el.style.color = profit >= 0 ? '#047857' : '#c53030'; }
+}
+
+function fpSyncKPIsFromExpenses() {
+  const total = fpExpTotal();
+  const el = document.getElementById('fp-expenses-val');
+  if (el) el.textContent = expFmt(total) + ' ﷼';
+  const sm = document.getElementById('fp-exp-summary');
+  if (sm) sm.innerHTML = fpExpSummaryHTML();
+  fpUpdateProfit();
+  try { fpRenderFinanceChart(); } catch(e) {}
+}
+
+// ---------- المصروفات: حسب الشهر بالتفصيل / إجمالي الفترة كاملة بالتفصيل ----------
+function fpExpMonths() {
+  const set = new Set(Object.keys(fpAggregateMonths()));
+  Object.keys(fpRevData.months || {}).forEach(k => set.add(k));
+  Object.keys(expStore || {}).forEach(k => { if (/^\d{4}-\d{2}$/.test(k)) set.add(k); });
+  return [...set].sort();
+}
+function fpSumItems(items) { return (items || []).reduce((s, it) => s + (Number(it.amount) || 0), 0); }
+function fpItemsForKey(k) { return (expState && expState.fp && expState.key === k) ? expState.items : expItemsFor(k); }
+function fpExpIsMonthly() { return fpRevData.expMode === 'monthly' && fpExpMonths().length > 0; }
+function fpExpTotal() {
+  if (fpExpIsMonthly()) return fpExpMonths().reduce((s, k) => s + fpSumItems(fpItemsForKey(k)), 0);
+  return fpSumItems(fpItemsForKey('ALL_TIME'));
+}
+
+let fpExpPicked = null;
+function fpSetExpState(key) {
+  const months = fpExpMonths();
+  const monthly = fpExpIsMonthly();
+  if (monthly) {
+    const cur = new Date().toISOString().slice(0, 7);
+    key = (key && months.includes(key)) ? key : (fpExpPicked && months.includes(fpExpPicked)) ? fpExpPicked : (months.includes(cur) ? cur : months[months.length - 1]);
+    fpExpPicked = key;
+  } else key = 'ALL_TIME';
+  expState = {
+    key, editable: true, items: expItemsFor(key), salesTotal: 0, fp: true,
+    titleLabel: monthly ? fpMonthLabel(key) : 'الفترة الكاملة',
+    note: monthly ? 'مصاريف هذا الشهر بالتفصيل — هي نفسها المستخدمة في تقرير المبيعات الشهري.' : '',
+    isDefault: !Array.isArray(expStore[key])
+  };
+  expDraw();
+}
+function fpOpenExpensesModal() {
+  fpSetExpState(null);
+  document.getElementById('exp-modal-overlay').classList.add('open');
+}
+function fpExpBarHTML() {
+  const monthly = fpExpIsMonthly();
+  const months = fpExpMonths();
+  const sel = monthly ? `<select class="s-select" onchange="fpSetExpState(this.value)" style="width:100%;margin-bottom:10px;padding:7px 10px;font-size:13px;">${months.map(k => `<option value="${k}"${expState && expState.key === k ? ' selected' : ''}>${fpMonthLabel(k)}</option>`).join('')}</select>` : '';
+  return `<div class="fp-mode-switch">
+      <button class="${monthly ? 'on' : ''}" onclick="fpSetExpMode('monthly')">📆 حسب الشهر</button>
+      <button class="${monthly ? '' : 'on'}" onclick="fpSetExpMode('total')">Σ إجمالي الفترة كاملة</button>
+    </div>${sel}`;
+}
+function fpExpSummaryHTML() {
+  if (!fpExpIsMonthly()) return '';
+  const months = fpExpMonths();
+  const rows = months.map(k => {
+    const t = fpSumItems(fpItemsForKey(k));
+    const on = expState && expState.key === k;
+    return `<tr onclick="fpSetExpState('${k}')" style="cursor:pointer;${on ? 'background:#fff5f6;' : ''}"><td style="padding:6px 8px;font-weight:${on ? 800 : 600};">${fpMonthLabel(k)}</td><td style="padding:6px 8px;text-align:center;font-weight:700;">${expFmt(t)} ﷼</td></tr>`;
+  }).join('');
+  return `<table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:12px;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;">
+    <thead><tr style="background:#edf2f7;"><th colspan="2" style="padding:7px 8px;text-align:right;">إجمالي المصروفات لكل شهر (اضغط على شهر لتعديله)</th></tr></thead>
+    <tbody>${rows}<tr style="background:#fef2f2;"><td style="padding:7px 8px;font-weight:800;">إجمالي كل الشهور</td><td style="padding:7px 8px;text-align:center;font-weight:800;color:#c53030;">${expFmt(fpExpTotal())} ﷼</td></tr></tbody></table>`;
+}
+function fpExpSummaryWrap() { return `<div id="fp-exp-summary">${fpExpSummaryHTML()}</div>`; }
+
+async function fpSetExpMode(mode) {
+  fpRevData.expMode = mode;
+  fpSetExpState(null);
+  await fpSaveRevenue();
+  fpRenderKPIs();
+  fpRenderFinanceChart();
+}
+
+// ---------- تجميع الحجوزات شهرياً (نفس منطق القائمة) ----------
+function fpAggregateMonths() {
+  const byMonth = {};
+  salesData.forEach(r => {
+    const dates = (r.bookingDates && r.bookingDates.length) ? r.bookingDates : [r.date];
+    const seen = new Set();
+    dates.filter(Boolean).forEach(dt => {
+      const key = dt.slice(0, 7);
+      if (seen.has(key)) return;
+      seen.add(key);
+      if (!byMonth[key]) byMonth[key] = { count: 0, total: 0 };
+      byMonth[key].count++;
+      byMonth[key].total += (r.amount || 0);
+    });
+  });
+  return byMonth;
+}
+function fpMonthLabel(key) {
+  const [yy, mm] = key.split('-').map(Number);
+  return MONTH_NAMES[mm] + ' ' + yy;
+}
+
+// ---------- نافذة إدخال الإيرادات ----------
+function fpOpenRevModal() {
+  const by = fpAggregateMonths();
+  const keySet = new Set(Object.keys(by));
+  Object.keys(fpRevData.months).forEach(k => keySet.add(k));
+  const keys = [...keySet].sort();
+  const host = document.getElementById('fp-rev-monthly-panel');
+  if (!keys.length) {
+    host.innerHTML = '<div style="padding:16px;text-align:center;color:#718096;font-size:12px;">لا توجد شهور مسجّلة بعد — استخدم «إجمالي الشهور».</div>';
+  } else {
+    host.innerHTML = keys.map(k => {
+      const v = fpRevData.months[k] || '';
+      const salesTxt = by[k] ? `<small>مبيعات الحجوزات: ${by[k].total.toLocaleString('ar-SA')} ﷼</small>` : '';
+      return `<div class="fp-rev-row">
+        <div class="fp-m">${fpMonthLabel(k)}${salesTxt}</div>
+        <div class="fp-inp${v ? ' has' : ''}"><input type="number" min="0" step="any" data-month="${k}" value="${v}" placeholder="0" oninput="fpRevInput(this)"><span class="fp-cur">﷼</span></div>
+      </div>`;
+    }).join('');
+  }
+  const tin = document.getElementById('fp-rev-total-input');
+  tin.value = fpRevData.total || '';
+  tin.parentElement.classList.toggle('has', !!fpRevData.total);
+  fpSetRevMode(keys.length ? fpRevData.mode : 'total');
+  document.getElementById('fp-rev-modal-overlay').classList.add('open');
+}
+function fpCloseRevModal() { document.getElementById('fp-rev-modal-overlay').classList.remove('open'); }
+
+function fpSetRevMode(mode) {
+  fpRevMode = mode;
+  document.getElementById('fp-mode-monthly').classList.toggle('on', mode === 'monthly');
+  document.getElementById('fp-mode-total').classList.toggle('on', mode === 'total');
+  document.getElementById('fp-rev-monthly-panel').style.display = mode === 'monthly' ? 'flex' : 'none';
+  document.getElementById('fp-rev-total-panel').style.display = mode === 'total' ? 'block' : 'none';
+  fpRevUpdateSum();
+}
+
+// العملة تظهر تلقائياً بمجرد إدخال رقم
+function fpRevInput(el) {
+  const v = el.value;
+  el.parentElement.classList.toggle('has', v !== '' && !isNaN(parseFloat(v)));
+  fpRevUpdateSum();
+}
+
+function fpRevReadDraft() {
+  const months = {};
+  document.querySelectorAll('#fp-rev-monthly-panel input[data-month]').forEach(inp => {
+    const n = parseFloat(inp.value) || 0;
+    if (n) months[inp.dataset.month] = n;
+  });
+  const total = parseFloat(document.getElementById('fp-rev-total-input').value) || 0;
+  return { mode: fpRevMode, total, months };
+}
+function fpRevUpdateSum() {
+  const t = fpRevTotalOf(fpRevReadDraft());
+  const el = document.getElementById('fp-rev-sum-val');
+  if (el) el.textContent = t > 0 ? expFmt(t) + ' ﷼' : '—';
+}
+
+async function fpSaveRevModal() {
+  fpRevData = { ...fpRevReadDraft(), expMode: fpRevData.expMode };
+  fpCloseRevModal();
+  await fpSaveRevenue();
+  fpRenderKPIs();
+  fpRenderCharts();
+}
+function fpClearRevModal() {
+  document.querySelectorAll('#fp-rev-monthly-panel input[data-month]').forEach(inp => { inp.value = ''; inp.parentElement.classList.remove('has'); });
+  const tin = document.getElementById('fp-rev-total-input');
+  tin.value = ''; tin.parentElement.classList.remove('has');
+  fpRevUpdateSum();
+}
+
+// ---------- المربعات العلوية ----------
+function fpRenderKPIs() {
+  const cnt = salesData.length;
+  const srcCount = {};
+  salesData.forEach(r => { srcCount[r.source] = (srcCount[r.source] || 0) + 1; });
+  const topSrc = Object.entries(srcCount).sort((a, b) => b[1] - a[1])[0];
+  const expTotal = fpExpTotal();
+  const profit = fpRevenue - expTotal;
+  const modeTxt = fpRevData.mode === 'monthly' ? 'حسب الشهر' : 'إجمالي';
+  document.getElementById('fp-kpis').innerHTML = `
+    <div class="s-kpi clickable" onclick="fpOpenRevModal()" title="اضغط لإدخال الإيرادات">
+      <div class="s-kpi-val" id="fp-revenue-val" style="${fpRevenue > 0 ? '' : 'color:#a0aec0;font-size:15px;'}">${fpRevenue > 0 ? expFmt(fpRevenue) + ' ﷼' : 'اضغط للإدخال'}</div>
+      <div class="s-kpi-lbl">إجمالي الإيرادات ✏️ ${fpRevenue > 0 ? '(' + modeTxt + ' — اضغط للتعديل)' : '(إدخال يدوي)'}</div>
+    </div>
+    <div class="s-kpi rose clickable" onclick="fpOpenExpensesModal()" title="اضغط لعرض وتعديل المصاريف">
+      <div class="s-kpi-val" id="fp-expenses-val">${expFmt(expTotal)} ﷼</div>
+      <div class="s-kpi-lbl">إجمالي المصروفات ✏️ (${fpExpIsMonthly() ? 'حسب الشهر' : 'إجمالي الفترة'} — اضغط للتفاصيل)</div>
+    </div>
+    <div class="s-kpi green">
+      <div class="s-kpi-val">${cnt}</div>
+      <div class="s-kpi-lbl">إجمالي الحجوزات (تلقائي)</div>
+    </div>
+    <div class="s-kpi orange">
+      <div class="s-kpi-val">${topSrc ? topSrc[0] : '-'}</div>
+      <div class="s-kpi-lbl">أعلى مصدر (تلقائي${topSrc ? ' — ' + topSrc[1] + ' حجز' : ''})</div>
+    </div>
+    <div class="s-kpi" id="fp-profit-card">
+      <div class="s-kpi-val" id="fp-profit-val" style="color:${profit >= 0 ? '#047857' : '#c53030'}">${expFmt(profit)} ﷼</div>
+      <div class="s-kpi-lbl">إجمالي الأرباح (تلقائي)</div>
+    </div>
+  `;
+}
+
+// ---------- الشارتات ----------
+function fpYTicks(v) { return v >= 1000 ? Math.round(v / 1000) + 'k' : v; }
+function fpTipMoney(ctx) { return ' ' + (ctx.dataset.label || '') + ': ' + (Number(ctx.parsed.y ?? ctx.parsed) || 0).toLocaleString('ar-SA') + ' ﷼'; }
+
+function fpRenderFinanceChart() {
+  srDestroyChart('fpFin');
+  const ctx = document.getElementById('fp-ch-fin');
+  if (!ctx || typeof Chart === 'undefined') return;
+  const expTotal = fpExpTotal();
+  const profit = fpRevenue - expTotal;
+  srCharts['fpFin'] = new Chart(ctx, {
+    type: 'bar',
+    data: { labels: ['الإيرادات', 'المصروفات', 'الأرباح'], datasets: [{ label: '﷼', data: [fpRevenue, expTotal, profit], backgroundColor: ['#10b981', '#e94560', profit >= 0 ? '#3b82f6' : '#c53030'], borderRadius: 6 }] },
+    options: { maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ' ' + (c.parsed.y || 0).toLocaleString('ar-SA') + ' ﷼' } } }, scales: { y: { ticks: { callback: fpYTicks, font: { size: 9 } } }, x: { ticks: { font: { size: 10 } } } } }
+  });
+}
+
+function fpRenderCharts() {
+  if (!fpCanAccess()) return;
+  ['fpBook', 'fpSales', 'fpSec', 'fpSrc', 'fpPaid'].forEach(srDestroyChart);
+  if (typeof Chart === 'undefined') return;
+  const by = fpAggregateMonths();
+  const keySet = new Set(Object.keys(by));
+  if (fpRevData.mode === 'monthly') Object.keys(fpRevData.months).forEach(k => keySet.add(k));
+  const keys = [...keySet].sort();
+  const labels = keys.map(fpMonthLabel);
+
+  // الحجوزات شهرياً
+  const c1 = document.getElementById('fp-ch-book');
+  if (c1) srCharts['fpBook'] = new Chart(c1, {
+    type: 'bar',
+    data: { labels, datasets: [{ label: 'حجوزات', data: keys.map(k => (by[k] || {}).count || 0), backgroundColor: '#3b82f6', borderRadius: 4 }] },
+    options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 9 } } }, x: { ticks: { font: { size: 9 } } } } }
+  });
+
+  // المبيعات شهرياً (+ الإيرادات المدخلة حسب الشهر إن وُجدت)
+  const hasMonthlyRev = fpRevData.mode === 'monthly' && Object.keys(fpRevData.months).length > 0;
+  const note = document.getElementById('fp-ch-sales-note');
+  if (note) note.textContent = hasMonthlyRev ? '— مقارنة مع الإيرادات المدخلة' : '';
+  const salesSets = [{ label: 'المبيعات', data: keys.map(k => (by[k] || {}).total || 0), borderColor: '#e94560', backgroundColor: 'rgba(233,69,96,0.08)', tension: 0.3, fill: true, pointRadius: 3, pointBackgroundColor: '#e94560' }];
+  if (hasMonthlyRev) salesSets.push({ label: 'الإيرادات', data: keys.map(k => fpRevData.months[k] || 0), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.08)', tension: 0.3, fill: false, pointRadius: 3, pointBackgroundColor: '#10b981' });
+  const c2 = document.getElementById('fp-ch-sales');
+  if (c2) srCharts['fpSales'] = new Chart(c2, {
+    type: 'line',
+    data: { labels, datasets: salesSets },
+    options: { maintainAspectRatio: false, plugins: { legend: { display: hasMonthlyRev, position: 'bottom', labels: { font: { family: 'inherit', size: 10 }, boxWidth: 12 } }, tooltip: { callbacks: { label: fpTipMoney } } }, scales: { y: { beginAtZero: true, ticks: { callback: fpYTicks, font: { size: 9 } } }, x: { ticks: { font: { size: 9 } } } } }
+  });
+
+  // الإيرادات / المصروفات / الأرباح
+  fpRenderFinanceChart();
+
+  // المدفوع والمتبقي
+  const total = salesData.reduce((s, r) => s + (r.amount || 0), 0);
+  const paid = salesData.reduce((s, r) => s + Math.min(r.paidAmount || 0, r.amount || 0), 0);
+  const remaining = Math.max(total - paid, 0);
+  const c3 = document.getElementById('fp-ch-paid');
+  if (c3) srCharts['fpPaid'] = new Chart(c3, {
+    type: 'doughnut',
+    data: { labels: ['المدفوع', 'المتبقي'], datasets: [{ data: [paid, remaining], backgroundColor: ['#10b981', '#ef4444'], hoverOffset: 6, borderWidth: 3 }] },
+    options: { maintainAspectRatio: false, cutout: '50%', plugins: { legend: { position: 'bottom', labels: { font: { family: 'inherit', size: 11 }, boxWidth: 13, padding: 8 } }, tooltip: { callbacks: { label: c => ' ' + c.label + ': ' + (c.parsed || 0).toLocaleString('ar-SA') + ' ﷼' } } } }
+  });
+
+  // الأقسام
+  const secMap = { 'قسم الرجال': 0, 'قسم الحريم': 0, 'قسمين': 0 };
+  salesData.forEach(r => { const k = r.section in secMap ? r.section : 'قسم الرجال'; secMap[k]++; });
+  const c4 = document.getElementById('fp-ch-sec');
+  if (c4) srCharts['fpSec'] = new Chart(c4, {
+    type: 'doughnut',
+    data: { labels: Object.keys(secMap), datasets: [{ data: Object.values(secMap), backgroundColor: ['#3b82f6', '#ec4899', '#8b5cf6'], hoverOffset: 6, borderWidth: 3 }] },
+    options: { maintainAspectRatio: false, cutout: '50%', plugins: { legend: { position: 'bottom', labels: { font: { family: 'inherit', size: 11 }, boxWidth: 13, padding: 8 } } } }
+  });
+
+  // المصادر
+  const srcMap = {};
+  salesData.forEach(r => { const k = r.source || 'غير محدد'; srcMap[k] = (srcMap[k] || 0) + 1; });
+  const c5 = document.getElementById('fp-ch-src');
+  if (c5) srCharts['fpSrc'] = new Chart(c5, {
+    type: 'doughnut',
+    data: { labels: Object.keys(srcMap), datasets: [{ data: Object.values(srcMap), backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#6366f1', '#06b6d4', '#84cc16'], hoverOffset: 6, borderWidth: 3 }] },
+    options: { maintainAspectRatio: false, cutout: '50%', plugins: { legend: { position: 'bottom', labels: { font: { family: 'inherit', size: 11 }, boxWidth: 13, padding: 8 } } } }
+  });
+}
+
+async function fullPeriodInit() {
+  if (!fpCanAccess()) return; // للحسابات والمدير فقط
+  await salesLoadData();
+  await expLoadAll();
+  await fpLoadRevenue();
+  fpRenderKPIs();
+  try { srRenderYearlyCalendar(salesData, 'fp-calendar'); } catch(e) { console.error('fp calendar error:', e); }
+  try { fpRenderCharts(); } catch(e) { console.error('fp charts error:', e); }
+}
+// ==================== END تبويب الفترة الكاملة ====================
+
 function expUpdateTotals() {
   if (!expState) return;
   const total = expState.items.reduce((s, it) => s + (Number(it.amount) || 0), 0);
@@ -4912,6 +5371,8 @@ function expUpdateTotals() {
   set('exp-kpi-net', expFmt(net) + ' ﷼', net >= 0 ? '#047857' : '#c53030');
   const card = document.getElementById('exp-kpi-net-card');
   if (card) card.style.borderRightColor = net >= 0 ? '#38a169' : '#c53030';
+  // إذا كانت النافذة مفتوحة من تبويب "الفترة الكاملة"، حدّث بطاقاته أيضاً
+  if (expState.fp) fpSyncKPIsFromExpenses(total);
 }
 
 function expFieldChanged(idx, field, val) {
@@ -4998,7 +5459,8 @@ function srCloseTotalsModal() {
   document.getElementById('sr-totals-modal-overlay').classList.remove('open');
 }
 
-function srRenderYearlyCalendar(d) {
+function srRenderYearlyCalendar(d, targetId) {
+  targetId = targetId || 'sr-calendar';
   // اجمع عدد الحجوزات وإجمالي مبلغها لكل شهر (سنة-شهر) بناءً على تواريخ الحجز الفعلية
   const byMonth = {}; // 'YYYY-MM' -> { count, total, men, women, both }
   d.forEach(r => {
@@ -5015,7 +5477,7 @@ function srRenderYearlyCalendar(d) {
   });
   const keys = Object.keys(byMonth).sort();
   if (!keys.length) {
-    document.getElementById('sr-calendar').innerHTML = '<div style="padding:20px;color:#718096;font-size:12px;text-align:center;">لا توجد حجوزات لعرضها</div>';
+    document.getElementById(targetId).innerHTML = '<div style="padding:20px;color:#718096;font-size:12px;text-align:center;">لا توجد حجوزات لعرضها</div>';
     return;
   }
   const thisMonthKey = new Date().toISOString().slice(0, 7);
@@ -5032,7 +5494,7 @@ function srRenderYearlyCalendar(d) {
     </div>`;
   });
   html += '</div>';
-  document.getElementById('sr-calendar').innerHTML = html;
+  document.getElementById(targetId).innerHTML = html;
 }
 
 function srRenderCalendar(d, ft) {
@@ -5046,9 +5508,6 @@ function srRenderCalendar(d, ft) {
       if(!bookingsByDate[dt].find(x=>x._id===r._id)) bookingsByDate[dt].push(r);
     });
   });
-
-  // ── الفترة كاملة: شبكة سنوية — عدد الحجوزات وإجمالي المبلغ لكل شهر بدل تقويم يومي ──
-  if (ft === 'all') { srRenderYearlyCalendar(d); return; }
 
   // Get the month to display
   let year=2026, month;
@@ -5411,9 +5870,9 @@ function cmpRenderCharts(aD,bD,aL,bL){
 
 // ==================== PIN LOGIN SYSTEM ====================
 const PIN_CONFIG = {
-  admin: { pin: '1234', label: 'مدير', roles: ['dashboard','records','report','entry','sales-records','sales-report','sales-compare','maintenance-entry','maintenance-records'] },
+  admin: { pin: '1234', label: 'مدير', roles: ['dashboard','records','report','entry','sales-records','sales-report','sales-compare','maintenance-entry','maintenance-records','full-period'] },
   staff: { pin: '5678', label: 'موظف', roles: ['entry','sales-records','records','sales-report','maintenance-entry','maintenance-records'] },
-  accounts: { pin: '2690', label: 'الحسابات', roles: ['dashboard','records','report','entry','sales-records','sales-report','sales-compare','maintenance-entry','maintenance-records'] }
+  accounts: { pin: '2690', label: 'الحسابات', roles: ['dashboard','records','report','entry','sales-records','sales-report','sales-compare','maintenance-entry','maintenance-records','full-period'] }
 };
 
 let pinCurrentRole = 'admin';
@@ -5474,13 +5933,18 @@ function pinLogout() {
   pinBuffer = '';
   pinUpdateDots();
   document.getElementById('pin-error').textContent = '';
+  const badge = document.getElementById('user-badge');
+  if (badge) badge.textContent = '';
   pinSelectRole('admin');
   document.getElementById('pin-overlay').style.display = 'flex';
 }
 
+const PIN_ROLE_ICONS = { admin: '🔐', staff: '👤', accounts: '💼' };
 function pinApplyPermissions() {
   if (!pinLoggedInRole) return;
   const allowed = PIN_CONFIG[pinLoggedInRole].roles;
+  const badge = document.getElementById('user-badge');
+  if (badge) badge.textContent = (PIN_ROLE_ICONS[pinLoggedInRole] || '👤') + ' ' + PIN_CONFIG[pinLoggedInRole].label;
   document.querySelectorAll('.tab[data-roles], .tab-dropdown-item[data-roles]').forEach(tab => {
     const tabRoles = tab.getAttribute('data-roles').split(',');
     const hasAccess = tabRoles.includes(pinLoggedInRole);
