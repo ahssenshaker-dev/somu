@@ -77,6 +77,16 @@
   .sr-mode-switch { display:inline-flex; gap:0; background:#edf2f7; border-radius:10px; padding:3px; }
   .sr-mode-switch button { padding:5px 12px; border:none; border-radius:8px; cursor:pointer; font-size:12px; font-weight:700; font-family:inherit; background:transparent; color:#718096; }
   .sr-mode-switch button.on { background:#e94560; color:#fff; }
+  .sr-kpi7 { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:10px; }
+  @media (min-width: 1350px) { .sr-kpi7 { grid-template-columns:repeat(7,1fr); } }
+  .sr-kpi7 .s-kpi-lbl { line-height:1.5; }
+  .pay-badge { display:inline-block; font-size:11px; font-weight:800; padding:3px 9px; border-radius:6px; }
+  .pay-full { background:#38a16922; color:#2f855a; }
+  .pay-part { background:#e53e3e22; color:#c53030; }
+  .sr2-search-wrap { position:relative; display:inline-flex; align-items:center; }
+  .sr2-search-wrap input { padding:5px 10px 5px 28px; border:1px solid #cbd5e0; border-radius:8px; font:inherit; font-size:12px; width:210px; outline:none; }
+  .sr2-search-wrap input:focus { border-color:#e94560; box-shadow:0 0 0 3px rgba(233,69,96,0.12); }
+  .sr2-search-wrap button { position:absolute; left:6px; border:none; background:#e2e8f0; border-radius:50%; width:18px; height:18px; font-size:10px; line-height:18px; cursor:pointer; padding:0; display:none; }
   .sr-hide-in-fp { display:none !important; }
   @media print { body.print-sales-report #sr-fp-wrap { display:none !important; } }
   .s-kpi.clickable { cursor: pointer; transition: transform .12s, box-shadow .12s; }
@@ -220,7 +230,7 @@
     body.print-sales-report #tab-sales-report { display: block !important; }
     body.print-sales-report #tab-sales-report .content { padding: 0 !important; margin: 0 !important; }
     /* KPIs */
-    body.print-sales-report #sr-kpis { display: grid !important; grid-template-columns: repeat(6,1fr) !important; gap: 3px !important; margin-bottom: 4px !important; }
+    body.print-sales-report #sr-kpis { display: grid !important; grid-template-columns: repeat(7,1fr) !important; gap: 3px !important; margin-bottom: 4px !important; }
     body.print-sales-report .s-kpi { padding: 4px 8px !important; box-shadow: none !important; border: 1px solid #dde3ec !important; break-inside: avoid; }
     body.print-sales-report .s-kpi-val { font-size: 13px !important; }
     body.print-sales-report .s-kpi-lbl { font-size: 7px !important; margin-top: 0 !important; }
@@ -969,7 +979,9 @@
           <th style="min-width:85px;background:#7a5a1a">مدة الحجز</th>
           <th style="min-width:110px;background:#1a6b4a">المصدر</th>
           <th style="min-width:100px;background:#0f4a2a">إجمالي المبلغ</th>
+          <th style="min-width:100px;background:#1a6e5a">مقدم الحجز</th>
           <th style="min-width:85px;background:#374a1e">حالة الحجز</th>
+          <th style="min-width:80px;background:#4a5568">حالة الدفع</th>
           <th style="min-width:160px;background:#374a1e">ملاحظات</th>
           <th class="col-del" style="min-width:36px;background:#2d3a52"></th>
         </tr></thead>
@@ -1009,7 +1021,7 @@
   </div>
 
   <!-- KPI Row -->
-  <div id="sr-kpis" class="sr-rep-part" style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:10px;"></div>
+  <div id="sr-kpis" class="sr-rep-part sr-kpi7"></div>
 
   <!-- ROW 1: Calendar + 2 bar charts stacked -->
   <div class="sr-rep-part" style="display:grid;grid-template-columns:1.6fr 1fr;gap:10px;margin-bottom:10px;">
@@ -1057,7 +1069,7 @@
 
   <!-- ===== الفترة الكاملة (للمدير والحسابات فقط) ===== -->
   <div id="sr-fp-wrap" style="display:none;">
-    <div id="fp-kpis" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px;"></div>
+    <div id="fp-kpis" class="sr-kpi7"></div>
     <div class="fp-list-card" style="margin-bottom:10px;">
       <div class="s-cal-title" id="fp-cal-title" style="font-size:13px;font-weight:700;color:#4a5568;margin-bottom:8px;">📊 الحجوزات شهرياً — كل الفترة</div>
       <div id="fp-calendar"></div>
@@ -1066,7 +1078,7 @@
       <div class="fp-chart-card half"><div class="fp-ct">📅 الحجوزات شهرياً</div><div class="fp-chart-box"><canvas id="fp-ch-book"></canvas></div></div>
       <div class="fp-chart-card half"><div class="fp-ct">💰 المبيعات شهرياً <span id="fp-ch-sales-note" style="font-weight:600;color:#a0aec0;font-size:10px;"></span></div><div class="fp-chart-box"><canvas id="fp-ch-sales"></canvas></div></div>
       <div class="fp-chart-card"><div class="fp-ct">⚖️ الإيرادات والمصروفات والأرباح</div><div class="fp-chart-box"><canvas id="fp-ch-fin"></canvas></div></div>
-      <div class="fp-chart-card"><div class="fp-ct">💳 المدفوع والمتبقي</div><div class="fp-chart-box"><canvas id="fp-ch-paid"></canvas></div></div>
+      <div class="fp-chart-card"><div class="fp-ct">💳 التحصيل والمتبقي</div><div class="fp-chart-box"><canvas id="fp-ch-paid"></canvas></div></div>
       <div class="fp-chart-card"><div class="fp-ct">🏠 توزيع الأقسام</div><div class="fp-chart-box"><canvas id="fp-ch-sec"></canvas></div></div>
       <div class="fp-chart-card"><div class="fp-ct">📣 مصادر الحجوزات</div><div class="fp-chart-box"><canvas id="fp-ch-src"></canvas></div></div>
     </div>
@@ -1088,7 +1100,7 @@
 <div class="modal-overlay" id="sr-totals-modal-overlay" onclick="if(event.target===this)srCloseTotalsModal()">
   <div class="modal" style="width:420px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-      <div style="font-size:16px;font-weight:800;color:#1a1a2e;">💳 المدفوع والمتبقي</div>
+      <div style="font-size:16px;font-weight:800;color:#1a1a2e;">💳 تفصيل الإيرادات</div>
       <button onclick="srCloseTotalsModal()" style="border:none;background:#edf2f7;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer;">✕ إغلاق</button>
     </div>
     <div id="sr-totals-modal-body" style="display:flex;flex-direction:column;gap:10px;"></div>
@@ -1226,6 +1238,10 @@
   </div>
   <div class="s-toolbar" style="padding:10px 16px;gap:8px;flex-wrap:wrap;">
     <span class="s-label" style="font-size:13px;">📋 سجل المبيعات</span>
+    <span class="sr2-search-wrap">
+      <input type="search" id="sr2-search" placeholder="🔍 بحث بالاسم أو الجوال..." oninput="sr2SearchDebounced()" autocomplete="off">
+      <button type="button" id="sr2-search-clear" onclick="sr2ClearSearch()" title="مسح البحث">✕</button>
+    </span>
     <select class="s-select" id="sr2-filter" onchange="salesRecordsInit()" style="padding:5px 10px;font-size:12px;">
       <option value="all">جميع الشهور</option>
       <option value="2026-7">يوليو 2026</option>
@@ -1243,6 +1259,11 @@
       <option value="تم الدخول">تم الدخول</option>
       <option value="مؤقت">مؤقت</option>
       <option value="ملغي">ملغي</option>
+    </select>
+    <select class="s-select" id="sr2-pay" onchange="salesRecordsInit()" style="padding:5px 10px;font-size:12px;">
+      <option value="all">جميع حالات الدفع</option>
+      <option value="كامل">كامل</option>
+      <option value="مقدم">مقدم</option>
     </select>
     <span class="s-spacer"></span>
     <span id="sr2-summary" style="font-size:12px;color:#718096;font-weight:700;"></span>
@@ -1269,8 +1290,9 @@
           <th style="min-width:105px;background:#6b46c1">القسم</th>
           <th style="min-width:95px;background:#1a6b4a">المصدر</th>
           <th style="min-width:95px;background:#0f4a2a">المبلغ</th>
-          <th style="min-width:95px;background:#1a6e5a">المدفوع</th>
+          <th style="min-width:95px;background:#1a6e5a">مقدم الحجز</th>
           <th style="min-width:95px;background:#7a1a1a">متبقي الإيجار</th>
+          <th style="min-width:80px;background:#4a5568">حالة الدفع</th>
           <th style="min-width:70px;background:#374a1e">الحالة</th>
           <th style="min-width:110px;background:#2c4a6e">الجوال</th>
           <th style="min-width:130px;background:#374a1e">ملاحظات</th>
@@ -3597,10 +3619,11 @@ function entrySalesSubrowHTML(r) {
         </select>
         <label style="color:#4a5568;">المبلغ:</label>
         <input type="number" id="ssub-amount-${r._eid}" value="${escH(r.salesAmount||'')}" placeholder="بالريال" oninput="entrySalesRecalcRemaining('${r._eid}')" style="width:90px;padding:4px 6px;border:1px solid #c4b5fd;border-radius:5px;font-size:12px;">
-        <label style="color:#4a5568;">المدفوع:</label>
-        <input type="number" id="ssub-paid-${r._eid}" value="${escH(r.salesPaid||'')}" placeholder="المدفوع" oninput="entrySalesRecalcRemaining('${r._eid}')" style="width:90px;padding:4px 6px;border:1px solid #6ee7b7;border-radius:5px;font-size:12px;">
+        <label style="color:#4a5568;">مقدم الحجز:</label>
+        <input type="number" id="ssub-paid-${r._eid}" value="${escH(r.salesPaid||'')}" placeholder="مقدم الحجز" oninput="entrySalesRecalcRemaining('${r._eid}')" style="width:90px;padding:4px 6px;border:1px solid #6ee7b7;border-radius:5px;font-size:12px;">
         <label style="color:#7a1a1a;font-weight:700;">متبقي الإيجار:</label>
-        <span id="ssub-remaining-${r._eid}" style="font-weight:800;color:${((r.salesAmount||0)-(r.salesPaid||0))>0?'#c53030':'#38a169'};">${((r.salesAmount||0)-(r.salesPaid||0)).toLocaleString('ar-SA')} ﷼</span>
+        <span id="ssub-remaining-${r._eid}" style="font-weight:800;color:${payRemaining({amount:r.salesAmount,paidAmount:r.salesPaid,status:r.salesStatus||'تم الحجز'})>0?'#c53030':'#38a169'};">${payRemaining({amount:r.salesAmount,paidAmount:r.salesPaid,status:r.salesStatus||'تم الحجز'}).toLocaleString('ar-SA')} ﷼</span>
+        <span id="ssub-pay-${r._eid}">${payBadgeHTML({amount:r.salesAmount,paidAmount:r.salesPaid,status:r.salesStatus||'تم الحجز'})}</span>
         <label style="color:#4a5568;">حالة الحجز:</label>
         <select id="ssub-status-${r._eid}" style="padding:4px 6px;border:1px solid #c4b5fd;border-radius:5px;font-size:12px;">
           ${['تم الحجز','تم الدخول','مؤقت','ملغي'].map(v=>`<option ${(r.salesStatus||'تم الحجز')===v?'selected':''}>${v}</option>`).join('')}
@@ -3612,14 +3635,19 @@ function entrySalesSubrowHTML(r) {
 }
 
 function entrySalesRecalcRemaining(eid) {
-  const amount = parseFloat(document.getElementById('ssub-amount-' + eid)?.value) || 0;
-  const paid = parseFloat(document.getElementById('ssub-paid-' + eid)?.value) || 0;
+  const tmp = {
+    amount: parseFloat(document.getElementById('ssub-amount-' + eid)?.value) || 0,
+    paidAmount: parseFloat(document.getElementById('ssub-paid-' + eid)?.value) || 0,
+    status: document.getElementById('ssub-status-' + eid)?.value || 'تم الحجز'
+  };
   const el = document.getElementById('ssub-remaining-' + eid);
   if (el) {
-    const remaining = amount - paid;
+    const remaining = payRemaining(tmp);
     el.textContent = remaining.toLocaleString('ar-SA') + ' ﷼';
     el.style.color = remaining > 0 ? '#c53030' : '#38a169';
   }
+  const pe = document.getElementById('ssub-pay-' + eid);
+  if (pe) pe.innerHTML = payBadgeHTML(tmp);
 }
 
 function entryToggleSalesSubrow(eid, typeVal) {
@@ -3658,7 +3686,12 @@ async function entrySalesFieldChanged(eid, field, val) {
     }
   }
 
+  if (field === 'salesStatus' && val === 'تم الدخول' && (r.salesStatus || 'تم الحجز') !== 'تم الدخول') {
+    r.salesPaid = '';
+    const pi = document.getElementById('ssub-paid-' + eid); if (pi) pi.value = '';
+  }
   r[field] = val;
+  entrySalesRecalcRemaining(eid);
   clearTimeout(entrySalesAutoTimer);
   entrySalesAutoTimer = setTimeout(() => entrySaveSalesLink(eid), 500);
 }
@@ -3679,6 +3712,7 @@ async function entrySaveSalesLink(eid) {
     contactRecordId: eid
   };
   const idx = salesData.findIndex(x => x._id === salesId);
+  payApplyStatusRule(rec, idx > -1 ? salesData[idx].status : null);
   if (idx > -1) salesData[idx] = rec; else salesData.push(rec);
   await salesUpsertRow(rec);
   const isNewLink = !r.linkedSalesId;
@@ -3694,6 +3728,64 @@ async function entrySaveSalesLink(eid) {
 // ==================== END LINK CONTACT ↔ SALES ====================
 
 // ==================== END ENTRY TAB ====================
+
+// ==================== حالة الدفع / مقدم الحجز / مؤشرات الإيرادات ====================
+// حالة الدفع تُشتق من البيانات (لا تُخزَّن) فتبقى متسقة دائماً:
+//  • تم الدخول           → كامل (المبلغ محصَّل بالكامل ويُصفَّر مقدم الحجز)
+//  • مقدم الحجز ≥ المبلغ → كامل
+//  • أي مقدم جزئي        → مقدم
+function payStatusOf(r) {
+  const amount = Number(r && r.amount) || 0, paid = Number(r && r.paidAmount) || 0;
+  if (r && r.status === 'تم الدخول') return 'كامل';
+  if (amount > 0 && paid >= amount) return 'كامل';
+  if (amount <= 0 && paid <= 0) return '';
+  return 'مقدم';
+}
+function payBadgeHTML(r) {
+  const st = payStatusOf(r);
+  if (!st) return '<span style="color:#a0aec0;">—</span>';
+  return `<span class="pay-badge ${st === 'كامل' ? 'pay-full' : 'pay-part'}">${st}</span>`;
+}
+function payRemaining(r) {
+  if (!r || r.status === 'تم الدخول' || r.status === 'ملغي') return 0;
+  return Math.max((Number(r.amount) || 0) - (Number(r.paidAmount) || 0), 0);
+}
+// عند الانتقال إلى "تم الدخول": الدفع يصبح كامل ويُصفَّر مقدم الحجز
+function payApplyStatusRule(rec, oldStatus) {
+  if (rec && rec.status === 'تم الدخول' && oldStatus !== 'تم الدخول') rec.paidAmount = 0;
+}
+function salesTodayStr() {
+  const t = new Date();
+  return t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0');
+}
+// مؤشرات الإيرادات لمجموعة حجوزات (الملغاة لا تُحتسب)
+function salesMetrics(d) {
+  const today = salesTodayStr();
+  let expected = 0, deposits = 0, collected = 0;
+  (d || []).forEach(r => {
+    if (r.status === 'ملغي') return;
+    const amount = Number(r.amount) || 0;
+    expected += amount;
+    if (r.status === 'تم الدخول') { collected += amount; return; }
+    const dates = (r.bookingDates && r.bookingDates.length) ? r.bookingDates : [r.date];
+    const last = dates.filter(Boolean).sort().pop() || '';
+    if (last && last >= today) {
+      const paid = Number(r.paidAmount) || 0;
+      deposits += amount > 0 ? Math.min(paid, amount) : paid;
+    }
+  });
+  const total = collected + deposits;
+  return { expected, deposits, collected, total, remaining: Math.max(expected - total, 0) };
+}
+// تطبيع النص العربي للبحث (همزات، تاء مربوطة، ألف مقصورة، تشكيل، أرقام هندية)
+function arNorm(s) {
+  return String(s || '').toLowerCase()
+    .replace(/[\u064B-\u065F\u0670\u0640]/g, '')
+    .replace(/[أإآٱ]/g, 'ا').replace(/ى/g, 'ي').replace(/ة/g, 'ه')
+    .replace(/[\u0660-\u0669]/g, c => String(c.charCodeAt(0) - 0x0660))
+    .replace(/\s+/g, ' ').trim();
+}
+// ==================== END حالة الدفع ====================
 
 // ==================== SALES DATA ====================
 const SALES_DATA_KEY = 'smo_sales_records';
@@ -4091,7 +4183,9 @@ async function checkinConfirmAttendance() {
   if (!checkinLastId) return;
   const r = salesData.find(x => x._id === checkinLastId);
   if (!r) return;
+  const prevStatus = r.status;
   r.status = 'تم الدخول';
+  payApplyStatusRule(r, prevStatus);
   try {
     await salesUpsertRow(r);
     showToast('✅ تم تأكيد الحضور بنجاح', 'success');
@@ -4210,7 +4304,7 @@ function defaultBookingStatus() {
 }
 
 function seNewRow() {
-  return { _id: crypto.randomUUID(), saved: false, name:'', phone:'', date:'', contactDate:'', bookingDates:[], section:'قسم الرجال', duration:'', source:'Google Map', amount:'', status:defaultBookingStatus(), notes:'' };
+  return { _id: crypto.randomUUID(), saved: false, name:'', phone:'', date:'', contactDate:'', bookingDates:[], section:'قسم الرجال', duration:'', source:'Google Map', amount:'', paidAmount:'', status:defaultBookingStatus(), notes:'' };
 }
 
 function seAddRow() {
@@ -4222,9 +4316,19 @@ function seAddRow() {
 function seDeleteRow(id) { seRows=seRows.filter(r=>r._id!==id); seRender(); }
 function seClearSaved() { if(!confirm('مسح الصفوف المحفوظة؟'))return; seRows=seRows.filter(r=>!r.saved); if(!seRows.length)for(let i=0;i<3;i++)seRows.push(seNewRow()); seRender(); }
 
+function seRefreshPay(id) {
+  const r = seRows.find(x => x._id === id); const el = document.getElementById('se-pay-' + id);
+  if (r && el) el.innerHTML = payBadgeHTML({ amount: r.amount, paidAmount: r.paidAmount, status: r.status });
+}
+
 function seSetField(id, field, val) {
   const r = seRows.find(r=>r._id===id); if(!r)return;
   r[field]=val; r.saved=false;
+  if (field==='status' && val==='تم الدخول') {
+    r.paidAmount='';
+    const pi=document.querySelector(`#se-body input[data-field="paidAmount"][data-seid="${id}"]`); if(pi) pi.value='';
+  }
+  if (field==='status' || field==='amount' || field==='paidAmount') seRefreshPay(id);
   const tr=document.querySelector(`#se-body tr[data-seid="${id}"]`);
   if(tr) tr.classList.remove('row-saved');
   clearTimeout(seAutoTimer);
@@ -4316,8 +4420,9 @@ async function seSaveRow(r) {
     bookingDates: dates,
     month: fd.getMonth()+1, year: fd.getFullYear(), day: fd.getDate(),
     section: r.section, duration: dates.length > 1 ? dates.length + ' أيام' : 'يوم', source: r.source,
-    amount: parseFloat(r.amount)||0, status: r.status, notes: r.notes };
+    amount: parseFloat(r.amount)||0, paidAmount: parseFloat(r.paidAmount)||0, status: r.status, notes: r.notes };
   const idx = salesData.findIndex(x=>x._id===r._id);
+  payApplyStatusRule(rec, idx>-1 ? salesData[idx].status : null);
   if(idx>-1) salesData[idx]=rec; else salesData.push(rec);
   await salesUpsertRow(rec);
   r.saved=true;
@@ -4427,9 +4532,11 @@ function seRender() {
         ${['Google Map','TikTok','Instagram','Snap Chat','Facebook','غير محدد'].map(v=>`<option ${r.source===v?'selected':''}>${v}</option>`).join('')}
       </select></td>
       <td><input class="excel-input" placeholder="المبلغ بالريال" value="${escH(r.amount)}" data-field="amount" data-seid="${r._id}" type="number" style="text-align:center;"></td>
+      <td><input class="excel-input" placeholder="مقدم الحجز" value="${escH(r.paidAmount||'')}" data-field="paidAmount" data-seid="${r._id}" type="number" style="text-align:center;"></td>
       <td><select class="excel-select" data-field="status" data-seid="${r._id}">
         ${['تم الحجز','تم الدخول','مؤقت','ملغي'].map(v=>`<option ${r.status===v?'selected':''}>${v}</option>`).join('')}
       </select></td>
+      <td style="text-align:center;" id="se-pay-${r._id}">${payBadgeHTML({amount:r.amount,paidAmount:r.paidAmount,status:r.status})}</td>
       <td><textarea class="excel-textarea" placeholder="ملاحظات..." data-field="notes" data-seid="${r._id}" rows="2">${escH(r.notes)}</textarea></td>
       <td style="text-align:center;vertical-align:middle;"><button class="row-del-btn" onclick="seDeleteRow('${r._id}')">✕</button></td>`;
     tr.querySelectorAll('.excel-input,.excel-select,.excel-textarea').forEach(el=>{
@@ -4811,7 +4918,7 @@ async function salesReportInit() {
   try { srRenderKPIs(filtered, titleLabel); } catch(e) { console.error('srRenderKPIs error:', e); }
   try { srRenderCalendar(filtered, ft); } catch(e) { console.error('srRenderCalendar error:', e); const cal=document.getElementById('sr-calendar'); if(cal) cal.innerHTML='<div style="padding:20px;color:#e53e3e;font-size:12px;">⚠️ تعذر عرض الكالندر — تحقق من بيانات السجلات (اسم/تاريخ مفقود)</div>'; }
   try { srRenderCharts(filtered); } catch(e) { console.error('srRenderCharts error:', e); }
-  try { await expRenderPanel(ft, filtered.reduce((s,r)=>s+(r.amount||0),0), titleLabel); } catch(e) { console.error('expRenderPanel error:', e); }
+  try { await expRenderPanel(ft, salesMetrics(filtered).total, titleLabel); } catch(e) { console.error('expRenderPanel error:', e); }
 }
 
 // ==================== المصروفات وصافي الأرباح (تقرير المبيعات) ====================
@@ -5056,20 +5163,19 @@ async function fpSaveRevenue() {
   fpUpdateProfit();
 }
 
-function fpUpdateProfit() {
-  const expTotal = fpExpTotal();
-  const profit = fpRevenue - expTotal;
-  const el = document.getElementById('fp-profit-val');
-  if (el) { el.textContent = expFmt(profit) + ' ﷼'; el.style.color = profit >= 0 ? '#047857' : '#c53030'; }
+function fpMetrics() {
+  const m = salesMetrics(salesData);
+  const manual = fpRevenue > 0;                       // إدخال يدوي لإجمالي الإيرادات (اختياري)
+  const total = manual ? fpRevenue : m.total;
+  const expenses = fpExpTotal();
+  return { ...m, manual, total, remaining: Math.max(m.expected - total, 0), expenses, net: total - expenses };
 }
+function fpUpdateProfit() { fpRenderKPIs(); }
 
 function fpSyncKPIsFromExpenses() {
-  const total = fpExpTotal();
-  const el = document.getElementById('fp-expenses-val');
-  if (el) el.textContent = expFmt(total) + ' ﷼';
   const sm = document.getElementById('fp-exp-summary');
   if (sm) sm.innerHTML = fpExpSummaryHTML();
-  fpUpdateProfit();
+  fpRenderKPIs();
   try { fpRenderFinanceChart(); } catch(e) {}
 }
 
@@ -5236,34 +5342,16 @@ function fpClearRevModal() {
 
 // ---------- المربعات العلوية ----------
 function fpRenderKPIs() {
-  const cnt = salesData.length;
-  const srcCount = {};
-  salesData.forEach(r => { srcCount[r.source] = (srcCount[r.source] || 0) + 1; });
-  const topSrc = Object.entries(srcCount).sort((a, b) => b[1] - a[1])[0];
-  const expTotal = fpExpTotal();
-  const profit = fpRevenue - expTotal;
-  const modeTxt = fpRevData.mode === 'monthly' ? 'حسب الشهر' : 'إجمالي';
+  const m = fpMetrics();
+  const f = n => n.toLocaleString('ar-SA') + ' ﷼';
   document.getElementById('fp-kpis').innerHTML = `
-    <div class="s-kpi clickable" onclick="fpOpenRevModal()" title="اضغط لإدخال الإيرادات">
-      <div class="s-kpi-val" id="fp-revenue-val" style="${fpRevenue > 0 ? '' : 'color:#a0aec0;font-size:15px;'}">${fpRevenue > 0 ? expFmt(fpRevenue) + ' ﷼' : 'اضغط للإدخال'}</div>
-      <div class="s-kpi-lbl">إجمالي الإيرادات ✏️ ${fpRevenue > 0 ? '(' + modeTxt + ' — اضغط للتعديل)' : '(إدخال يدوي)'}</div>
-    </div>
-    <div class="s-kpi rose clickable" onclick="fpOpenExpensesModal()" title="اضغط لعرض وتعديل المصاريف">
-      <div class="s-kpi-val" id="fp-expenses-val">${expFmt(expTotal)} ﷼</div>
-      <div class="s-kpi-lbl">إجمالي المصروفات ✏️ (${fpExpIsMonthly() ? 'حسب الشهر' : 'إجمالي الفترة'} — اضغط للتفاصيل)</div>
-    </div>
-    <div class="s-kpi green">
-      <div class="s-kpi-val">${cnt}</div>
-      <div class="s-kpi-lbl">إجمالي الحجوزات (تلقائي)</div>
-    </div>
-    <div class="s-kpi orange">
-      <div class="s-kpi-val">${topSrc ? topSrc[0] : '-'}</div>
-      <div class="s-kpi-lbl">أعلى مصدر (تلقائي${topSrc ? ' — ' + topSrc[1] + ' حجز' : ''})</div>
-    </div>
-    <div class="s-kpi" id="fp-profit-card">
-      <div class="s-kpi-val" id="fp-profit-val" style="color:${profit >= 0 ? '#047857' : '#c53030'}">${expFmt(profit)} ﷼</div>
-      <div class="s-kpi-lbl">إجمالي الأرباح (تلقائي)</div>
-    </div>
+    <div class="s-kpi blue"><div class="s-kpi-val">${f(m.expected)}</div><div class="s-kpi-lbl">الإيرادات المتوقعة 💳<br>(إجمالي عمود المبلغ)</div></div>
+    <div class="s-kpi orange"><div class="s-kpi-val">${f(m.deposits)}</div><div class="s-kpi-lbl">إجمالي مقدم الحجوزات (العربون)<br>من تاريخ اليوم فما فوق</div></div>
+    <div class="s-kpi green"><div class="s-kpi-val">${f(m.collected)}</div><div class="s-kpi-lbl">الإيرادات المحصّلة فعلياً<br>(دخلوا الشاليه)</div></div>
+    <div class="s-kpi purple clickable" onclick="fpOpenRevModal()" title="اضغط لإدخال إجمالي الإيرادات يدوياً (اختياري)"><div class="s-kpi-val" id="fp-revenue-val">${f(m.total)}</div><div class="s-kpi-lbl">إجمالي الإيرادات ✏️<br>${m.manual ? '(مُدخل يدوياً — اضغط للتعديل)' : '(المحصّلة + المقدم — اضغط للإدخال اليدوي)'}</div></div>
+    <div class="s-kpi"><div class="s-kpi-val" style="color:${m.remaining>0?'#c53030':'#38a169'}">${f(m.remaining)}</div><div class="s-kpi-lbl">باقي الإيرادات المتوقعة<br>غير المحصّلة</div></div>
+    <div class="s-kpi rose clickable" onclick="fpOpenExpensesModal()" title="اضغط لعرض وتعديل المصاريف"><div class="s-kpi-val" id="fp-expenses-val">${f(m.expenses)}</div><div class="s-kpi-lbl">إجمالي المصروفات ✏️<br>(${fpExpIsMonthly() ? 'حسب الشهر' : 'إجمالي الفترة'} — اضغط للتفاصيل)</div></div>
+    <div class="s-kpi"><div class="s-kpi-val" id="fp-profit-val" style="color:${m.net>=0?'#047857':'#c53030'}">${f(m.net)}</div><div class="s-kpi-lbl">صافي الأرباح الفعلية<br>(إجمالي الإيرادات − المصروفات)</div></div>
   `;
 }
 
@@ -5275,11 +5363,10 @@ function fpRenderFinanceChart() {
   srDestroyChart('fpFin');
   const ctx = document.getElementById('fp-ch-fin');
   if (!ctx || typeof Chart === 'undefined') return;
-  const expTotal = fpExpTotal();
-  const profit = fpRevenue - expTotal;
+  const m = fpMetrics();
   srCharts['fpFin'] = new Chart(ctx, {
     type: 'bar',
-    data: { labels: ['الإيرادات', 'المصروفات', 'الأرباح'], datasets: [{ label: '﷼', data: [fpRevenue, expTotal, profit], backgroundColor: ['#10b981', '#e94560', profit >= 0 ? '#3b82f6' : '#c53030'], borderRadius: 6 }] },
+    data: { labels: ['إجمالي الإيرادات', 'المصروفات', 'صافي الأرباح'], datasets: [{ label: '﷼', data: [m.total, m.expenses, m.net], backgroundColor: ['#10b981', '#e94560', m.net >= 0 ? '#3b82f6' : '#c53030'], borderRadius: 6 }] },
     options: { maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ' ' + (c.parsed.y || 0).toLocaleString('ar-SA') + ' ﷼' } } }, scales: { y: { ticks: { callback: fpYTicks, font: { size: 9 } } }, x: { ticks: { font: { size: 10 } } } } }
   });
 }
@@ -5318,14 +5405,12 @@ function fpRenderCharts() {
   // الإيرادات / المصروفات / الأرباح
   fpRenderFinanceChart();
 
-  // المدفوع والمتبقي
-  const total = salesData.reduce((s, r) => s + (r.amount || 0), 0);
-  const paid = salesData.reduce((s, r) => s + Math.min(r.paidAmount || 0, r.amount || 0), 0);
-  const remaining = Math.max(total - paid, 0);
+  // التحصيل: محصّل فعلياً / مقدم الحجوزات / متبقٍ
+  const pm = fpMetrics();
   const c3 = document.getElementById('fp-ch-paid');
   if (c3) srCharts['fpPaid'] = new Chart(c3, {
     type: 'doughnut',
-    data: { labels: ['المدفوع', 'المتبقي'], datasets: [{ data: [paid, remaining], backgroundColor: ['#10b981', '#ef4444'], hoverOffset: 6, borderWidth: 3 }] },
+    data: { labels: ['محصّل فعلياً', 'مقدم الحجوزات', 'متبقٍ'], datasets: [{ data: [pm.collected, pm.deposits, pm.remaining], backgroundColor: ['#10b981', '#f59e0b', '#ef4444'], hoverOffset: 6, borderWidth: 3 }] },
     options: { maintainAspectRatio: false, cutout: '50%', plugins: { legend: { position: 'bottom', labels: { font: { family: 'inherit', size: 11 }, boxWidth: 13, padding: 8 } }, tooltip: { callbacks: { label: c => ' ' + c.label + ': ' + (c.parsed || 0).toLocaleString('ar-SA') + ' ﷼' } } } }
   });
 
@@ -5419,38 +5504,32 @@ let srCurrentLabel = '';
 function srRenderKPIs(d, label) {
   srCurrentFiltered = d;
   srCurrentLabel = label;
-  const total=d.reduce((s,r)=>s+r.amount,0);
-  const cnt=d.length;
-  const days=new Set(d.map(r=>r.date)).size;
-  const srcCount={};
-  d.forEach(r=>{srcCount[r.source]=(srcCount[r.source]||0)+1;});
-  const topSrc=Object.entries(srcCount).sort((a,b)=>b[1]-a[1])[0];
-  const avg=cnt?Math.round(total/cnt):0;
-  const maxDay=days?Math.round(total/days):0;
+  const m = salesMetrics(d);
   document.getElementById('sr-kpis').innerHTML=`
-    <div class="s-kpi clickable" onclick="srOpenTotalsModal()" title="اضغط لعرض إجمالي المدفوع والمتبقي"><div class="s-kpi-val">${total.toLocaleString('ar-SA')} ﷼</div><div class="s-kpi-lbl">إجمالي المبيعات 💳 (اضغط للتفاصيل)</div></div>
-    <div class="s-kpi green"><div class="s-kpi-val">${cnt}</div><div class="s-kpi-lbl">عدد الحجوزات</div></div>
-    <div class="s-kpi blue"><div class="s-kpi-val">${days}</div><div class="s-kpi-lbl">أيام الحجز</div></div>
-    <div class="s-kpi orange"><div class="s-kpi-val">${topSrc?topSrc[0]:'-'}</div><div class="s-kpi-lbl">أعلى مصدر (${topSrc?topSrc[1]:0} حجز)</div></div>
-    <div class="s-kpi rose clickable" onclick="expOpenModal()" title="اضغط لعرض وتعديل المصاريف الثابتة"><div class="s-kpi-val" id="exp-kpi-exp">—</div><div class="s-kpi-lbl">إجمالي المصروفات ✏️ (اضغط للتفاصيل)</div></div>
-    <div class="s-kpi" id="exp-kpi-net-card"><div class="s-kpi-val" id="exp-kpi-net">—</div><div class="s-kpi-lbl">صافي الأرباح</div></div>
+    <div class="s-kpi blue clickable" onclick="srOpenTotalsModal()" title="اضغط لعرض تفصيل الإيرادات"><div class="s-kpi-val">${m.expected.toLocaleString('ar-SA')} ﷼</div><div class="s-kpi-lbl">الإيرادات المتوقعة 💳<br>(إجمالي عمود المبلغ)</div></div>
+    <div class="s-kpi orange"><div class="s-kpi-val">${m.deposits.toLocaleString('ar-SA')} ﷼</div><div class="s-kpi-lbl">إجمالي مقدم الحجوزات (العربون)<br>من تاريخ اليوم فما فوق</div></div>
+    <div class="s-kpi green"><div class="s-kpi-val">${m.collected.toLocaleString('ar-SA')} ﷼</div><div class="s-kpi-lbl">الإيرادات المحصّلة فعلياً<br>(دخلوا الشاليه)</div></div>
+    <div class="s-kpi purple"><div class="s-kpi-val">${m.total.toLocaleString('ar-SA')} ﷼</div><div class="s-kpi-lbl">إجمالي الإيرادات<br>(المحصّلة + المقدم)</div></div>
+    <div class="s-kpi"><div class="s-kpi-val" style="color:${m.remaining>0?'#c53030':'#38a169'}">${m.remaining.toLocaleString('ar-SA')} ﷼</div><div class="s-kpi-lbl">باقي الإيرادات المتوقعة<br>غير المحصّلة</div></div>
+    <div class="s-kpi rose clickable" onclick="expOpenModal()" title="اضغط لعرض وتعديل المصاريف الثابتة"><div class="s-kpi-val" id="exp-kpi-exp">—</div><div class="s-kpi-lbl">إجمالي المصروفات ✏️<br>(اضغط للتفاصيل)</div></div>
+    <div class="s-kpi" id="exp-kpi-net-card"><div class="s-kpi-val" id="exp-kpi-net">—</div><div class="s-kpi-lbl">صافي الأرباح الفعلية<br>(إجمالي الإيرادات − المصروفات)</div></div>
   `;
 }
 
 // ==================== نافذة إجمالي المدفوع / المتبقي (تقرير المبيعات) ====================
 function srOpenTotalsModal() {
   const d = srCurrentFiltered || [];
-  const total = d.reduce((s,r) => s + (r.amount||0), 0);
-  const paid = d.reduce((s,r) => s + (r.paidAmount||0), 0);
-  const remaining = total - paid;
+  const m = salesMetrics(d);
   const body = document.getElementById('sr-totals-modal-body');
   if (body) {
     body.innerHTML = `
       <div class="sr-exp-line"><span>الفترة</span><b>${escH(srCurrentLabel||'')}</b></div>
-      <div class="sr-exp-line"><span>عدد الحجوزات</span><b>${d.length}</b></div>
-      <div class="sr-exp-line"><span>إجمالي المبيعات</span><b>${total.toLocaleString('ar-SA')} ﷼</b></div>
-      <div class="sr-exp-line"><span>إجمالي المدفوع</span><b style="color:#047857;">${paid.toLocaleString('ar-SA')} ﷼</b></div>
-      <div class="sr-exp-line sr-exp-net"><span>إجمالي المتبقي</span><b style="color:${remaining>0?'#c53030':'#38a169'};">${remaining.toLocaleString('ar-SA')} ﷼</b></div>
+      <div class="sr-exp-line"><span>عدد الحجوزات (بدون الملغاة)</span><b>${d.filter(r => r.status !== 'ملغي').length}</b></div>
+      <div class="sr-exp-line"><span>الإيرادات المتوقعة</span><b>${m.expected.toLocaleString('ar-SA')} ﷼</b></div>
+      <div class="sr-exp-line"><span>مقدم الحجوزات (من اليوم فما فوق)</span><b style="color:#dd6b20;">${m.deposits.toLocaleString('ar-SA')} ﷼</b></div>
+      <div class="sr-exp-line"><span>المحصّلة فعلياً</span><b style="color:#047857;">${m.collected.toLocaleString('ar-SA')} ﷼</b></div>
+      <div class="sr-exp-line"><span>إجمالي الإيرادات</span><b>${m.total.toLocaleString('ar-SA')} ﷼</b></div>
+      <div class="sr-exp-line sr-exp-net"><span>الباقي غير المحصّل</span><b style="color:${m.remaining>0?'#c53030':'#38a169'};">${m.remaining.toLocaleString('ar-SA')} ﷼</b></div>
     `;
   }
   document.getElementById('sr-totals-modal-overlay').classList.add('open');
@@ -6121,7 +6200,7 @@ function sr2Export() {
   
   // Build CSV with BOM for Arabic support
   const cols = ['_id','name','phone','contactDate','bookingDates','section','duration','source','amount','status','notes','contactMonth','contactYear','month','year','day'];
-  const headers = ['المعرف','الاسم','الجوال','تاريخ طلب الحجز','تواريخ الحجز','القسم','مدة الحجز','المصدر','المبلغ','الحالة','ملاحظات','شهر الطلب','سنة الطلب','شهر الحجز','سنة الحجز','يوم الحجز'];
+  const headers = ['المعرف','الاسم','الجوال','تاريخ طلب الحجز','تواريخ الحجز','القسم','مدة الحجز','المصدر','المبلغ','مقدم الحجز','حالة الدفع','الحالة','ملاحظات','شهر الطلب','سنة الطلب','شهر الحجز','سنة الحجز','يوم الحجز'];
   
   const NL = String.fromCharCode(10); const BOM = String.fromCharCode(0xFEFF);
   let csv = BOM + headers.join(',') + NL;
@@ -6134,7 +6213,7 @@ function sr2Export() {
       contactDate,
       bDates,
       r.section||'', r.duration||'', r.source||'',
-      r.amount||0, r.status||'', (r.notes||'').replace(/,/g,'،'),
+      r.amount||0, r.paidAmount||0, payStatusOf(r), r.status||'', (r.notes||'').replace(/,/g,'،'),
       r.contactMonth || (cd ? cd.getMonth()+1 : r.month)||'',
       r.contactYear  || (cd ? cd.getFullYear() : r.year)||'',
       r.month||'', r.year||'', r.day||''
@@ -6177,6 +6256,7 @@ async function sr2Import(input) {
         'المصدر':'source','مصدر التواصل':'source',
         'المبلغ':'amount','إجمالي المبلغ':'amount','الاجمالي':'amount','اجمالي':'amount',
         'الحالة':'status','حالة الحجز':'status',
+        'مقدم الحجز':'paidAmount','المدفوع':'paidAmount','paidAmount':'paidAmount',
         'ملاحظات':'notes',
         'شهر التواصل':'contactMonth','سنة التواصل':'contactYear',
         'شهر الحجز':'month','سنة الحجز':'year','يوم الحجز':'day',
@@ -6235,6 +6315,7 @@ async function sr2Import(input) {
 
         // ─── أرقام ───
         rec.amount = parseFloat(rec.amount) || 0;
+        rec.paidAmount = parseFloat(rec.paidAmount) || 0;
         if (rec.date) {
           const dp = rec.date.split('-');
           rec.year  = parseInt(rec.year)  || parseInt(dp[0]) || 2026;
@@ -6303,23 +6384,48 @@ function sr2QueryDate() {
 
 // ==================== END IMPORT / EXPORT / QUERY ====================
 
+let sr2SearchTimer = null;
+function sr2SearchDebounced() { clearTimeout(sr2SearchTimer); sr2SearchTimer = setTimeout(salesRecordsInit, 180); }
+function sr2ClearSearch() { const i = document.getElementById('sr2-search'); i.value = ''; salesRecordsInit(); i.focus(); }
+function sr2ResetFilters() {
+  document.getElementById('sr2-search').value = '';
+  ['sr2-filter', 'sr2-section', 'sr2-status', 'sr2-pay'].forEach(id => { const el = document.getElementById(id); if (el) el.value = 'all'; });
+  salesRecordsInit();
+}
+
 async function salesRecordsInit() {
   await salesLoadData();
   populateSalesMonthSelects();
   const filt = document.getElementById('sr2-filter').value;
   const secFilt = document.getElementById('sr2-section').value;
   const statusFilt = document.getElementById('sr2-status').value;
+  const payFilt = document.getElementById('sr2-pay').value;
+  const searchRaw = (document.getElementById('sr2-search').value || '').trim();
+  const clearBtn = document.getElementById('sr2-search-clear');
+  if (clearBtn) clearBtn.style.display = searchRaw ? 'block' : 'none';
 
   let filtered = [...salesData];
   if (filt !== 'all') { const [yy,mm] = filt.split('-').map(Number); filtered = filtered.filter(r => r.month === mm && r.year === yy); }
   if (secFilt !== 'all') filtered = filtered.filter(r => r.section === secFilt);
   if (statusFilt !== 'all') filtered = filtered.filter(r => r.status === statusFilt);
+  if (payFilt !== 'all') filtered = filtered.filter(r => payStatusOf(r) === payFilt);
+  const beforeSearch = filtered.length;
+  // البحث بالاسم (كل كلمة يجب أن تكون موجودة) أو الجوال — يعمل مع كل الفلاتر أعلاه
+  if (searchRaw) {
+    const tokens = arNorm(searchRaw).split(' ').filter(Boolean);
+    const qDigits = searchRaw.replace(/\D/g, '');
+    filtered = filtered.filter(r => {
+      const nm = arNorm(r.name);
+      if (tokens.every(t => nm.includes(t))) return true;
+      return qDigits.length >= 3 && String(r.phone || '').replace(/\D/g, '').includes(qDigits);
+    });
+  }
 
   // Sort by date desc
   filtered.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
   const total = filtered.reduce((s, r) => s + (r.amount || 0), 0);
-  const totalRemaining = filtered.reduce((s, r) => s + Math.max((r.amount||0) - (r.paidAmount||0), 0), 0);
+  const totalRemaining = filtered.reduce((s, r) => s + payRemaining(r), 0);
   const confirmed = filtered.filter(r => r.status === 'تم الدخول').length;
 
   // KPIs
@@ -6330,13 +6436,22 @@ async function salesRecordsInit() {
     <div class="s-kpi purple" style="padding:10px 14px;"><div class="s-kpi-val">${filtered.length ? Math.round(total/filtered.length).toLocaleString('ar-SA') : 0} ﷼</div><div class="s-kpi-lbl">متوسط الحجز</div></div>
     <div class="s-kpi" style="padding:10px 14px;background:#fef2f2;"><div class="s-kpi-val" style="color:${totalRemaining>0?'#c53030':'#38a169'}">${totalRemaining.toLocaleString('ar-SA')} ﷼</div><div class="s-kpi-lbl">إجمالي متبقي الإيجار</div></div>`;
 
-  document.getElementById('sr2-summary').textContent = filtered.length + ' سجل';
+  document.getElementById('sr2-summary').textContent = searchRaw ? (filtered.length + ' من ' + beforeSearch + ' سجل') : (filtered.length + ' سجل');
 
   // Table
   const body = document.getElementById('sr2-body');
   body.innerHTML = '';
+  if (!filtered.length) {
+    const hasFilters = searchRaw || filt !== 'all' || secFilt !== 'all' || statusFilt !== 'all' || payFilt !== 'all';
+    body.innerHTML = `<tr><td colspan="16" style="padding:28px;text-align:center;color:#718096;font-size:13px;">
+      ${searchRaw ? '🔍 لا توجد نتائج للبحث «' + escH(searchRaw) + '» ضمن الفلاتر الحالية' : 'لا توجد سجلات'}
+      ${hasFilters ? '<div style="margin-top:10px;"><button onclick="sr2ResetFilters()" style="padding:6px 14px;border:none;border-radius:7px;background:#3182ce;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">إعادة ضبط كل الفلاتر</button></div>' : ''}
+    </td></tr>`;
+    return;
+  }
   filtered.forEach((r, idx) => {
     const statusColor = r.status === 'تم الدخول' ? '#38a169' : r.status === 'ملغي' ? '#e53e3e' : r.status === 'تم الحجز' ? '#3182ce' : '#dd6b20';
+    const remainingVal = payRemaining(r);
     const secColor = r.section === 'قسم الرجال' ? '#3b82f6' : r.section === 'قسم الحريم' ? '#ec4899' : '#8b5cf6';
     const tr = document.createElement('tr');
     // حساب تواريخ الحجز والأيام
@@ -6355,7 +6470,8 @@ async function salesRecordsInit() {
       <td style="padding:5px 8px;font-size:11px;text-align:center;">${escH(r.source||'')}</td>
       <td style="padding:5px 8px;font-size:13px;font-weight:800;color:#047857;text-align:center;">${r.amount ? r.amount.toLocaleString('ar-SA')+' ﷼' : '—'}</td>
       <td style="padding:5px 8px;font-size:13px;font-weight:700;color:#1a6e5a;text-align:center;">${r.paidAmount ? r.paidAmount.toLocaleString('ar-SA')+' ﷼' : '—'}</td>
-      <td style="padding:5px 8px;font-size:13px;font-weight:800;text-align:center;color:${((r.amount||0)-(r.paidAmount||0))>0?'#c53030':'#38a169'};">${((r.amount||0)-(r.paidAmount||0)).toLocaleString('ar-SA')} ﷼</td>
+      <td style="padding:5px 8px;font-size:13px;font-weight:800;text-align:center;color:${remainingVal>0?'#c53030':'#38a169'};">${remainingVal.toLocaleString('ar-SA')} ﷼</td>
+      <td style="padding:5px 8px;text-align:center;">${payBadgeHTML(r)}</td>
       <td style="padding:5px 8px;text-align:center;"><span style="background:${statusColor}22;color:${statusColor};font-size:11px;font-weight:700;padding:3px 7px;border-radius:6px;">${escH(r.status||'')}</span></td>
       <td style="padding:5px 8px;font-size:11px;direction:ltr;text-align:center;">${escH(r.phone||'')}</td>
       <td style="padding:5px 8px;font-size:11px;color:#718096;">${escH(r.notes||'')}</td>
@@ -6435,9 +6551,10 @@ function sr2EditRow(id) {
     <td><select class="excel-select" id="sr2i-section-${id}" style="border:1px solid #e94560;border-radius:4px;padding:5px 7px;width:100%;">${secs.map(v=>'<option'+(r.section===v?' selected':'')+'>'+v+'</option>').join('')}</select></td>
     <td><select class="excel-select" id="sr2i-source-${id}" style="border:1px solid #e94560;border-radius:4px;padding:5px 7px;width:100%;">${srcs.map(v=>'<option'+(r.source===v?' selected':'')+'>'+v+'</option>').join('')}</select></td>
     <td><input class="excel-input" id="sr2i-amount-${id}" type="number" value="${r.amount||''}" oninput="sr2iRecalcRemaining('${id}')" style="border:1px solid #e94560;border-radius:4px;padding:5px 7px;width:100%;text-align:center;"></td>
-    <td><input class="excel-input" id="sr2i-paid-${id}" type="number" value="${r.paidAmount||''}" placeholder="المدفوع" oninput="sr2iRecalcRemaining('${id}')" style="border:1px solid #1a6e5a;border-radius:4px;padding:5px 7px;width:100%;text-align:center;"></td>
-    <td style="text-align:center;font-weight:800;font-size:12px;" id="sr2i-remaining-${id}">${((r.amount||0)-(r.paidAmount||0)).toLocaleString('ar-SA')} ﷼</td>
-    <td><select class="excel-select" id="sr2i-status-${id}" style="border:1px solid #e94560;border-radius:4px;padding:5px 7px;width:100%;">${stats.map(v=>'<option'+(r.status===v?' selected':'')+'>'+v+'</option>').join('')}</select></td>
+    <td><input class="excel-input" id="sr2i-paid-${id}" type="number" value="${r.paidAmount||''}" placeholder="مقدم الحجز" oninput="sr2iRecalcRemaining('${id}')" style="border:1px solid #1a6e5a;border-radius:4px;padding:5px 7px;width:100%;text-align:center;"></td>
+    <td style="text-align:center;font-weight:800;font-size:12px;color:${payRemaining(r)>0?'#c53030':'#38a169'};" id="sr2i-remaining-${id}">${payRemaining(r).toLocaleString('ar-SA')} ﷼</td>
+    <td style="text-align:center;" id="sr2i-pay-${id}">${payBadgeHTML(r)}</td>
+    <td><select class="excel-select" id="sr2i-status-${id}" onchange="sr2iStatusChanged('${id}')" style="border:1px solid #e94560;border-radius:4px;padding:5px 7px;width:100%;">${stats.map(v=>'<option'+(r.status===v?' selected':'')+'>'+v+'</option>').join('')}</select></td>
     <td><input class="excel-input" id="sr2i-phone-${id}" value="${(r.phone||'').replace(/"/g,'&quot;')}" placeholder="الجوال" style="border:1px solid #e94560;border-radius:4px;padding:5px 7px;width:100%;"></td>
     <td><textarea class="excel-textarea" id="sr2i-notes-${id}" style="border:1px solid #e94560;border-radius:4px;padding:5px 7px;width:100%;min-height:38px;">${r.notes||''}</textarea></td>
     <td style="vertical-align:middle;text-align:center;">
@@ -6510,14 +6627,28 @@ function sr2CancelInlineEdit(id) {
 }
 
 function sr2iRecalcRemaining(id) {
-  const amount = parseFloat(document.getElementById('sr2i-amount-' + id)?.value) || 0;
-  const paid = parseFloat(document.getElementById('sr2i-paid-' + id)?.value) || 0;
+  const tmp = {
+    amount: parseFloat(document.getElementById('sr2i-amount-' + id)?.value) || 0,
+    paidAmount: parseFloat(document.getElementById('sr2i-paid-' + id)?.value) || 0,
+    status: document.getElementById('sr2i-status-' + id)?.value || ''
+  };
   const el = document.getElementById('sr2i-remaining-' + id);
   if (el) {
-    const remaining = amount - paid;
+    const remaining = payRemaining(tmp);
     el.textContent = remaining.toLocaleString('ar-SA') + ' ﷼';
     el.style.color = remaining > 0 ? '#c53030' : '#38a169';
   }
+  const pe = document.getElementById('sr2i-pay-' + id);
+  if (pe) pe.innerHTML = payBadgeHTML(tmp);
+}
+// عند تغيير الحالة إلى "تم الدخول": حالة الدفع كامل ويُصفَّر مقدم الحجز مباشرة
+function sr2iStatusChanged(id) {
+  const r = salesData.find(x => x._id === id);
+  const sel = document.getElementById('sr2i-status-' + id);
+  if (r && sel && sel.value === 'تم الدخول' && r.status !== 'تم الدخول') {
+    const p = document.getElementById('sr2i-paid-' + id); if (p) p.value = '';
+  }
+  sr2iRecalcRemaining(id);
 }
 
 async function sr2SaveInlineEdit(id) {
@@ -6566,7 +6697,9 @@ async function sr2SaveInlineEdit(id) {
   r.paidAmount = parseFloat(document.getElementById('sr2i-paid-' + id)?.value) || 0;
   r.section = document.getElementById('sr2i-section-' + id)?.value || r.section;
   r.source = document.getElementById('sr2i-source-' + id)?.value || r.source;
+  const oldStatusBeforeEdit = r.status;
   r.status = document.getElementById('sr2i-status-' + id)?.value || r.status;
+  payApplyStatusRule(r, oldStatusBeforeEdit);
   r.notes = document.getElementById('sr2i-notes-' + id)?.value || '';
   r.duration = bDates.length > 1 ? bDates.length + ' أيام' : 'يوم';
 
