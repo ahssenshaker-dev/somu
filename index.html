@@ -87,6 +87,39 @@
   .sr2-search-wrap input { padding:5px 10px 5px 28px; border:1px solid #cbd5e0; border-radius:8px; font:inherit; font-size:12px; width:210px; outline:none; }
   .sr2-search-wrap input:focus { border-color:#e94560; box-shadow:0 0 0 3px rgba(233,69,96,0.12); }
   .sr2-search-wrap button { position:absolute; left:6px; border:none; background:#e2e8f0; border-radius:50%; width:18px; height:18px; font-size:10px; line-height:18px; cursor:pointer; padding:0; display:none; }
+  .sar { display:inline-block; width:0.95em; height:0.95em; vertical-align:-0.14em; fill:none; stroke:currentColor; stroke-width:2.3; stroke-linecap:round; stroke-linejoin:round; margin:0 0.04em; }
+  /* ===== تقرير الحسابات ===== */
+  .ac-kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:10px; }
+  .ac-kpis .s-kpi-lbl { line-height:1.5; }
+  .ac-kpi-hint { font-size:10px; color:#a0aec0; margin-top:3px; font-weight:600; }
+  .ac-note { display:none; margin:-2px 0 10px; padding:7px 12px; background:#fffbeb; border:1px solid #fde68a; color:#92400e; border-radius:8px; font-size:12px; font-weight:600; }
+  .ac-charts { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  .ac-card { background:#fff; border-radius:12px; padding:12px; box-shadow:0 1px 4px rgba(0,0,0,0.08); min-width:0; position:relative; }
+  .ac-card.half { grid-column:span 2; }
+  .ac-card .ac-ct { font-size:12px; font-weight:700; color:#4a5568; margin-bottom:6px; }
+  .ac-box { position:relative; height:225px; }
+  .ac-empty { position:absolute; left:0; right:0; top:34px; bottom:0; display:none; align-items:center; justify-content:center; color:#a0aec0; font-size:12px; font-weight:600; }
+  @media (max-width: 1100px) { .ac-charts { grid-template-columns:repeat(2,1fr); } }
+  @media (max-width: 900px) { .ac-kpis { grid-template-columns:repeat(2,1fr); } }
+  @media (max-width: 600px) { .ac-charts { grid-template-columns:1fr; } .ac-card.half { grid-column:span 1; } }
+  .ac-modal .modal { padding:20px; max-height:92vh; overflow:auto; }
+  .ac-tbl-wrap { max-height:46vh; overflow:auto; border:1px solid #e2e8f0; border-radius:8px; }
+  .ac-edit-tbl { width:100%; border-collapse:collapse; font-size:12px; }
+  .ac-edit-tbl th { background:#edf2f7; padding:7px 6px; text-align:right; font-size:11px; color:#4a5568; position:sticky; top:0; z-index:1; }
+  .ac-edit-tbl td { padding:4px; border-bottom:1px solid #edf2f7; vertical-align:middle; }
+  .ac-edit-tbl input { width:100%; padding:6px 7px; border:1.5px solid #e2e8f0; border-radius:6px; font:inherit; font-size:12px; box-sizing:border-box; outline:none; background:#fff; }
+  .ac-edit-tbl input:focus { border-color:#e94560; }
+  .ac-edit-tbl .ac-amt { direction:ltr; text-align:center; font-weight:700; }
+  .ac-del { border:none; background:#fed7d7; color:#c53030; border-radius:6px; width:26px; height:26px; cursor:pointer; font-weight:800; }
+  .ac-add-btn { margin-top:8px; padding:7px 14px; border:1.5px dashed #3182ce; background:#ebf8ff; color:#2b6cb0; border-radius:8px; font:inherit; font-size:12px; font-weight:700; cursor:pointer; }
+  .ac-rev-hl { background:#fff5f6 !important; border-color:#fbb6ce !important; }
+  .ac-sec-title { font-size:12px; font-weight:800; color:#4a5568; margin:14px 0 6px; }
+  .ac-sec-title small { font-weight:600; color:#a0aec0; }
+  .ac-log { max-height:190px; overflow:auto; border:1px solid #e2e8f0; border-radius:8px; background:#fafbfc; }
+  .ac-log-row { display:grid; grid-template-columns:130px 1fr auto; gap:8px; padding:6px 10px; border-bottom:1px solid #edf2f7; font-size:11px; align-items:center; }
+  .ac-log-row:last-child { border-bottom:none; }
+  .ac-log-at { color:#718096; direction:ltr; text-align:right; }
+  .ac-log-empty { padding:14px; text-align:center; color:#a0aec0; font-size:12px; }
   .sr-hide-in-fp { display:none !important; }
   @media print { body.print-sales-report #sr-fp-wrap { display:none !important; } }
   .s-kpi.clickable { cursor: pointer; transition: transform .12s, box-shadow .12s; }
@@ -558,6 +591,8 @@
 <style id="dyn-page-size">@page { size: A4 landscape; margin: 8mm; }</style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><symbol id="sar-sym" viewBox="0 0 24 24"><path d="m20 19.5-5.5 1.2"/><path d="M14.5 4v11.22a1 1 0 0 0 1.242.97L20 15.2"/><path d="m2.978 19.351 5.549-1.363A2 2 0 0 0 10 16V2"/><path d="M20 10 4 13.5"/></symbol></svg>
+
 
 <!-- HEADER -->
 <!-- ========== PIN LOGIN SCREEN ========== -->
@@ -679,6 +714,7 @@
   <div class="tab" onclick="showTab('checkin')" data-roles="staff,admin">📷 تأكيد الحضور</div>
   <div class="tab" onclick="showTab('sales-report')" data-roles="staff,admin,accounts">📊 تقرير المبيعات</div>
   <div class="tab" onclick="showTab('sales-compare')" data-roles="admin">⚖️ مقارنة الفترات</div>
+  <div class="tab" onclick="showTab('accounts-report')" data-roles="admin,accounts">💼 تقرير الحسابات</div>
 </div>
 
 <!-- DASHBOARD TAB -->
@@ -990,7 +1026,7 @@
     </div>
     <div class="entry-footer">
       <span class="entry-footer-info">💡 Tab للانتقال — الحفظ تلقائي عند إدخال البيانات</span>
-      <span class="entry-footer-info">المحفوظة: <b id="se-saved-count">0</b> حجز | الإجمالي: <b id="se-total">0</b> ر.س</span>
+      <span class="entry-footer-info">المحفوظة: <b id="se-saved-count">0</b> حجز | الإجمالي: <b id="se-total">0</b> <svg class="sar" viewBox="0 0 24 24" aria-label="SAR"><use href="#sar-sym"/></svg></span>
     </div>
   </div>
 </div>
@@ -1122,7 +1158,7 @@
     <div id="fp-rev-total-panel" style="display:none;">
       <div class="fp-rev-row">
         <div class="fp-m">إجمالي إيرادات كل الشهور</div>
-        <div class="fp-inp"><input type="number" min="0" step="any" id="fp-rev-total-input" placeholder="أدخل المبلغ" oninput="fpRevInput(this)"><span class="fp-cur">﷼</span></div>
+        <div class="fp-inp"><input type="number" min="0" step="any" id="fp-rev-total-input" placeholder="أدخل المبلغ" oninput="fpRevInput(this)"><span class="fp-cur"><svg class="sar" viewBox="0 0 24 24" aria-label="SAR"><use href="#sar-sym"/></svg></span></div>
       </div>
     </div>
     <div class="fp-rev-sum"><span>الإجمالي</span><b id="fp-rev-sum-val">—</b></div>
@@ -1302,6 +1338,126 @@
         <tbody id="sr2-body"></tbody>
       </table>
     </div>
+  </div>
+</div>
+
+<!-- ===== ACCOUNTS REPORT TAB (admin + accounts) ===== -->
+<div class="content" id="tab-accounts-report" style="display:none">
+  <div class="s-toolbar" style="padding:10px 16px;gap:10px;">
+    <span class="s-label" style="font-size:13px;">💼 تقرير الحسابات</span>
+    <select class="s-select" id="ac-filter-type" onchange="acRender()" style="padding:5px 10px;font-size:12px;">
+      <option value="month">شهري</option>
+      <option value="range">فترة محددة (من – إلى)</option>
+      <option value="all">الفترة الكاملة</option>
+    </select>
+    <select class="s-select" id="ac-month" onchange="acRender()" style="padding:5px 10px;font-size:12px;"></select>
+    <span id="ac-range-wrap" style="display:none;gap:8px;align-items:center;">
+      <input type="date" lang="en-GB" class="entry-date-input" id="ac-from" style="border-width:1px;padding:5px 10px;font-size:12px;" onchange="acRender()">
+      <span style="font-size:12px;color:#718096;">إلى</span>
+      <input type="date" lang="en-GB" class="entry-date-input" id="ac-to" style="border-width:1px;padding:5px 10px;font-size:12px;" onchange="acRender()">
+    </span>
+    <span class="s-spacer"></span>
+    <span id="ac-summary-label" style="font-size:12px;color:#718096;font-weight:700;"></span>
+  </div>
+  <div class="ac-note" id="ac-note"></div>
+  <div class="ac-kpis" id="ac-kpis"></div>
+  <div class="ac-charts" id="ac-charts">
+    <div class="ac-card half"><div class="ac-ct"><span id="ac-ct-trend">📊 الإيرادات والمصروفات شهرياً</span></div><div class="ac-box"><canvas id="ac-ch-trend"></canvas><div class="ac-empty" id="ac-em-trend">لا توجد بيانات للفترة</div></div></div>
+    <div class="ac-card half"><div class="ac-ct"><span id="ac-ct-net">📈 صافي الربح شهرياً</span></div><div class="ac-box"><canvas id="ac-ch-net"></canvas><div class="ac-empty" id="ac-em-net">لا توجد بيانات للفترة</div></div></div>
+    <div class="ac-card"><div class="ac-ct">🍩 توزيع المصروفات حسب البند</div><div class="ac-box"><canvas id="ac-ch-cat"></canvas><div class="ac-empty" id="ac-em-cat">لا توجد مصروفات</div></div></div>
+    <div class="ac-card"><div class="ac-ct">🔝 أعلى المصروفات</div><div class="ac-box"><canvas id="ac-ch-top"></canvas><div class="ac-empty" id="ac-em-top">لا توجد مصروفات</div></div></div>
+    <div class="ac-card"><div class="ac-ct">🏦 رصيد البنك عبر الزمن</div><div class="ac-box"><canvas id="ac-ch-bank"></canvas><div class="ac-empty" id="ac-em-bank">لا توجد أرصدة مُدخلة</div></div></div>
+    <div class="ac-card"><div class="ac-ct">⚖️ ملخص الفترة</div><div class="ac-box"><canvas id="ac-ch-sum"></canvas><div class="ac-empty" id="ac-em-sum">لا توجد بيانات</div></div></div>
+  </div>
+</div>
+
+<!-- نافذة الإيرادات -->
+<div class="modal-overlay ac-modal" id="ac-rev-overlay" onclick="if(event.target===this)acCloseModal('rev')">
+  <div class="modal" style="width:540px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div style="font-size:16px;font-weight:800;color:#1a1a2e;">💰 الإيرادات</div>
+      <button onclick="acCloseModal('rev')" style="border:none;background:#edf2f7;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer;">✕ إغلاق</button>
+    </div>
+    <div class="fp-mode-switch">
+      <button id="ac-rev-mode-monthly" onclick="acSetRevMode('monthly')">📆 حسب الشهر</button>
+      <button id="ac-rev-mode-total" onclick="acSetRevMode('total')">Σ إجمالي الفترة كاملة</button>
+    </div>
+    <div id="ac-rev-monthly-panel">
+      <div id="ac-rev-list" class="fp-rev-list"></div>
+      <div style="display:flex;gap:6px;margin-top:8px;align-items:center;">
+        <input type="month" lang="en-GB" id="ac-rev-newmonth" style="flex:1;padding:6px 8px;border:1.5px solid #e2e8f0;border-radius:8px;font:inherit;font-size:12px;">
+        <button class="ac-add-btn" style="margin-top:0;" onclick="acRevAddMonth()">➕ إضافة شهر</button>
+      </div>
+    </div>
+    <div id="ac-rev-total-panel" style="display:none;">
+      <div class="fp-rev-row">
+        <div class="fp-m">إجمالي إيرادات الفترة كاملة</div>
+        <div class="fp-inp"><input type="text" inputmode="decimal" id="ac-rev-total-input" placeholder="0" oninput="acRevInput(this)" style="direction:ltr;"><span class="fp-cur"><svg class="sar" viewBox="0 0 24 24" aria-label="SAR"><use href="#sar-sym"/></svg></span></div>
+      </div>
+      <div style="font-size:11px;color:#a0aec0;margin-top:6px;">الإجمالي يظهر في عرض «الفترة الكاملة» فقط. لعرض شهر أو فترة محددة أدخل الإيرادات حسب الشهر.</div>
+    </div>
+    <div class="fp-rev-sum"><span>الإجمالي</span><b id="ac-rev-sum">—</b></div>
+    <div class="fp-rev-actions">
+      <button class="s-btn s-btn-primary" onclick="acSaveRev()" style="flex:1;padding:9px;font-size:13px;">💾 حفظ</button>
+      <button class="s-btn" onclick="acClearRev()" style="padding:9px 14px;font-size:13px;background:#fff;color:#c53030;border:1px solid #e2e8f0;">مسح الكل</button>
+    </div>
+  </div>
+</div>
+
+<!-- نافذة المصروفات -->
+<div class="modal-overlay ac-modal" id="ac-exp-overlay" onclick="if(event.target===this)acCloseModal('exp')">
+  <div class="modal" style="width:620px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div style="font-size:16px;font-weight:800;color:#1a1a2e;">💸 المصروفات</div>
+      <button onclick="acCloseModal('exp')" style="border:none;background:#edf2f7;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer;">✕ إغلاق</button>
+    </div>
+    <div class="fp-mode-switch">
+      <button id="ac-exp-mode-monthly" onclick="acSetExpMode('monthly')">📆 حسب الشهر</button>
+      <button id="ac-exp-mode-total" onclick="acSetExpMode('total')">Σ إجمالي الفترة كاملة</button>
+    </div>
+    <select class="s-select" id="ac-exp-month" onchange="acExpPickMonth(this.value)" style="width:100%;margin-bottom:10px;padding:7px 10px;font-size:13px;"></select>
+    <div class="ac-tbl-wrap">
+      <table class="ac-edit-tbl">
+        <thead><tr><th style="width:34px;">#</th><th>المصروف</th><th style="width:170px;">المبلغ</th><th style="width:36px;"></th></tr></thead>
+        <tbody id="ac-exp-body"></tbody>
+      </table>
+    </div>
+    <datalist id="ac-exp-names"></datalist>
+    <button class="ac-add-btn" onclick="acExpAddRow()">➕ إضافة مصروف</button>
+    <div class="fp-rev-sum"><span id="ac-exp-sum-lbl">إجمالي مصروفات الشهر</span><b id="ac-exp-sum">—</b></div>
+    <div id="ac-exp-summary"></div>
+    <div class="fp-rev-actions">
+      <button class="s-btn s-btn-primary" onclick="acSaveExp()" style="flex:1;padding:9px;font-size:13px;">💾 حفظ</button>
+      <button class="s-btn" onclick="acCloseModal('exp')" style="padding:9px 14px;font-size:13px;background:#fff;color:#4a5568;border:1px solid #e2e8f0;">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- نافذة رصيد البنك (حفظ تلقائي + سجل منفصل) -->
+<div class="modal-overlay ac-modal" id="ac-bank-overlay" onclick="if(event.target===this)acCloseModal('bank')">
+  <div class="modal" style="width:600px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+      <div style="font-size:16px;font-weight:800;color:#1a1a2e;">🏦 رصيد البنك</div>
+      <button onclick="acCloseModal('bank')" style="border:none;background:#edf2f7;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer;">✕ إغلاق</button>
+    </div>
+    <div style="font-size:12px;color:#718096;margin-bottom:10px;">كل تعديل يُحفظ تلقائياً ويُسجَّل في سجل منفصل بتاريخه ووقته.</div>
+    <div class="fp-rev-row" style="background:#f5f3ff;border-color:#ddd6fe;">
+      <div class="fp-m">الرصيد الحالي<small>يُحدَّث يومياً — للفترة الكاملة</small></div>
+      <div class="fp-inp"><input type="text" inputmode="decimal" id="ac-bank-cur-input" placeholder="0" style="direction:ltr;" oninput="acInputHas(this)" onchange="acBankCommit('current','',this)" onkeydown="if(event.key==='Enter')this.blur()"><span class="fp-cur"><svg class="sar" viewBox="0 0 24 24" aria-label="SAR"><use href="#sar-sym"/></svg></span></div>
+    </div>
+    <div id="ac-bank-cur-at" style="font-size:11px;color:#a0aec0;margin:4px 4px 0;"></div>
+    <div class="ac-sec-title">أرصدة الأشهر السابقة <small>(تُدخل يدوياً حسب سجلات حسابات البنك)</small></div>
+    <div id="ac-bank-months" class="fp-rev-list" style="max-height:30vh;"></div>
+    <div style="display:flex;gap:6px;margin-top:8px;align-items:center;">
+      <input type="month" lang="en-GB" id="ac-bank-newmonth" style="flex:1;padding:6px 8px;border:1.5px solid #e2e8f0;border-radius:8px;font:inherit;font-size:12px;">
+      <button class="ac-add-btn" style="margin-top:0;" onclick="acBankAddMonth()">➕ إضافة شهر</button>
+    </div>
+    <div id="ac-bank-saved" style="font-size:12px;font-weight:700;color:#047857;min-height:18px;margin-top:8px;"></div>
+    <div class="ac-sec-title" style="display:flex;justify-content:space-between;align-items:center;">
+      <span>📜 سجل التحديثات</span>
+      <button onclick="acDownloadLog()" style="padding:5px 12px;border:none;border-radius:7px;background:#3182ce;color:#fff;font:inherit;font-size:11px;font-weight:700;cursor:pointer;">⬇️ تنزيل السجل (Excel)</button>
+    </div>
+    <div id="ac-bank-log" class="ac-log"></div>
   </div>
 </div>
 
@@ -1524,6 +1680,10 @@
 </div>
 
 <script>
+// ==================== رمز الريال السعودي الجديد + الأرقام الإنجليزية ====================
+const SAR = '<svg class="sar" viewBox="0 0 24 24" aria-label="SAR"><use href="#sar-sym"/></svg>';
+const SAR_SP = ' ' + SAR;
+if (typeof Chart !== 'undefined') { Chart.defaults.locale = 'en-US'; }
 // ==================== DATA ====================
 // =============================================
 
@@ -2431,7 +2591,7 @@ function buildCharts(d) {
   // Daily - bar
   const dayCounts = {};
   d.forEach(r=>{
-    const label = r.fullDate ? new Date(r.fullDate+'T00:00:00').toLocaleDateString('ar-SA',{month:'numeric',day:'numeric'}) : (r.day+'/7');
+    const label = r.fullDate ? new Date(r.fullDate+'T00:00:00').toLocaleDateString('en-GB-u-ca-gregory',{month:'numeric',day:'numeric'}) : (r.day+'/7');
     dayCounts[label]=(dayCounts[label]||0)+1;
   });
   barChart('chart-daily', dayCounts, '#e94560');
@@ -2592,7 +2752,7 @@ function renderTable() {
       <td>${start+i+1}</td>
       <td>${r.name||'<span style="color:#a0aec0">—</span>'}</td>
       <td style="direction:ltr;text-align:right">${r.phone||''}</td>
-      <td>${r.fullDate ? new Date(r.fullDate+'T00:00:00').toLocaleDateString('ar-SA',{year:'numeric',month:'numeric',day:'numeric'}) : (r.day||'')}${r.fullDate?'<div style="font-size:10px;color:#6b46c1;font-weight:700;">'+arDayName(r.fullDate)+'</div>':''}</td>
+      <td>${r.fullDate ? new Date(r.fullDate+'T00:00:00').toLocaleDateString('en-GB-u-ca-gregory',{year:'numeric',month:'numeric',day:'numeric'}) : (r.day||'')}${r.fullDate?'<div style="font-size:10px;color:#6b46c1;font-weight:700;">'+arDayName(r.fullDate)+'</div>':''}</td>
       <td><span class="source-icon">${r.source||''}</span></td>
       <td>${r.contact||''}</td>
       <td><span class="badge ${getBadgeClass(r.request)}">${r.request||''}</span></td>
@@ -2823,7 +2983,8 @@ document.addEventListener('click', (e) => {
 
 function showTab(name) {
   if (name === 'full-period') { srMode = 'full'; name = 'sales-report'; }
-  ['dashboard','records','report','entry','sales-entry','sales-records','checkin','sales-report','sales-compare','maintenance-entry','maintenance-records','full-period'].forEach(t=>{
+  if (name === 'accounts-report' && typeof acCanAccess === 'function' && !acCanAccess()) return;
+  ['dashboard','records','report','entry','sales-entry','sales-records','checkin','sales-report','sales-compare','maintenance-entry','maintenance-records','full-period','accounts-report'].forEach(t=>{
     const el = document.getElementById('tab-'+t);
     if(el) el.style.display = t===name?'block':'none';
   });
@@ -2842,6 +3003,7 @@ function showTab(name) {
   if(name==='checkin') { if(typeof checkinReset==='function') checkinReset(); }
   if(name==='sales-report') salesReportInit();
   if(name==='sales-compare') salesCompareInit();
+  if(name==='accounts-report') accountsReportInit();
   if(name==='maintenance-entry') maintEntryInit();
   if(name==='maintenance-records') maintRecordsInit();
 }
@@ -2971,7 +3133,7 @@ function renderReport() {
 function printReport(size) {
   renderReport();
   const now = new Date();
-  const dateStr = now.toLocaleDateString('ar-SA',{year:'numeric',month:'long',day:'numeric'});
+  const dateStr = now.toLocaleDateString('ar-SA-u-ca-gregory-nu-latn',{year:'numeric',month:'long',day:'numeric'});
   const isA4 = size === 'a4';
   const pageSize = isA4 ? 'A4 landscape' : 'A3 landscape';
   const margin = isA4 ? '8mm' : '10mm';
@@ -3256,7 +3418,7 @@ function exportExcel() {
   const bom = '\uFEFF';
   const rows = [headers];
   d.forEach((r, i) => {
-    const dateStr = r.fullDate ? new Date(r.fullDate + 'T00:00:00').toLocaleDateString('ar-SA', {year:'numeric',month:'numeric',day:'numeric'}) : (r.day + '/7/2026');
+    const dateStr = r.fullDate ? new Date(r.fullDate + 'T00:00:00').toLocaleDateString('en-GB-u-ca-gregory', {year:'numeric',month:'numeric',day:'numeric'}) : (r.day + '/7/2026');
     rows.push([
       i + 1,
       r.name || '—',
@@ -3622,7 +3784,7 @@ function entrySalesSubrowHTML(r) {
         <label style="color:#4a5568;">مقدم الحجز:</label>
         <input type="number" id="ssub-paid-${r._eid}" value="${escH(r.salesPaid||'')}" placeholder="مقدم الحجز" oninput="entrySalesRecalcRemaining('${r._eid}')" style="width:90px;padding:4px 6px;border:1px solid #6ee7b7;border-radius:5px;font-size:12px;">
         <label style="color:#7a1a1a;font-weight:700;">متبقي الإيجار:</label>
-        <span id="ssub-remaining-${r._eid}" style="font-weight:800;color:${payRemaining({amount:r.salesAmount,paidAmount:r.salesPaid,status:r.salesStatus||'تم الحجز'})>0?'#c53030':'#38a169'};">${payRemaining({amount:r.salesAmount,paidAmount:r.salesPaid,status:r.salesStatus||'تم الحجز'}).toLocaleString('ar-SA')} ﷼</span>
+        <span id="ssub-remaining-${r._eid}" style="font-weight:800;color:${payRemaining({amount:r.salesAmount,paidAmount:r.salesPaid,status:r.salesStatus||'تم الحجز'})>0?'#c53030':'#38a169'};">${payRemaining({amount:r.salesAmount,paidAmount:r.salesPaid,status:r.salesStatus||'تم الحجز'}).toLocaleString('en-US')}${SAR_SP}</span>
         <span id="ssub-pay-${r._eid}">${payBadgeHTML({amount:r.salesAmount,paidAmount:r.salesPaid,status:r.salesStatus||'تم الحجز'})}</span>
         <label style="color:#4a5568;">حالة الحجز:</label>
         <select id="ssub-status-${r._eid}" style="padding:4px 6px;border:1px solid #c4b5fd;border-radius:5px;font-size:12px;">
@@ -3643,7 +3805,7 @@ function entrySalesRecalcRemaining(eid) {
   const el = document.getElementById('ssub-remaining-' + eid);
   if (el) {
     const remaining = payRemaining(tmp);
-    el.textContent = remaining.toLocaleString('ar-SA') + ' ﷼';
+    el.innerHTML = remaining.toLocaleString('en-US') + SAR_SP;
     el.style.color = remaining > 0 ? '#c53030' : '#38a169';
   }
   const pe = document.getElementById('ssub-pay-' + eid);
@@ -4169,7 +4331,7 @@ function checkinRenderResult(r) {
       <div><b>الاسم:</b> ${escH(r.name||'—')}</div>
       <div><b>الجوال:</b> <span style="direction:ltr;display:inline-block;">${escH(r.phone||'—')}</span></div>
       <div><b>القسم:</b> ${escH(r.section||'—')}</div>
-      <div><b>المبلغ:</b> ${r.amount ? r.amount.toLocaleString('ar-SA')+' ﷼' : '—'}</div>
+      <div><b>المبلغ:</b> ${r.amount ? r.amount.toLocaleString('en-US')+SAR_SP : '—'}</div>
       <div><b>تواريخ الحجز:</b> ${bDates.length ? bDates.join('، ') : '—'}</div>
     </div>
     ${alreadyConfirmed
@@ -4501,7 +4663,7 @@ function seUpdateCounts() {
   const total=seRows.reduce((s,r)=>s+(parseFloat(r.amount)||0),0);
   const el=document.getElementById('se-count'); if(el) el.textContent=seRows.length+' صفوف';
   const sc=document.getElementById('se-saved-count'); if(sc)sc.textContent=saved;
-  const st=document.getElementById('se-total'); if(st)st.textContent=total.toLocaleString('ar-SA');
+  const st=document.getElementById('se-total'); if(st)st.textContent=total.toLocaleString('en-US');
 }
 
 function seRender() {
@@ -4821,7 +4983,7 @@ function maintRenderTable() {
       <td style="font-size:12px;">${r.assignee||''}</td>
       <td><span class="badge" style="background:${sColor}22;color:${sColor};font-weight:700;padding:3px 8px;border-radius:6px;font-size:11px;">${r.status||''}</span></td>
       <td style="direction:ltr;text-align:center;font-size:12px;">${r.handledDate||'—'}${r.handledDate?'<div style="font-size:10px;color:#7a5a1a;font-weight:700;direction:rtl;">'+arDayName(r.handledDate)+'</div>':''}</td>
-      <td style="text-align:center;font-weight:600;">${r.cost ? r.cost.toLocaleString('ar-SA') + ' ر.س' : '—'}</td>
+      <td style="text-align:center;font-weight:600;">${r.cost ? r.cost.toLocaleString('en-US') + SAR_SP : '—'}</td>
       <td style="text-align:center;font-weight:700;color:#7a5a1a;">${delay}</td>
       <td style="max-width:180px;font-size:12px;color:#718096;">${r.notes||''}</td>
       <td>
@@ -4999,7 +5161,7 @@ function expMonthsInRange(from, to) {
   }
   return keys;
 }
-const expFmt = n => (Number(n) || 0).toLocaleString('ar-SA');
+const expFmt = n => (Number(n) || 0).toLocaleString('en-US');
 
 async function expRenderPanel(ft, salesTotal, titleLabel) {
   const host = document.getElementById('sr-expenses');
@@ -5230,11 +5392,11 @@ function fpExpSummaryHTML() {
   const rows = months.map(k => {
     const t = fpSumItems(fpItemsForKey(k));
     const on = expState && expState.key === k;
-    return `<tr onclick="fpSetExpState('${k}')" style="cursor:pointer;${on ? 'background:#fff5f6;' : ''}"><td style="padding:6px 8px;font-weight:${on ? 800 : 600};">${fpMonthLabel(k)}</td><td style="padding:6px 8px;text-align:center;font-weight:700;">${expFmt(t)} ﷼</td></tr>`;
+    return `<tr onclick="fpSetExpState('${k}')" style="cursor:pointer;${on ? 'background:#fff5f6;' : ''}"><td style="padding:6px 8px;font-weight:${on ? 800 : 600};">${fpMonthLabel(k)}</td><td style="padding:6px 8px;text-align:center;font-weight:700;">${expFmt(t)}${SAR_SP}</td></tr>`;
   }).join('');
   return `<table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:12px;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;">
     <thead><tr style="background:#edf2f7;"><th colspan="2" style="padding:7px 8px;text-align:right;">إجمالي المصروفات لكل شهر (اضغط على شهر لتعديله)</th></tr></thead>
-    <tbody>${rows}<tr style="background:#fef2f2;"><td style="padding:7px 8px;font-weight:800;">إجمالي كل الشهور</td><td style="padding:7px 8px;text-align:center;font-weight:800;color:#c53030;">${expFmt(fpExpTotal())} ﷼</td></tr></tbody></table>`;
+    <tbody>${rows}<tr style="background:#fef2f2;"><td style="padding:7px 8px;font-weight:800;">إجمالي كل الشهور</td><td style="padding:7px 8px;text-align:center;font-weight:800;color:#c53030;">${expFmt(fpExpTotal())}${SAR_SP}</td></tr></tbody></table>`;
 }
 function fpExpSummaryWrap() { return `<div id="fp-exp-summary">${fpExpSummaryHTML()}</div>`; }
 
@@ -5280,10 +5442,10 @@ function fpOpenRevModal() {
   } else {
     host.innerHTML = keys.map(k => {
       const v = fpRevData.months[k] || '';
-      const salesTxt = by[k] ? `<small>مبيعات الحجوزات: ${by[k].total.toLocaleString('ar-SA')} ﷼</small>` : '';
+      const salesTxt = by[k] ? `<small>مبيعات الحجوزات: ${by[k].total.toLocaleString('en-US')}${SAR_SP}</small>` : '';
       return `<div class="fp-rev-row">
         <div class="fp-m">${fpMonthLabel(k)}${salesTxt}</div>
-        <div class="fp-inp${v ? ' has' : ''}"><input type="number" min="0" step="any" data-month="${k}" value="${v}" placeholder="0" oninput="fpRevInput(this)"><span class="fp-cur">﷼</span></div>
+        <div class="fp-inp${v ? ' has' : ''}"><input type="number" min="0" step="any" data-month="${k}" value="${v}" placeholder="0" oninput="fpRevInput(this)"><span class="fp-cur">${SAR}</span></div>
       </div>`;
     }).join('');
   }
@@ -5323,7 +5485,7 @@ function fpRevReadDraft() {
 function fpRevUpdateSum() {
   const t = fpRevTotalOf(fpRevReadDraft());
   const el = document.getElementById('fp-rev-sum-val');
-  if (el) el.textContent = t > 0 ? expFmt(t) + ' ﷼' : '—';
+  if (el) el.innerHTML = t > 0 ? expFmt(t) + SAR_SP : '—';
 }
 
 async function fpSaveRevModal() {
@@ -5343,7 +5505,7 @@ function fpClearRevModal() {
 // ---------- المربعات العلوية ----------
 function fpRenderKPIs() {
   const m = fpMetrics();
-  const f = n => n.toLocaleString('ar-SA') + ' ﷼';
+  const f = n => n.toLocaleString('en-US') + SAR_SP;
   document.getElementById('fp-kpis').innerHTML = `
     <div class="s-kpi blue"><div class="s-kpi-val">${f(m.expected)}</div><div class="s-kpi-lbl">الإيرادات المتوقعة 💳<br>(إجمالي عمود المبلغ)</div></div>
     <div class="s-kpi orange"><div class="s-kpi-val">${f(m.deposits)}</div><div class="s-kpi-lbl">إجمالي مقدم الحجوزات (العربون)<br>من تاريخ اليوم فما فوق</div></div>
@@ -5357,7 +5519,7 @@ function fpRenderKPIs() {
 
 // ---------- الشارتات ----------
 function fpYTicks(v) { return v >= 1000 ? Math.round(v / 1000) + 'k' : v; }
-function fpTipMoney(ctx) { return ' ' + (ctx.dataset.label || '') + ': ' + (Number(ctx.parsed.y ?? ctx.parsed) || 0).toLocaleString('ar-SA') + ' ﷼'; }
+function fpTipMoney(ctx) { return ' ' + (ctx.dataset.label || '') + ': ' + (Number(ctx.parsed.y ?? ctx.parsed) || 0).toLocaleString('en-US'); }
 
 function fpRenderFinanceChart() {
   srDestroyChart('fpFin');
@@ -5366,8 +5528,8 @@ function fpRenderFinanceChart() {
   const m = fpMetrics();
   srCharts['fpFin'] = new Chart(ctx, {
     type: 'bar',
-    data: { labels: ['إجمالي الإيرادات', 'المصروفات', 'صافي الأرباح'], datasets: [{ label: '﷼', data: [m.total, m.expenses, m.net], backgroundColor: ['#10b981', '#e94560', m.net >= 0 ? '#3b82f6' : '#c53030'], borderRadius: 6 }] },
-    options: { maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ' ' + (c.parsed.y || 0).toLocaleString('ar-SA') + ' ﷼' } } }, scales: { y: { ticks: { callback: fpYTicks, font: { size: 9 } } }, x: { ticks: { font: { size: 10 } } } } }
+    data: { labels: ['إجمالي الإيرادات', 'المصروفات', 'صافي الأرباح'], datasets: [{ label: 'المبلغ', data: [m.total, m.expenses, m.net], backgroundColor: ['#10b981', '#e94560', m.net >= 0 ? '#3b82f6' : '#c53030'], borderRadius: 6 }] },
+    options: { maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ' ' + (c.parsed.y || 0).toLocaleString('en-US') } } }, scales: { y: { ticks: { callback: fpYTicks, font: { size: 9 } } }, x: { ticks: { font: { size: 10 } } } } }
   });
 }
 
@@ -5411,7 +5573,7 @@ function fpRenderCharts() {
   if (c3) srCharts['fpPaid'] = new Chart(c3, {
     type: 'doughnut',
     data: { labels: ['محصّل فعلياً', 'مقدم الحجوزات', 'متبقٍ'], datasets: [{ data: [pm.collected, pm.deposits, pm.remaining], backgroundColor: ['#10b981', '#f59e0b', '#ef4444'], hoverOffset: 6, borderWidth: 3 }] },
-    options: { maintainAspectRatio: false, cutout: '50%', plugins: { legend: { position: 'bottom', labels: { font: { family: 'inherit', size: 11 }, boxWidth: 13, padding: 8 } }, tooltip: { callbacks: { label: c => ' ' + c.label + ': ' + (c.parsed || 0).toLocaleString('ar-SA') + ' ﷼' } } } }
+    options: { maintainAspectRatio: false, cutout: '50%', plugins: { legend: { position: 'bottom', labels: { font: { family: 'inherit', size: 11 }, boxWidth: 13, padding: 8 } }, tooltip: { callbacks: { label: c => ' ' + c.label + ': ' + (c.parsed || 0).toLocaleString('en-US') } } } }
   });
 
   // الأقسام
@@ -5446,14 +5608,574 @@ async function fullPeriodInit() {
 }
 // ==================== END تبويب الفترة الكاملة ====================
 
+// ==================== تقرير الحسابات (admin/accounts فقط) ====================
+const AC_LS_KEY = 'smo_accounts_report';
+const AC_LOG_LS_KEY = 'smo_accounts_bank_log';
+let acData = { revenue: { mode: 'monthly', total: 0, months: {} }, expenses: { mode: 'monthly', total: [], months: {} }, bank: { current: null, months: {} } };
+let acLog = [];            // سجل تحديثات رصيد البنك (مفتاح منفصل)
+let acLoaded = false;
+let acCharts = {};
+let acRevMode = 'monthly';
+let acExpDraft = null, acExpMode = 'monthly', acExpMonth = '';
+
+function acCanAccess() { return !pinLoggedInRole || pinLoggedInRole === 'admin' || pinLoggedInRole === 'accounts'; }
+function acUid() { return 'ac_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+function acNumStrict(v) {
+  const t = String(v == null ? '' : v)
+    .replace(/[\u0660-\u0669]/g, d => String(d.charCodeAt(0) - 0x0660))
+    .replace(/[\u06F0-\u06F9]/g, d => String(d.charCodeAt(0) - 0x06F0))
+    .replace(/\u066B/g, '.').replace(/[\u066C,\s]/g, '');
+  if (t === '') return null;
+  const n = parseFloat(t);
+  return isFinite(n) ? n : null;
+}
+function acNum(v) { const n = acNumStrict(v); return n === null ? 0 : n; }
+function acFmt(n) { return (Number(n) || 0).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
+function acMoney(n) { return '<bdi dir="ltr">' + acFmt(n) + '</bdi>' + SAR_SP; }
+function acEsc(x) { return String(x == null ? '' : x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+function acTodayStr() { return salesTodayStr(); }
+function acCurKey() { return acTodayStr().slice(0, 7); }
+function acAddMonths(key, n) { const [y, m] = key.split('-').map(Number); const d = new Date(y, m - 1 + n, 1); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
+function acMonthRange(a, b) { const out = []; let k = a, guard = 0; while (k <= b && guard++ < 600) { out.push(k); k = acAddMonths(k, 1); } return out; }
+function acMonthLabel(k) { const [y, m] = k.split('-').map(Number); return MONTH_NAMES[m] + ' ' + y; }
+function acMonthShort(k) { const [y, m] = k.split('-').map(Number); return MONTH_NAMES[m] + ' ' + String(y).slice(2); }
+function acFmtDT(iso) {
+  const d = new Date(iso); if (isNaN(d)) return iso || '';
+  return d.toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace(',', '');
+}
+function acSumItems(items) { return (items || []).reduce((s, i) => s + (Number(i.amount) || 0), 0); }
+
+function acItemsNorm(arr) {
+  return (Array.isArray(arr) ? arr : []).map(i => ({ id: (i && i.id) || acUid(), name: String((i && i.name) || '').trim(), amount: Number(i && i.amount) || 0 })).filter(i => i.name || i.amount);
+}
+function acNormalize(o) {
+  const d = { revenue: { mode: 'monthly', total: 0, months: {} }, expenses: { mode: 'monthly', total: [], months: {} }, bank: { current: null, months: {} } };
+  if (!o || typeof o !== 'object') return d;
+  const keyOk = k => /^\d{4}-\d{2}$/.test(k);
+  if (o.revenue) {
+    d.revenue.mode = o.revenue.mode === 'total' ? 'total' : 'monthly';
+    d.revenue.total = Number(o.revenue.total) || 0;
+    Object.entries(o.revenue.months || {}).forEach(([k, v]) => { const n = Number(v) || 0; if (keyOk(k) && n) d.revenue.months[k] = n; });
+  }
+  // المصروفات: بند + مبلغ فقط (شهري أو إجمالي). دعم تحويل البيانات القديمة ذات التواريخ إلى أشهر.
+  if (Array.isArray(o.expenses)) {
+    o.expenses.forEach(e => { if (e && /^\d{4}-\d{2}-\d{2}$/.test(e.date || '')) { const k = e.date.slice(0, 7); (d.expenses.months[k] = d.expenses.months[k] || []).push({ id: e.id || acUid(), name: String(e.name || '').trim() || 'بدون اسم', amount: Number(e.amount) || 0 }); } });
+  } else if (o.expenses && typeof o.expenses === 'object') {
+    d.expenses.mode = o.expenses.mode === 'total' ? 'total' : 'monthly';
+    d.expenses.total = acItemsNorm(o.expenses.total);
+    Object.entries(o.expenses.months || {}).forEach(([k, v]) => { if (keyOk(k)) { const it = acItemsNorm(v); if (it.length) d.expenses.months[k] = it; } });
+  }
+  // رصيد البنك: رصيد حالي (تاريخ التحديث تلقائي) + أرصدة الأشهر السابقة يدوياً
+  const cur = acCurKey();
+  if (Array.isArray(o.bank)) {
+    const sorted = o.bank.filter(b => b && /^\d{4}-\d{2}-\d{2}$/.test(b.date || '')).sort((a, b) => a.date.localeCompare(b.date));
+    sorted.forEach((b, i) => { if (i === sorted.length - 1) d.bank.current = { amount: Number(b.amount) || 0, at: b.date + 'T00:00:00' }; else if (b.date.slice(0, 7) < cur) d.bank.months[b.date.slice(0, 7)] = Number(b.amount) || 0; });
+  } else if (o.bank && typeof o.bank === 'object') {
+    const c = o.bank.current;
+    if (c && c.amount !== null && c.amount !== undefined && c.amount !== '' && isFinite(Number(c.amount))) d.bank.current = { amount: Number(c.amount), at: c.at || '' };
+    Object.entries(o.bank.months || {}).forEach(([k, v]) => { if (keyOk(k) && v !== null && v !== '' && isFinite(Number(v))) d.bank.months[k] = Number(v); });
+  }
+  return d;
+}
+function acLogNorm(arr) {
+  return (Array.isArray(arr) ? arr : []).filter(l => l && l.at).map(l => ({ id: l.id || acUid(), at: l.at, kind: l.kind === 'month' ? 'month' : 'current', month: l.month || '', old: (l.old === null || l.old === undefined) ? null : Number(l.old), amount: (l.amount === null || l.amount === undefined) ? null : Number(l.amount) }));
+}
+async function acLoad(force) {
+  if (acLoaded && !force) return;
+  let src = null, logSrc = null;
+  if (USE_CLOUD && isOnline) {
+    try {
+      const { data: rows, error } = await sbClient.from('app_settings').select('*').in('key', ['accounts_report', 'accounts_bank_log']);
+      if (!error && rows) {
+        const r1 = rows.find(r => r.key === 'accounts_report'), r2 = rows.find(r => r.key === 'accounts_bank_log');
+        if (r1) src = JSON.parse(r1.value);
+        if (r2) logSrc = JSON.parse(r2.value);
+      } else if (error) console.warn('accounts load error:', error.message);
+    } catch (e) { console.warn('accounts load exception:', e.message); }
+  }
+  if (!src) { try { const c = localStorage.getItem(AC_LS_KEY); if (c) src = JSON.parse(c); } catch (e) {} }
+  if (!logSrc) { try { const c = localStorage.getItem(AC_LOG_LS_KEY); if (c) logSrc = JSON.parse(c); } catch (e) {} }
+  acData = acNormalize(src);
+  acLog = acLogNorm(logSrc);
+  acLoaded = true;
+}
+async function acPersist(key, lsKey, obj, toast) {
+  const payload = JSON.stringify(obj);
+  try { localStorage.setItem(lsKey, payload); } catch (e) {}
+  if (USE_CLOUD && isOnline) {
+    try {
+      const { error } = await sbClient.from('app_settings').upsert({ key, value: payload }, { onConflict: 'key' });
+      if (error) { console.warn(key + ' save failed:', error.message); if (toast) showToast('❌ Supabase: ' + error.message.slice(0, 60), 'warn'); return false; }
+      return true;
+    } catch (e) { console.warn(key + ' save error:', e.message); return false; }
+  }
+  if (toast) showToast('⚠️ حُفظ محلياً — غير متصل', 'warn');
+  return false;
+}
+function acSave() { return acPersist('accounts_report', AC_LS_KEY, acData, true); }
+function acSaveLog() { return acPersist('accounts_bank_log', AC_LOG_LS_KEY, acLog, false); }
+
+// ---------- الأشهر والفترة ----------
+function acUniverseMonths() {
+  const set = new Set([acCurKey()]);
+  Object.keys(acData.revenue.months).forEach(k => set.add(k));
+  Object.keys(acData.expenses.months).forEach(k => set.add(k));
+  Object.keys(acData.bank.months).forEach(k => set.add(k));
+  (typeof salesData !== 'undefined' ? salesData : []).forEach(r => { if (r.date && /^\d{4}-\d{2}/.test(r.date)) set.add(r.date.slice(0, 7)); });
+  return [...set].sort();
+}
+function acPopulateMonths() {
+  const sel = document.getElementById('ac-month');
+  const prev = sel.value;
+  const months = acUniverseMonths().reverse();
+  sel.innerHTML = months.map(k => `<option value="${k}">${acMonthLabel(k)}</option>`).join('');
+  sel.value = months.includes(prev) ? prev : (months.includes(acCurKey()) ? acCurKey() : months[0]);
+  const f = document.getElementById('ac-from'), t = document.getElementById('ac-to');
+  if (!f.value) f.value = acCurKey() + '-01';
+  if (!t.value) t.value = acTodayStr();
+}
+function acPeriod() {
+  const type = document.getElementById('ac-filter-type').value;
+  if (type === 'month') {
+    const k = document.getElementById('ac-month').value || acCurKey();
+    return { type, from: k + '-01', to: k + '-31', months: [k], label: acMonthLabel(k) };
+  }
+  if (type === 'range') {
+    const from = document.getElementById('ac-from').value, to = document.getElementById('ac-to').value;
+    if (!from || !to || from > to) return { type, invalid: true, from: '9999-01-01', to: '0000-01-01', months: [], label: 'اختر فترة صحيحة' };
+    return { type, from, to, months: acMonthRange(from.slice(0, 7), to.slice(0, 7)), label: from + ' → ' + to };
+  }
+  return { type: 'all', from: '0000-01-01', to: '9999-12-31', months: acUniverseMonths(), label: 'الفترة الكاملة' };
+}
+function acEndKey(p) { if (p.type === 'all') return acCurKey(); if (p.invalid) return null; return p.type === 'month' ? p.months[0] : p.to.slice(0, 7); }
+// رصيد البنك للفترة: الحالي إن كانت الفترة تنتهي في الشهر الحالي/الكاملة، وإلا رصيد الشهر المُدخل يدوياً
+function acBankFor(p) {
+  const end = acEndKey(p), cur = acCurKey(), b = acData.bank;
+  if (!end) return null;
+  if (p.type === 'all') {
+    if (b.current) return { amount: b.current.amount, kind: 'current', at: b.current.at };
+    const ks = Object.keys(b.months).sort(); const k = ks[ks.length - 1];
+    return k ? { amount: b.months[k], kind: 'month', month: k } : null;
+  }
+  if (end === cur) return b.current ? { amount: b.current.amount, kind: 'current', at: b.current.at } : null;
+  if (end < cur && b.months[end] !== undefined) return { amount: b.months[end], kind: 'month', month: end };
+  return null;
+}
+function acCompute(p) {
+  const rev = acData.revenue, ex = acData.expenses;
+  let revenue = null;
+  if (rev.mode === 'monthly') revenue = p.type === 'all' ? Object.values(rev.months).reduce((s, v) => s + v, 0) : p.months.reduce((s, k) => s + (rev.months[k] || 0), 0);
+  else if (p.type === 'all') revenue = rev.total;
+  let items = null;
+  if (ex.mode === 'monthly') {
+    const keys = p.type === 'all' ? Object.keys(ex.months) : p.months;
+    items = []; keys.forEach(k => (ex.months[k] || []).forEach(i => items.push({ name: i.name, amount: i.amount, month: k })));
+  } else if (p.type === 'all') items = ex.total.map(i => ({ name: i.name, amount: i.amount, month: '' }));
+  const expenses = items === null ? null : acSumItems(items);
+  const net = (revenue === null || expenses === null) ? null : revenue - expenses;
+  const margin = (revenue && revenue > 0 && net !== null) ? (net / revenue) * 100 : null;
+  return { revenue, expenses, items: items || [], net, bank: acBankFor(p), margin };
+}
+
+// ---------- التصيير ----------
+async function accountsReportInit() {
+  if (!acCanAccess()) return;
+  await acLoad();
+  try { await salesLoadData(); } catch (e) {}
+  acPopulateMonths();
+  acRender();
+}
+function acRender() {
+  if (!acCanAccess()) return;
+  const type = document.getElementById('ac-filter-type').value;
+  document.getElementById('ac-month').style.display = type === 'month' ? '' : 'none';
+  document.getElementById('ac-range-wrap').style.display = type === 'range' ? 'flex' : 'none';
+  const p = acPeriod(), m = acCompute(p);
+  document.getElementById('ac-summary-label').textContent = p.label;
+  const notes = [];
+  if (p.type !== 'all') {
+    if (acData.revenue.mode === 'total') notes.push('الإيرادات مُدخلة كإجمالي للفترة الكاملة');
+    if (acData.expenses.mode === 'total') notes.push('المصروفات مُدخلة كإجمالي للفترة الكاملة');
+  }
+  let msg = notes.length ? notes.join(' و') + ' — أدخلها حسب الشهر لعرض هذه الفترة وحساب صافي الربح.' : '';
+  if (!msg && p.type === 'range' && !p.invalid) msg = 'الإيرادات والمصروفات تُحتسب للأشهر الكاملة التي تتقاطع مع الفترة.';
+  const note = document.getElementById('ac-note');
+  note.style.display = msg ? 'block' : 'none'; note.textContent = msg;
+  acRenderKPIs(p, m);
+  try { acRenderCharts(p, m); } catch (e) { console.error('acRenderCharts error:', e); }
+}
+function acRenderKPIs(p, m) {
+  const ex = acData.expenses;
+  const revHint = acData.revenue.mode === 'monthly' ? 'حسب الشهر — اضغط للإدخال والتعديل' : (p.type === 'all' ? 'إجمالي مُدخل — اضغط للتعديل' : 'مُدخلة كإجمالي — اضغط للتعديل');
+  const expHint = m.expenses === null ? 'مُدخلة كإجمالي — اضغط للتعديل' : `${m.items.length} بند — ${ex.mode === 'monthly' ? 'حسب الشهر' : 'إجمالي الفترة'} — اضغط للتعديل`;
+  let bankHint = 'اضغط للإدخال';
+  if (m.bank) bankHint = m.bank.kind === 'current' ? ('الرصيد الحالي' + (m.bank.at ? ' — آخر تحديث ' + acFmtDT(m.bank.at) : '')) : ('رصيد نهاية ' + acMonthLabel(m.bank.month) + ' — مُدخل يدوياً');
+  else if (p.type !== 'all' && acEndKey(p) && acEndKey(p) < acCurKey()) bankHint = 'لم يُدخل رصيد هذا الشهر — اضغط للإدخال';
+  const netColor = m.net === null ? '#a0aec0' : (m.net >= 0 ? '#047857' : '#c53030');
+  document.getElementById('ac-kpis').innerHTML = `
+    <div class="s-kpi green clickable" onclick="acOpenRev()" title="اضغط لإدخال الإيرادات">
+      <div class="s-kpi-val">${m.revenue === null ? '—' : acMoney(m.revenue)}</div>
+      <div class="s-kpi-lbl">الإيرادات ✏️</div><div class="ac-kpi-hint">${revHint}</div></div>
+    <div class="s-kpi rose clickable" onclick="acOpenExp()" title="اضغط لإضافة وتعديل المصروفات">
+      <div class="s-kpi-val">${m.expenses === null ? '—' : acMoney(m.expenses)}</div>
+      <div class="s-kpi-lbl">المصروفات ✏️</div><div class="ac-kpi-hint">${expHint}</div></div>
+    <div class="s-kpi purple clickable" onclick="acOpenBank()" title="اضغط لتحديث رصيد البنك">
+      <div class="s-kpi-val">${m.bank ? acMoney(m.bank.amount) : '—'}</div>
+      <div class="s-kpi-lbl">رصيد البنك ✏️</div><div class="ac-kpi-hint">${bankHint}</div></div>
+    <div class="s-kpi blue">
+      <div class="s-kpi-val" style="color:${netColor}">${m.net === null ? '—' : acMoney(m.net)}</div>
+      <div class="s-kpi-lbl">صافي الربح للفترة</div><div class="ac-kpi-hint">${m.margin !== null ? 'هامش الربح ' + m.margin.toFixed(1) + '%' : 'الإيرادات − المصروفات'}</div></div>`;
+}
+
+// ---------- الشارتات ----------
+const AC_PALETTE = ['#3b82f6', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#84cc16', '#94a3b8'];
+function acDestroy(k) { if (acCharts[k]) { acCharts[k].destroy(); delete acCharts[k]; } }
+function acEmpty(id, show) { const el = document.getElementById(id); if (el) el.style.display = show ? 'flex' : 'none'; }
+function acTick(v) { const a = Math.abs(v); return a >= 1000000 ? (v / 1000000) + 'M' : a >= 1000 ? (v / 1000) + 'k' : v; }
+function acTrendMonths(p) {
+  let months = p.type === 'all' ? acUniverseMonths() : p.months.slice();
+  let extended = false;
+  if (months.length < 3) { const last = months.length ? months[months.length - 1] : acCurKey(); months = acMonthRange(acAddMonths(last, -5), last); extended = true; }
+  return { months, extended };
+}
+function acRenderCharts(p, m) {
+  ['trend', 'net', 'cat', 'top', 'bank', 'sum'].forEach(acDestroy);
+  if (typeof Chart === 'undefined') return;
+  const legend = { position: 'bottom', labels: { boxWidth: 12, padding: 8, font: { size: 11 } } };
+  const yTicks = { callback: acTick, font: { size: 10 } };
+  const tipY = c => ' ' + (c.dataset.label ? c.dataset.label + ': ' : '') + acFmt(c.parsed.y);
+
+  // 1+2) الاتجاه الشهري
+  const { months, extended } = acTrendMonths(p);
+  const labels = months.map(acMonthShort);
+  const inP = months.map(k => p.type === 'all' || p.months.includes(k));
+  const rv = months.map(k => acData.revenue.mode === 'monthly' ? (acData.revenue.months[k] || 0) : 0);
+  const ex = months.map(k => acData.expenses.mode === 'monthly' ? acSumItems(acData.expenses.months[k]) : 0);
+  const nt = months.map((_, i) => rv[i] - ex[i]);
+  const dim = (hex, i) => inP[i] ? hex : hex + '55';
+  document.getElementById('ac-ct-trend').textContent = '📊 الإيرادات والمصروفات شهرياً' + (extended ? ' (آخر 6 أشهر)' : '');
+  document.getElementById('ac-ct-net').textContent = '📈 صافي الربح شهرياً' + (extended ? ' (آخر 6 أشهر)' : '');
+  const hasTrend = rv.some(v => v) || ex.some(v => v);
+  acEmpty('ac-em-trend', !hasTrend); acEmpty('ac-em-net', !hasTrend);
+  acCharts.trend = new Chart(document.getElementById('ac-ch-trend'), {
+    type: 'bar',
+    data: { labels, datasets: [
+      { label: 'الإيرادات', data: rv, backgroundColor: rv.map((_, i) => dim('#10b981', i)), borderRadius: 4, order: 2 },
+      { label: 'المصروفات', data: ex, backgroundColor: ex.map((_, i) => dim('#ef4444', i)), borderRadius: 4, order: 2 },
+      { type: 'line', label: 'صافي الربح', data: nt, borderColor: '#3b82f6', backgroundColor: '#3b82f6', tension: 0.3, pointRadius: 3, borderWidth: 2, order: 1 }
+    ] },
+    options: { maintainAspectRatio: false, plugins: { legend, tooltip: { callbacks: { label: tipY } } }, scales: { y: { ticks: yTicks }, x: { ticks: { font: { size: 10 } } } } }
+  });
+  acCharts.net = new Chart(document.getElementById('ac-ch-net'), {
+    type: 'bar',
+    data: { labels, datasets: [{ label: 'صافي الربح', data: nt, backgroundColor: nt.map((v, i) => dim(v >= 0 ? '#3b82f6' : '#c53030', i)), borderRadius: 4 }] },
+    options: { maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: tipY } } }, scales: { y: { ticks: yTicks }, x: { ticks: { font: { size: 10 } } } } }
+  });
+
+  // 3) توزيع المصروفات حسب البند
+  const byName = {};
+  m.items.forEach(e => { const key = arNorm(e.name) || '—'; (byName[key] = byName[key] || { name: e.name || 'بدون اسم', total: 0 }).total += e.amount; });
+  let items = Object.values(byName).sort((a, b) => b.total - a.total);
+  if (items.length > 7) { const rest = items.slice(7).reduce((s, x) => s + x.total, 0); items = items.slice(0, 7).concat([{ name: 'أخرى', total: rest }]); }
+  acEmpty('ac-em-cat', !items.length);
+  if (items.length) acCharts.cat = new Chart(document.getElementById('ac-ch-cat'), {
+    type: 'doughnut',
+    data: { labels: items.map(x => x.name), datasets: [{ data: items.map(x => x.total), backgroundColor: AC_PALETTE, borderWidth: 3, hoverOffset: 6 }] },
+    options: { maintainAspectRatio: false, cutout: '52%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 11, padding: 6, font: { size: 10 } } }, tooltip: { callbacks: { label: c => { const tot = c.dataset.data.reduce((s, v) => s + v, 0); return ' ' + c.label + ': ' + acFmt(c.parsed) + ' (' + (tot ? (c.parsed / tot * 100).toFixed(1) : 0) + '%)'; } } } } }
+  });
+
+  // 4) أعلى المصروفات
+  const top = [...m.items].sort((a, b) => b.amount - a.amount).slice(0, 6);
+  acEmpty('ac-em-top', !top.length);
+  if (top.length) acCharts.top = new Chart(document.getElementById('ac-ch-top'), {
+    type: 'bar',
+    data: { labels: top.map(e => (e.name || 'بدون اسم').slice(0, 16)), datasets: [{ label: 'المبلغ', data: top.map(e => e.amount), backgroundColor: '#ef4444', borderRadius: 4 }] },
+    options: { indexAxis: 'y', maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { title: c => { const e = top[c[0].dataIndex]; return (e.name || 'بدون اسم') + (e.month ? ' — ' + acMonthLabel(e.month) : ''); }, label: c => ' ' + acFmt(c.parsed.x) } } }, scales: { x: { ticks: yTicks }, y: { ticks: { font: { size: 10 } } } } }
+  });
+
+  // 5) رصيد البنك: أرصدة الأشهر المُدخلة + الرصيد الحالي
+  const end = acEndKey(p), cur = acCurKey();
+  let pts = Object.entries(acData.bank.months).filter(([k]) => !end || k <= end).sort((a, b) => a[0].localeCompare(b[0])).map(([k, v]) => ({ label: acMonthShort(k), v }));
+  if (acData.bank.current && end && end >= cur) pts.push({ label: acMonthShort(cur) + ' (الحالي)', v: acData.bank.current.amount });
+  if (pts.length > 24) pts = pts.slice(-24);
+  acEmpty('ac-em-bank', !pts.length);
+  if (pts.length) acCharts.bank = new Chart(document.getElementById('ac-ch-bank'), {
+    type: 'line',
+    data: { labels: pts.map(x => x.label), datasets: [{ label: 'الرصيد', data: pts.map(x => x.v), borderColor: '#8b5cf6', backgroundColor: 'rgba(139,92,246,0.12)', fill: true, tension: 0.3, pointRadius: 4, pointBackgroundColor: '#8b5cf6' }] },
+    options: { maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: tipY } } }, scales: { y: { ticks: yTicks }, x: { ticks: { font: { size: 9 }, maxRotation: 45 } } } }
+  });
+
+  // 6) ملخص الفترة
+  const sumVals = [m.revenue || 0, m.expenses || 0, m.net || 0, m.bank ? m.bank.amount : 0];
+  acEmpty('ac-em-sum', !sumVals.some(v => v));
+  acCharts.sum = new Chart(document.getElementById('ac-ch-sum'), {
+    type: 'bar',
+    data: { labels: ['الإيرادات', 'المصروفات', 'صافي الربح', 'رصيد البنك'], datasets: [{ label: 'المبلغ', data: sumVals, backgroundColor: ['#10b981', '#ef4444', (m.net || 0) >= 0 ? '#3b82f6' : '#c53030', '#8b5cf6'], borderRadius: 6 }] },
+    options: { maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ' ' + acFmt(c.parsed.y) } } }, scales: { y: { ticks: yTicks }, x: { ticks: { font: { size: 10 } } } } }
+  });
+}
+
+// ---------- النوافذ ----------
+function acOpenModal(kind) { document.getElementById('ac-' + kind + '-overlay').classList.add('open'); }
+function acCloseModal(kind) { document.getElementById('ac-' + kind + '-overlay').classList.remove('open'); }
+function acInputHas(el) {
+  // تحويل الأرقام العربية إلى إنجليزية أثناء الكتابة
+  const fixed = el.value.replace(/[\u0660-\u0669]/g, d => String(d.charCodeAt(0) - 0x0660)).replace(/[\u06F0-\u06F9]/g, d => String(d.charCodeAt(0) - 0x06F0)).replace(/\u066B/g, '.');
+  if (fixed !== el.value) el.value = fixed;
+  el.parentElement.classList.toggle('has', el.value.trim() !== '' && acNum(el.value) !== 0);
+}
+
+// --- الإيرادات ---
+function acRevRowHTML(k, v, hl) {
+  return `<div class="fp-rev-row${hl ? ' ac-rev-hl' : ''}" data-m="${k}"><div class="fp-m">${acMonthLabel(k)}</div>
+    <div class="fp-inp${v ? ' has' : ''}"><input type="text" inputmode="decimal" value="${v || ''}" placeholder="0" oninput="acRevInput(this)" style="direction:ltr;"><span class="fp-cur">${SAR}</span></div></div>`;
+}
+function acOpenRev() {
+  const p = acPeriod();
+  const set = new Set(acUniverseMonths());
+  acMonthRange(acAddMonths(acCurKey(), -11), acCurKey()).forEach(k => set.add(k));   // آخر 12 شهراً دائماً
+  Object.keys(acData.revenue.months).forEach(k => set.add(k));
+  const months = [...set].sort().reverse();
+  document.getElementById('ac-rev-list').innerHTML = months.map(k => acRevRowHTML(k, acData.revenue.months[k], p.type !== 'all' && p.months.includes(k))).join('');
+  const tin = document.getElementById('ac-rev-total-input');
+  tin.value = acData.revenue.total || ''; acInputHas(tin);
+  acSetRevMode(acData.revenue.mode);
+  acOpenModal('rev');
+  const hl = document.querySelector('#ac-rev-list .ac-rev-hl'); if (hl) hl.scrollIntoView({ block: 'center' });
+}
+function acSetRevMode(mode) {
+  acRevMode = mode;
+  document.getElementById('ac-rev-mode-monthly').classList.toggle('on', mode === 'monthly');
+  document.getElementById('ac-rev-mode-total').classList.toggle('on', mode === 'total');
+  document.getElementById('ac-rev-monthly-panel').style.display = mode === 'monthly' ? 'block' : 'none';
+  document.getElementById('ac-rev-total-panel').style.display = mode === 'total' ? 'block' : 'none';
+  acRevSum();
+}
+function acRevInput(el) { acInputHas(el); acRevSum(); }
+function acRevRead() {
+  const months = {};
+  document.querySelectorAll('#ac-rev-list .fp-rev-row').forEach(r => { const n = acNum(r.querySelector('input').value); if (n) months[r.dataset.m] = n; });
+  return { mode: acRevMode, total: acNum(document.getElementById('ac-rev-total-input').value), months };
+}
+function acRevSum() {
+  const d = acRevRead();
+  const t = d.mode === 'monthly' ? Object.values(d.months).reduce((s, v) => s + v, 0) : d.total;
+  document.getElementById('ac-rev-sum').innerHTML = t ? acMoney(t) : '—';
+}
+function acRevAddMonth() {
+  const inp = document.getElementById('ac-rev-newmonth'); const k = inp.value;
+  if (!/^\d{4}-\d{2}$/.test(k)) { showToast('اختر الشهر أولاً', 'info'); return; }
+  const list = document.getElementById('ac-rev-list');
+  let row = list.querySelector(`[data-m="${k}"]`);
+  if (!row) {
+    const tmp = document.createElement('div'); tmp.innerHTML = acRevRowHTML(k, 0, false); row = tmp.firstElementChild;
+    const rows = [...list.children]; const after = rows.find(r => r.dataset.m < k);
+    after ? list.insertBefore(row, after) : list.appendChild(row);
+  }
+  inp.value = ''; row.querySelector('input').focus(); row.scrollIntoView({ block: 'center' });
+}
+function acClearRev() {
+  document.querySelectorAll('#ac-rev-list input').forEach(i => { i.value = ''; i.parentElement.classList.remove('has'); });
+  const t = document.getElementById('ac-rev-total-input'); t.value = ''; t.parentElement.classList.remove('has');
+  acRevSum();
+}
+async function acSaveRev() {
+  acData.revenue = acRevRead();
+  acCloseModal('rev');
+  await acSave();
+  acPopulateMonths(); acRender();
+}
+
+// --- المصروفات (بند + مبلغ فقط: شهري أو إجمالي الفترة) ---
+function acExpViewItems() {
+  if (acExpMode === 'total') return acExpDraft.total;
+  return acExpDraft.months[acExpMonth] || (acExpDraft.months[acExpMonth] = []);
+}
+function acExpRowHTML(it, idx) {
+  return `<tr data-id="${it.id}"><td style="text-align:center;color:#a0aec0;" class="ac-idx">${idx}</td>
+    <td><input type="text" list="ac-exp-names" value="${acEsc(it.name)}" placeholder="اسم المصروف" autocomplete="off" oninput="acExpSum()"></td>
+    <td><div class="fp-inp${it.amount ? ' has' : ''}" style="width:100%;"><input type="text" inputmode="decimal" class="ac-amt" value="${it.amount || ''}" placeholder="0" oninput="acInputHas(this);acExpSum()" onkeydown="if(event.key==='Enter'){event.preventDefault();acExpAddRow();}"><span class="fp-cur">${SAR}</span></div></td>
+    <td><button class="ac-del" onclick="acDelExpRow(this)" title="حذف">✕</button></td></tr>`;
+}
+function acRenumber() { document.querySelectorAll('#ac-exp-body .ac-idx').forEach((el, i) => { el.textContent = i + 1; }); }
+// DOM → المسودة (للعرض الحالي)
+function acExpCommitView() {
+  if (!acExpDraft) return;
+  const items = [];
+  document.querySelectorAll('#ac-exp-body tr').forEach(tr => {
+    const ins = tr.querySelectorAll('input');
+    const name = ins[0].value.trim(), amount = acNum(ins[1].value);
+    if (!name && !amount) return;
+    items.push({ id: tr.dataset.id, name: name || 'بدون اسم', amount });
+  });
+  if (acExpMode === 'total') acExpDraft.total = items; else if (acExpMonth) acExpDraft.months[acExpMonth] = items;
+}
+function acExpRenderView() {
+  const monthly = acExpMode === 'monthly';
+  document.getElementById('ac-exp-mode-monthly').classList.toggle('on', monthly);
+  document.getElementById('ac-exp-mode-total').classList.toggle('on', !monthly);
+  document.getElementById('ac-exp-month').style.display = monthly ? '' : 'none';
+  document.getElementById('ac-exp-sum-lbl').textContent = monthly ? 'إجمالي مصروفات ' + acMonthLabel(acExpMonth) : 'إجمالي مصروفات الفترة كاملة';
+  const items = acExpViewItems();
+  const body = document.getElementById('ac-exp-body');
+  body.innerHTML = items.map((it, i) => acExpRowHTML(it, i + 1)).join('');
+  if (!items.length) body.insertAdjacentHTML('beforeend', acExpRowHTML({ id: acUid(), name: '', amount: 0 }, 1));
+  acExpSum();
+}
+function acExpSum() {
+  acExpCommitView();
+  const t = acSumItems(acExpViewItems());
+  document.getElementById('ac-exp-sum').innerHTML = t ? acMoney(t) : '—';
+  const sm = document.getElementById('ac-exp-summary');
+  if (acExpMode !== 'monthly') { sm.innerHTML = ''; return; }
+  const ks = Object.keys(acExpDraft.months).filter(k => acSumItems(acExpDraft.months[k]) > 0).sort();
+  if (!ks.length) { sm.innerHTML = ''; return; }
+  const grand = ks.reduce((s, k) => s + acSumItems(acExpDraft.months[k]), 0);
+  sm.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:12px;border:1px solid #e2e8f0;">
+    <thead><tr style="background:#edf2f7;"><th colspan="2" style="padding:7px 8px;text-align:right;">إجمالي المصروفات لكل شهر (اضغط على شهر لتعديله)</th></tr></thead>
+    <tbody>${ks.map(k => `<tr onclick="acExpPickMonth('${k}')" style="cursor:pointer;${k === acExpMonth ? 'background:#fff5f6;' : ''}"><td style="padding:6px 8px;font-weight:${k === acExpMonth ? 800 : 600};">${acMonthLabel(k)}</td><td style="padding:6px 8px;text-align:center;font-weight:700;">${acMoney(acSumItems(acExpDraft.months[k]))}</td></tr>`).join('')}
+    <tr style="background:#fef2f2;"><td style="padding:7px 8px;font-weight:800;">إجمالي كل الشهور</td><td style="padding:7px 8px;text-align:center;font-weight:800;color:#c53030;">${acMoney(grand)}</td></tr></tbody></table>`;
+}
+function acExpMonthOptions() {
+  const set = new Set(acUniverseMonths());
+  acMonthRange(acAddMonths(acCurKey(), -11), acCurKey()).forEach(k => set.add(k));
+  Object.keys(acExpDraft.months).forEach(k => set.add(k));
+  const months = [...set].sort().reverse();
+  document.getElementById('ac-exp-month').innerHTML = months.map(k => `<option value="${k}">${acMonthLabel(k)}</option>`).join('');
+  return months;
+}
+function acOpenExp() {
+  acExpDraft = JSON.parse(JSON.stringify(acData.expenses));
+  acExpMode = acExpDraft.mode;
+  const p = acPeriod();
+  acExpMonth = p.type === 'month' ? p.months[0] : (p.type === 'range' && !p.invalid ? p.to.slice(0, 7) : acCurKey());
+  const months = acExpMonthOptions();
+  if (!months.includes(acExpMonth)) acExpMonth = months[0];
+  document.getElementById('ac-exp-month').value = acExpMonth;
+  const names = new Set();
+  Object.values(acData.expenses.months).forEach(a => a.forEach(i => i.name && names.add(i.name)));
+  acData.expenses.total.forEach(i => i.name && names.add(i.name));
+  document.getElementById('ac-exp-names').innerHTML = [...names].map(n => `<option value="${acEsc(n)}">`).join('');
+  acExpRenderView();
+  acOpenModal('exp');
+}
+function acSetExpMode(mode) { acExpCommitView(); acExpMode = mode; acExpRenderView(); }
+function acExpPickMonth(k) { acExpCommitView(); acExpMonth = k; document.getElementById('ac-exp-month').value = k; acExpRenderView(); }
+function acExpAddRow() {
+  const body = document.getElementById('ac-exp-body');
+  body.insertAdjacentHTML('beforeend', acExpRowHTML({ id: acUid(), name: '', amount: 0 }, body.children.length + 1));
+  const last = body.lastElementChild; last.querySelector('input').focus(); last.scrollIntoView({ block: 'nearest' });
+}
+function acDelExpRow(btn) { btn.closest('tr').remove(); acRenumber(); acExpSum(); }
+async function acSaveExp() {
+  acExpCommitView();
+  const months = {};
+  Object.entries(acExpDraft.months).forEach(([k, v]) => { if (v && v.length) months[k] = v; });
+  acData.expenses = { mode: acExpMode, total: acExpDraft.total || [], months };
+  acCloseModal('exp');
+  await acSave();
+  acPopulateMonths(); acRender();
+}
+
+// --- رصيد البنك: حفظ تلقائي + سجل منفصل ---
+function acBankMonthKeys() {
+  const cur = acCurKey();
+  const set = new Set(acMonthRange(acAddMonths(cur, -12), acAddMonths(cur, -1)));
+  Object.keys(acData.bank.months).forEach(k => { if (k < cur) set.add(k); });
+  return [...set].sort().reverse();
+}
+function acBankMonthRowHTML(k) {
+  const v = acData.bank.months[k];
+  return `<div class="fp-rev-row" data-m="${k}"><div class="fp-m">${acMonthLabel(k)}</div>
+    <div class="fp-inp${v !== undefined && v !== 0 ? ' has' : ''}"><input type="text" inputmode="decimal" value="${v === undefined ? '' : v}" placeholder="—" style="direction:ltr;" oninput="acInputHas(this)" onchange="acBankCommit('month','${k}',this)" onkeydown="if(event.key==='Enter')this.blur()"><span class="fp-cur">${SAR}</span></div></div>`;
+}
+function acBankRefresh() {
+  const c = acData.bank.current;
+  const inp = document.getElementById('ac-bank-cur-input');
+  inp.value = c ? c.amount : ''; acInputHas(inp);
+  document.getElementById('ac-bank-cur-at').textContent = c && c.at ? 'آخر تحديث: ' + acFmtDT(c.at) : 'لم يُدخل الرصيد الحالي بعد';
+  document.getElementById('ac-bank-log').innerHTML = acBankLogHTML();
+}
+function acBankLogHTML() {
+  if (!acLog.length) return '<div class="ac-log-empty">لا توجد تحديثات بعد</div>';
+  return [...acLog].reverse().slice(0, 200).map(l => {
+    const label = l.kind === 'current' ? 'الرصيد الحالي' : 'رصيد ' + acMonthLabel(l.month);
+    const oldS = l.old === null ? '—' : acFmt(l.old), newS = l.amount === null ? 'محذوف' : acFmt(l.amount);
+    const diff = (l.old !== null && l.amount !== null) ? ' (' + (l.amount - l.old >= 0 ? '+' : '') + acFmt(l.amount - l.old) + ')' : '';
+    return `<div class="ac-log-row"><span class="ac-log-at">${acFmtDT(l.at)}</span><span>${label}</span><span dir="ltr" style="font-weight:700;">${oldS} → ${newS}${diff}</span></div>`;
+  }).join('');
+}
+function acOpenBank() {
+  document.getElementById('ac-bank-months').innerHTML = acBankMonthKeys().map(acBankMonthRowHTML).join('');
+  document.getElementById('ac-bank-newmonth').max = acAddMonths(acCurKey(), -1);
+  document.getElementById('ac-bank-saved').textContent = '';
+  acBankRefresh();
+  acOpenModal('bank');
+}
+function acBankAddMonth() {
+  const inp = document.getElementById('ac-bank-newmonth'); const k = inp.value;
+  if (!/^\d{4}-\d{2}$/.test(k)) { showToast('اختر الشهر أولاً', 'info'); return; }
+  if (k >= acCurKey()) { showToast('الشهر الحالي يُدخل من «الرصيد الحالي»', 'info'); return; }
+  const list = document.getElementById('ac-bank-months');
+  let row = list.querySelector(`[data-m="${k}"]`);
+  if (!row) {
+    const tmp = document.createElement('div'); tmp.innerHTML = acBankMonthRowHTML(k); row = tmp.firstElementChild;
+    const after = [...list.children].find(r => r.dataset.m < k);
+    after ? list.insertBefore(row, after) : list.appendChild(row);
+  }
+  inp.value = ''; row.querySelector('input').focus(); row.scrollIntoView({ block: 'center' });
+}
+// تنزيل سجل تحديثات رصيد البنك (CSV يفتح في Excel بالعربية)
+function acDownloadLog() {
+  if (!acLog.length) { showToast('لا توجد تحديثات لتنزيلها', 'info'); return; }
+  const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+  const pad = n => String(n).padStart(2, '0');
+  const rows = [['التاريخ', 'الوقت', 'النوع', 'الشهر', 'القيمة السابقة', 'القيمة الجديدة', 'الفرق']];
+  [...acLog].sort((a, b) => a.at.localeCompare(b.at)).forEach(l => {
+    const d = new Date(l.at);
+    const date = isNaN(d) ? '' : d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+    const time = isNaN(d) ? '' : pad(d.getHours()) + ':' + pad(d.getMinutes());
+    const diff = (l.old !== null && l.amount !== null) ? +(l.amount - l.old).toFixed(2) : '';
+    rows.push([date, time, l.kind === 'current' ? 'الرصيد الحالي' : 'رصيد شهر سابق', l.kind === 'month' ? acMonthLabel(l.month) : '', l.old === null ? '' : l.old, l.amount === null ? 'محذوف' : l.amount, diff]);
+  });
+  const csv = '\ufeff' + rows.map(r => r.map(q).join(',')).join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'سجل-تحديثات-رصيد-البنك-' + acTodayStr() + '.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+}
+
+async function acBankCommit(kind, month, el) {
+  const newV = acNumStrict(el.value);
+  const b = acData.bank;
+  const oldV = kind === 'current' ? (b.current ? b.current.amount : null) : (b.months[month] !== undefined ? b.months[month] : null);
+  if (newV === oldV) return;
+  if (el.value.trim() !== '' && newV === null) { el.value = oldV === null ? '' : oldV; acInputHas(el); return; }   // إدخال غير صالح
+  if (kind === 'current') {
+    if (newV === null) { el.value = oldV === null ? '' : oldV; acInputHas(el); return; }
+    b.current = { amount: newV, at: new Date().toISOString() };
+  } else if (newV === null) delete b.months[month];
+  else b.months[month] = newV;
+  acLog.push({ id: acUid(), at: new Date().toISOString(), kind, month: month || '', old: oldV, amount: newV });
+  if (acLog.length > 1000) acLog = acLog.slice(-1000);
+  const ok = await acSave(); await acSaveLog();
+  document.getElementById('ac-bank-saved').textContent = '✓ تم الحفظ تلقائياً' + (ok ? '' : ' (محلياً)') + ' — ' + acFmtDT(new Date().toISOString());
+  acBankRefresh();
+  acPopulateMonths(); acRender();
+}
+// ==================== END تقرير الحسابات ====================
+
+
 function expUpdateTotals() {
   if (!expState) return;
   const total = expState.items.reduce((s, it) => s + (Number(it.amount) || 0), 0);
   const net = (expState.salesTotal || 0) - total;
-  const set = (id, txt, color) => { const el = document.getElementById(id); if (el) { el.textContent = txt; if (color) el.style.color = color; } };
+  const set = (id, txt, color) => { const el = document.getElementById(id); if (el) { el.innerHTML = txt; if (color) el.style.color = color; } };
   document.querySelectorAll('.exp-total-cell').forEach(el => { el.textContent = expFmt(total); });
-  set('exp-kpi-exp', expFmt(total) + ' ﷼');
-  set('exp-kpi-net', expFmt(net) + ' ﷼', net >= 0 ? '#047857' : '#c53030');
+  set('exp-kpi-exp', expFmt(total) + SAR_SP);
+  set('exp-kpi-net', expFmt(net) + SAR_SP, net >= 0 ? '#047857' : '#c53030');
   const card = document.getElementById('exp-kpi-net-card');
   if (card) card.style.borderRightColor = net >= 0 ? '#38a169' : '#c53030';
   // إذا كانت النافذة مفتوحة من تبويب "الفترة الكاملة"، حدّث بطاقاته أيضاً
@@ -5506,11 +6228,11 @@ function srRenderKPIs(d, label) {
   srCurrentLabel = label;
   const m = salesMetrics(d);
   document.getElementById('sr-kpis').innerHTML=`
-    <div class="s-kpi blue clickable" onclick="srOpenTotalsModal()" title="اضغط لعرض تفصيل الإيرادات"><div class="s-kpi-val">${m.expected.toLocaleString('ar-SA')} ﷼</div><div class="s-kpi-lbl">الإيرادات المتوقعة 💳<br>(إجمالي عمود المبلغ)</div></div>
-    <div class="s-kpi orange"><div class="s-kpi-val">${m.deposits.toLocaleString('ar-SA')} ﷼</div><div class="s-kpi-lbl">إجمالي مقدم الحجوزات (العربون)<br>من تاريخ اليوم فما فوق</div></div>
-    <div class="s-kpi green"><div class="s-kpi-val">${m.collected.toLocaleString('ar-SA')} ﷼</div><div class="s-kpi-lbl">الإيرادات المحصّلة فعلياً<br>(دخلوا الشاليه)</div></div>
-    <div class="s-kpi purple"><div class="s-kpi-val">${m.total.toLocaleString('ar-SA')} ﷼</div><div class="s-kpi-lbl">إجمالي الإيرادات<br>(المحصّلة + المقدم)</div></div>
-    <div class="s-kpi"><div class="s-kpi-val" style="color:${m.remaining>0?'#c53030':'#38a169'}">${m.remaining.toLocaleString('ar-SA')} ﷼</div><div class="s-kpi-lbl">باقي الإيرادات المتوقعة<br>غير المحصّلة</div></div>
+    <div class="s-kpi blue clickable" onclick="srOpenTotalsModal()" title="اضغط لعرض تفصيل الإيرادات"><div class="s-kpi-val">${m.expected.toLocaleString('en-US')}${SAR_SP}</div><div class="s-kpi-lbl">الإيرادات المتوقعة 💳<br>(إجمالي عمود المبلغ)</div></div>
+    <div class="s-kpi orange"><div class="s-kpi-val">${m.deposits.toLocaleString('en-US')}${SAR_SP}</div><div class="s-kpi-lbl">إجمالي مقدم الحجوزات (العربون)<br>من تاريخ اليوم فما فوق</div></div>
+    <div class="s-kpi green"><div class="s-kpi-val">${m.collected.toLocaleString('en-US')}${SAR_SP}</div><div class="s-kpi-lbl">الإيرادات المحصّلة فعلياً<br>(دخلوا الشاليه)</div></div>
+    <div class="s-kpi purple"><div class="s-kpi-val">${m.total.toLocaleString('en-US')}${SAR_SP}</div><div class="s-kpi-lbl">إجمالي الإيرادات<br>(المحصّلة + المقدم)</div></div>
+    <div class="s-kpi"><div class="s-kpi-val" style="color:${m.remaining>0?'#c53030':'#38a169'}">${m.remaining.toLocaleString('en-US')}${SAR_SP}</div><div class="s-kpi-lbl">باقي الإيرادات المتوقعة<br>غير المحصّلة</div></div>
     <div class="s-kpi rose clickable" onclick="expOpenModal()" title="اضغط لعرض وتعديل المصاريف الثابتة"><div class="s-kpi-val" id="exp-kpi-exp">—</div><div class="s-kpi-lbl">إجمالي المصروفات ✏️<br>(اضغط للتفاصيل)</div></div>
     <div class="s-kpi" id="exp-kpi-net-card"><div class="s-kpi-val" id="exp-kpi-net">—</div><div class="s-kpi-lbl">صافي الأرباح الفعلية<br>(إجمالي الإيرادات − المصروفات)</div></div>
   `;
@@ -5525,11 +6247,11 @@ function srOpenTotalsModal() {
     body.innerHTML = `
       <div class="sr-exp-line"><span>الفترة</span><b>${escH(srCurrentLabel||'')}</b></div>
       <div class="sr-exp-line"><span>عدد الحجوزات (بدون الملغاة)</span><b>${d.filter(r => r.status !== 'ملغي').length}</b></div>
-      <div class="sr-exp-line"><span>الإيرادات المتوقعة</span><b>${m.expected.toLocaleString('ar-SA')} ﷼</b></div>
-      <div class="sr-exp-line"><span>مقدم الحجوزات (من اليوم فما فوق)</span><b style="color:#dd6b20;">${m.deposits.toLocaleString('ar-SA')} ﷼</b></div>
-      <div class="sr-exp-line"><span>المحصّلة فعلياً</span><b style="color:#047857;">${m.collected.toLocaleString('ar-SA')} ﷼</b></div>
-      <div class="sr-exp-line"><span>إجمالي الإيرادات</span><b>${m.total.toLocaleString('ar-SA')} ﷼</b></div>
-      <div class="sr-exp-line sr-exp-net"><span>الباقي غير المحصّل</span><b style="color:${m.remaining>0?'#c53030':'#38a169'};">${m.remaining.toLocaleString('ar-SA')} ﷼</b></div>
+      <div class="sr-exp-line"><span>الإيرادات المتوقعة</span><b>${m.expected.toLocaleString('en-US')}${SAR_SP}</b></div>
+      <div class="sr-exp-line"><span>مقدم الحجوزات (من اليوم فما فوق)</span><b style="color:#dd6b20;">${m.deposits.toLocaleString('en-US')}${SAR_SP}</b></div>
+      <div class="sr-exp-line"><span>المحصّلة فعلياً</span><b style="color:#047857;">${m.collected.toLocaleString('en-US')}${SAR_SP}</b></div>
+      <div class="sr-exp-line"><span>إجمالي الإيرادات</span><b>${m.total.toLocaleString('en-US')}${SAR_SP}</b></div>
+      <div class="sr-exp-line sr-exp-net"><span>الباقي غير المحصّل</span><b style="color:${m.remaining>0?'#c53030':'#38a169'};">${m.remaining.toLocaleString('en-US')}${SAR_SP}</b></div>
     `;
   }
   document.getElementById('sr-totals-modal-overlay').classList.add('open');
@@ -5569,7 +6291,7 @@ function srRenderYearlyCalendar(d, targetId) {
       <div style="font-size:11px;font-weight:700;color:#4a5568;margin-bottom:4px;">${MONTH_NAMES[mm]} ${yy}</div>
       <div style="font-size:16px;font-weight:800;color:#1a1a2e;">${info.count}</div>
       <div style="font-size:9px;color:#a0aec0;margin-bottom:3px;">حجز</div>
-      <div style="font-size:10px;font-weight:700;color:#047857;">${info.total.toLocaleString('ar-SA')} ﷼</div>
+      <div style="font-size:10px;font-weight:700;color:#047857;">${info.total.toLocaleString('en-US')}${SAR_SP}</div>
     </div>`;
   });
   html += '</div>';
@@ -5624,7 +6346,7 @@ function srRenderCalendar(d, ft) {
     html+=`<div class="${cls}"><div class="s-cal-num">${day}</div>`;
     recs.forEach(r=>{
       const iW=r.section==='قسم الحريم';
-      html+=`<div class="s-cal-booking${iW?' women':''}"><span class="bname">${(r.name||'بدون اسم').split(' ')[0]}</span><span class="bamt">${r.amount?r.amount.toLocaleString('ar-SA')+'﷼':''}</span></div>`;
+      html+=`<div class="s-cal-booking${iW?' women':''}"><span class="bname">${(r.name||'بدون اسم').split(' ')[0]}</span><span class="bamt">${r.amount?r.amount.toLocaleString('en-US')+SAR:''}</span></div>`;
     });
     html+=`</div>`;
   }
@@ -5660,7 +6382,7 @@ function srRenderCharts(d) {
   d.forEach(r=>{revMap[r.day]=(revMap[r.day]||0)+r.amount;});
   const sortedRevDays=Object.keys(revMap).map(Number).sort((a,b)=>a-b);
   const dailyCtx=document.getElementById('sr-daily-chart');
-  if(dailyCtx) srCharts['daily']=new Chart(dailyCtx,{type:'line',data:{labels:sortedRevDays.map(d=>''+d),datasets:[{label:'ر.س',data:sortedRevDays.map(d=>revMap[d]),borderColor:'#e94560',backgroundColor:'rgba(233,69,96,0.07)',tension:0.3,fill:true,pointRadius:3,pointBackgroundColor:'#e94560'}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{callback:v=>v>=1000?Math.round(v/1000)+'k':v,font:{size:9}}},x:{ticks:{font:{size:9}}}}}});
+  if(dailyCtx) srCharts['daily']=new Chart(dailyCtx,{type:'line',data:{labels:sortedRevDays.map(d=>''+d),datasets:[{label:'المبلغ',data:sortedRevDays.map(d=>revMap[d]),borderColor:'#e94560',backgroundColor:'rgba(233,69,96,0.07)',tension:0.3,fill:true,pointRadius:3,pointBackgroundColor:'#e94560'}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{callback:v=>v>=1000?Math.round(v/1000)+'k':v,font:{size:9}}},x:{ticks:{font:{size:9}}}}}});
 }
 
 function setDynPageSize(size) {
@@ -5822,7 +6544,7 @@ function cmpRenderPanels(aD,bD,aL,bL){
   const aDays=new Set(aD.map(r=>r.date)).size;
   const bDays=new Set(bD.map(r=>r.date)).size;
   function win(a,b){return a>b?'win-a':a<b?'win-b':'win-tie';}
-  const fmt0=(v)=>v.toLocaleString('ar-SA')+' ﷼';
+  const fmt0=(v)=>v.toLocaleString('en-US')+SAR_SP;
   const makeRow=(lbl,aVal,bVal,fmt)=>{
     const pct=pctChange(aVal,bVal); const cls=pctCls(aVal,bVal);
     const fA=fmt?fmt(aVal):aVal; const fB=fmt?fmt(bVal):bVal;
@@ -5949,9 +6671,9 @@ function cmpRenderCharts(aD,bD,aL,bL){
 
 // ==================== PIN LOGIN SYSTEM ====================
 const PIN_CONFIG = {
-  admin: { pin: '1234', label: 'مدير', roles: ['dashboard','records','report','entry','sales-records','sales-report','sales-compare','maintenance-entry','maintenance-records','full-period'] },
+  admin: { pin: '1234', label: 'مدير', roles: ['dashboard','records','report','entry','sales-records','sales-report','sales-compare','maintenance-entry','maintenance-records','full-period','accounts-report'] },
   staff: { pin: '5678', label: 'موظف', roles: ['entry','sales-records','records','sales-report','maintenance-entry','maintenance-records'] },
-  accounts: { pin: '2690', label: 'الحسابات', roles: ['dashboard','records','report','entry','sales-records','sales-report','sales-compare','maintenance-entry','maintenance-records','full-period'] }
+  accounts: { pin: '2690', label: 'الحسابات', roles: ['dashboard','records','report','entry','sales-records','sales-report','sales-compare','maintenance-entry','maintenance-records','full-period','accounts-report'] }
 };
 
 let pinCurrentRole = 'admin';
@@ -6432,9 +7154,9 @@ async function salesRecordsInit() {
   document.getElementById('sr2-kpis').innerHTML = `
     <div class="s-kpi" style="padding:10px 14px;"><div class="s-kpi-val">${filtered.length}</div><div class="s-kpi-lbl">إجمالي الحجوزات</div></div>
     <div class="s-kpi green" style="padding:10px 14px;"><div class="s-kpi-val">${confirmed}</div><div class="s-kpi-lbl">دخلوا</div></div>
-    <div class="s-kpi blue" style="padding:10px 14px;"><div class="s-kpi-val">${total.toLocaleString('ar-SA')} ﷼</div><div class="s-kpi-lbl">إجمالي المبيعات</div></div>
-    <div class="s-kpi purple" style="padding:10px 14px;"><div class="s-kpi-val">${filtered.length ? Math.round(total/filtered.length).toLocaleString('ar-SA') : 0} ﷼</div><div class="s-kpi-lbl">متوسط الحجز</div></div>
-    <div class="s-kpi" style="padding:10px 14px;background:#fef2f2;"><div class="s-kpi-val" style="color:${totalRemaining>0?'#c53030':'#38a169'}">${totalRemaining.toLocaleString('ar-SA')} ﷼</div><div class="s-kpi-lbl">إجمالي متبقي الإيجار</div></div>`;
+    <div class="s-kpi blue" style="padding:10px 14px;"><div class="s-kpi-val">${total.toLocaleString('en-US')}${SAR_SP}</div><div class="s-kpi-lbl">إجمالي المبيعات</div></div>
+    <div class="s-kpi purple" style="padding:10px 14px;"><div class="s-kpi-val">${filtered.length ? Math.round(total/filtered.length).toLocaleString('en-US') : 0}${SAR_SP}</div><div class="s-kpi-lbl">متوسط الحجز</div></div>
+    <div class="s-kpi" style="padding:10px 14px;background:#fef2f2;"><div class="s-kpi-val" style="color:${totalRemaining>0?'#c53030':'#38a169'}">${totalRemaining.toLocaleString('en-US')}${SAR_SP}</div><div class="s-kpi-lbl">إجمالي متبقي الإيجار</div></div>`;
 
   document.getElementById('sr2-summary').textContent = searchRaw ? (filtered.length + ' من ' + beforeSearch + ' سجل') : (filtered.length + ' سجل');
 
@@ -6468,9 +7190,9 @@ async function salesRecordsInit() {
       <td style="padding:5px 8px;text-align:center;font-size:13px;font-weight:800;color:#7a5a1a;">${daysCount}</td>
       <td style="padding:5px 8px;text-align:center;"><span style="background:${secColor}22;color:${secColor};font-size:11px;font-weight:700;padding:3px 7px;border-radius:6px;">${escH(r.section||'')}</span></td>
       <td style="padding:5px 8px;font-size:11px;text-align:center;">${escH(r.source||'')}</td>
-      <td style="padding:5px 8px;font-size:13px;font-weight:800;color:#047857;text-align:center;">${r.amount ? r.amount.toLocaleString('ar-SA')+' ﷼' : '—'}</td>
-      <td style="padding:5px 8px;font-size:13px;font-weight:700;color:#1a6e5a;text-align:center;">${r.paidAmount ? r.paidAmount.toLocaleString('ar-SA')+' ﷼' : '—'}</td>
-      <td style="padding:5px 8px;font-size:13px;font-weight:800;text-align:center;color:${remainingVal>0?'#c53030':'#38a169'};">${remainingVal.toLocaleString('ar-SA')} ﷼</td>
+      <td style="padding:5px 8px;font-size:13px;font-weight:800;color:#047857;text-align:center;">${r.amount ? r.amount.toLocaleString('en-US')+SAR_SP : '—'}</td>
+      <td style="padding:5px 8px;font-size:13px;font-weight:700;color:#1a6e5a;text-align:center;">${r.paidAmount ? r.paidAmount.toLocaleString('en-US')+SAR_SP : '—'}</td>
+      <td style="padding:5px 8px;font-size:13px;font-weight:800;text-align:center;color:${remainingVal>0?'#c53030':'#38a169'};">${remainingVal.toLocaleString('en-US')}${SAR_SP}</td>
       <td style="padding:5px 8px;text-align:center;">${payBadgeHTML(r)}</td>
       <td style="padding:5px 8px;text-align:center;"><span style="background:${statusColor}22;color:${statusColor};font-size:11px;font-weight:700;padding:3px 7px;border-radius:6px;">${escH(r.status||'')}</span></td>
       <td style="padding:5px 8px;font-size:11px;direction:ltr;text-align:center;">${escH(r.phone||'')}</td>
@@ -6552,7 +7274,7 @@ function sr2EditRow(id) {
     <td><select class="excel-select" id="sr2i-source-${id}" style="border:1px solid #e94560;border-radius:4px;padding:5px 7px;width:100%;">${srcs.map(v=>'<option'+(r.source===v?' selected':'')+'>'+v+'</option>').join('')}</select></td>
     <td><input class="excel-input" id="sr2i-amount-${id}" type="number" value="${r.amount||''}" oninput="sr2iRecalcRemaining('${id}')" style="border:1px solid #e94560;border-radius:4px;padding:5px 7px;width:100%;text-align:center;"></td>
     <td><input class="excel-input" id="sr2i-paid-${id}" type="number" value="${r.paidAmount||''}" placeholder="مقدم الحجز" oninput="sr2iRecalcRemaining('${id}')" style="border:1px solid #1a6e5a;border-radius:4px;padding:5px 7px;width:100%;text-align:center;"></td>
-    <td style="text-align:center;font-weight:800;font-size:12px;color:${payRemaining(r)>0?'#c53030':'#38a169'};" id="sr2i-remaining-${id}">${payRemaining(r).toLocaleString('ar-SA')} ﷼</td>
+    <td style="text-align:center;font-weight:800;font-size:12px;color:${payRemaining(r)>0?'#c53030':'#38a169'};" id="sr2i-remaining-${id}">${payRemaining(r).toLocaleString('en-US')}${SAR_SP}</td>
     <td style="text-align:center;" id="sr2i-pay-${id}">${payBadgeHTML(r)}</td>
     <td><select class="excel-select" id="sr2i-status-${id}" onchange="sr2iStatusChanged('${id}')" style="border:1px solid #e94560;border-radius:4px;padding:5px 7px;width:100%;">${stats.map(v=>'<option'+(r.status===v?' selected':'')+'>'+v+'</option>').join('')}</select></td>
     <td><input class="excel-input" id="sr2i-phone-${id}" value="${(r.phone||'').replace(/"/g,'&quot;')}" placeholder="الجوال" style="border:1px solid #e94560;border-radius:4px;padding:5px 7px;width:100%;"></td>
@@ -6635,7 +7357,7 @@ function sr2iRecalcRemaining(id) {
   const el = document.getElementById('sr2i-remaining-' + id);
   if (el) {
     const remaining = payRemaining(tmp);
-    el.textContent = remaining.toLocaleString('ar-SA') + ' ﷼';
+    el.innerHTML = remaining.toLocaleString('en-US') + SAR_SP;
     el.style.color = remaining > 0 ? '#c53030' : '#38a169';
   }
   const pe = document.getElementById('sr2i-pay-' + id);
